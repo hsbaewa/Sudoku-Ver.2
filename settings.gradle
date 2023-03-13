@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 rootProject.name = "HS-Sudoku2"
 include ':app'
 include ':domain'
+include ':data'

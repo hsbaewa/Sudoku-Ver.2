@@ -1,9 +1,11 @@
 package kr.co.hs.sudoku
 
-import kr.co.hs.sudoku.model.IntCoordinateCellEntity
-import kr.co.hs.sudoku.model.MutableStage
-import kr.co.hs.sudoku.model.Stage
-import kr.co.hs.sudoku.model.impl.*
+import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
+import kr.co.hs.sudoku.model.stage.MutableStage
+import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.model.stage.impl.IntCoordinateCellEntityImpl
+import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
+import kr.co.hs.sudoku.model.stage.impl.StageMaskImpl
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -165,7 +167,7 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
     fun testAuto() {
         val stage = buildStage()
         assertThrows(IllegalArgumentException::class.java) {
-            stage.set(0,0, 1)
+            stage.set(0, 0, 1)
         }
 
         stage[0, 2] = 1
@@ -176,7 +178,7 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
         sudoku.generate()
         println(sudoku)
         assertEquals(true, sudoku.isCompleted())
-        sudoku.toImmutable(
+        val stageMask = StageMaskImpl(
             listOf(
                 listOf(1, 1, 0, 0, 1, 0, 0, 0, 0),
                 listOf(1, 0, 0, 1, 1, 1, 0, 0, 0),
@@ -189,7 +191,7 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 0, 1, 0, 0, 1, 1)
             )
         )
-        sudoku.clear()
+        stageMask.setMask(sudoku)
         println(sudoku)
         return sudoku
     }
