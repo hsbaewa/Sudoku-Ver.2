@@ -1,0 +1,205 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+'값
+abstract CellValueEntity<ValueType> {
+    +value: ValueType
+    +to(c: Class<CellValueEntity>): CellValueEntity
+    +getValue(): ValueType
+}
+class Mutable<ValueType> {
+    +setValue(value: ValueType)
+}
+CellValueEntity <|.. Mutable
+class Immutable
+CellValueEntity <|.. Immutable
+class Empty
+CellValueEntity <|.. Empty
+
+
+'셀 정보
+interface CellEntity<ValueType> {
+    +value: CellValueEntity<ValueType>
+    +valueChangedListener: ValueChangedListener?
+    +isMutable(): Boolean
+    +toMutable()
+    +isImmutable(): Boolean
+    +toImmutable()
+    +isEmpty(): Boolean
+    +toEmpty()
+    +getValue(): ValueType
+    +setValue(value: ValueType)
+}
+CellValueEntity <- CellEntity
+'interface CellEntity.ValueChangedListener {
+'    +onChanged(cell: CellEntity)
+'}
+'CellEntity +- CellEntity.ValueChangedListener
+
+
+'좌표
+interface Coordinate<T> {
+    +x: T
+    +y: T
+}
+class IntCoordinate {
+    +x: Int
+    +y: Int
+}
+Coordinate <|.. IntCoordinate
+interface IntCoordinateCellEntity {
+    +coordinate: IntCoordinate
+}
+IntCoordinate <- IntCoordinateCellEntity
+CellEntity <|... IntCoordinateCellEntity
+interface IntCoordinateCellEntity.ValueChangedListener {
+    +onChanged(cell: IntCoordinateCellEntity)
+}
+IntCoordinateCellEntity +- IntCoordinateCellEntity.ValueChangedListener
+
+
+interface CellCollection<ValueType> {
+    +count: Int
+    +toValueList(): List<ValueType>
+    +toList(): List<CellEntity<ValueType>>
+    +filter(value: ValueType): List<CellEntity<ValueType>>
+}
+
+
+interface MutableCellCollection<ValueType> {
+    +clear()
+    +clear(value: ValueType)
+}
+CellCollection <|.... MutableCellCollection
+
+'셀 테이블
+interface CellTable<ValueType> {
+    +rowCount: Int
+    +columnCount: Int
+    +getCell(coordinate: Coordinate<Int>): IntCoordinateCellEntity<ValueType>
+    +getValue(coordinate: Coordinate<Int>): ValueType
+}
+CellCollection <|... CellTable
+IntCoordinateCellEntity <---- CellTable
+interface MutableCellTable<ValueType> {
+    +setCell(coordinate: IntCoordinate, cell: IntCoordinateCellEntity<ValueType>)
+    +setValue(coordinate: IntCoordinate, value: ValueType)
+}
+CellTable <|.... MutableCellTable
+MutableCellCollection <|.... MutableCellTable
+
+
+
+interface CellList<ValueType> {
+'    +count: Int
+    +getCell(idx: Int): CellEntity<ValueType>
+    +getValue(idx Int): ValueType
+}
+CellCollection <|... CellList
+CellEntity <------ CellList
+interface MutableCellList<ValueType> {
+    +setCell(idx: Int, cell: CellEntity<ValueType>)
+    +setValue(idx: Int, value: ValueType)
+}
+CellList <|... MutableCellList
+MutableCellCollection <|... MutableCellList
+
+
+interface SudokuStrategyRule {
+    +getDuplicatedCells(): CellList<Int>
+    +getEmptyCells(): CellList<Int>
+    +isCompleted(): Boolean
+}
+
+interface SudokuBox
+CellTable <|...... SudokuBox
+SudokuStrategyRule <|... SudokuBox
+
+interface SudokuLine
+CellList <|....... SudokuLine
+SudokuStrategyRule <|... SudokuLine
+
+
+interface Stage {
+    +getBox(coordinate: Coordinate): SudokuBox
+    +getRowLine(row: Int): SudokuLine
+    +getColumnLine(column: Int): SudokuLine
+    +getAroundBox(coordinate: Coordinate): List<SudokuBox>
+}
+CellTable <|.. Stage
+SudokuBox <--- Stage
+SudokuLine <--- Stage
+
+
+interface MutableSudokuBox {
+}
+MutableCellTable <|.... MutableSudokuBox
+SudokuStrategyRule <|.... MutableSudokuBox
+
+interface MutableSudokuLine {
+}
+MutableCellList <|.... MutableSudokuLine
+SudokuStrategyRule <|.... MutableSudokuLine
+
+interface MutableStage {
+    +getBox(coordinate: Coordinate): MutableSudokuBox
+    +getRowLine(row: Int): MutableSudokuLine
+    +getColumnLine(column: Int): MutableSudokuLine
+}
+MutableCellTable <|... MutableStage
+Stage <|.... MutableStage
+MutableSudokuBox <-- MutableStage
+MutableSudokuLine <-- MutableStage
+
+
+''구현
+class IntCellEntityImpl
+CellEntity <|-- IntCellEntityImpl
+class IntCoordinateCellEntityImpl
+IntCoordinateCellEntity <|-- IntCoordinateCellEntityImpl
+IntCellEntityImpl <|-- IntCoordinateCellEntityImpl
+
+abstract CellCollectionImpl<ValueType> {
+    +toValueList(): List<ValueType>
+    +filter(value: ValueType): List<CellEntity<ValueType>>
+}
+CellCollection <|.. CellCollectionImpl
+
+class SudokuCellListImpl {
+    +list: List<CellEntity<Int>>
+    +toList(): List<CellEntity<Int>>
+}
+CellCollectionImpl <|-- SudokuCellListImpl
+CellList <|.. SudokuCellListImpl
+
+class SudokuCellTableImpl {
+    +table: List<List<IntCoordinateCellEntity<Int>>>
+    +toList(): List<CellEntity<Int>>
+}
+CellCollectionImpl <|-- SudokuCellTableImpl
+CellTable <|.. SudokuCellTableImpl
+
+class MutableSudokuCellListImpl
+MutableCellList <|.. MutableSudokuCellListImpl
+SudokuCellListImpl <|-- MutableSudokuCellListImpl
+
+class MutableSudokuCellTableImpl
+MutableCellTable <|.. MutableSudokuCellTableImpl
+SudokuCellTableImpl <|-- MutableSudokuCellTableImpl
+
+class SudokuLineImpl
+SudokuLine <|.. SudokuLineImpl
+SudokuCellListImpl <|-- SudokuLineImpl
+
+class SudokuBoxImpl
+SudokuBox <|.. SudokuBoxImpl
+SudokuCellTableImpl <|-- SudokuBoxImpl
+
+class StageImpl {
+    +boxSize: Int
+    +boxCount: Int
+}
+Stage <|.. StageImpl
+
+@enduml
