@@ -134,43 +134,6 @@ class MutableStageImpl(
         return builder.toString()
     }
 
-    override fun generate() = generate(0, 0)
-
-    private fun generate(row: Int, column: Int) {
-        if (row == rowCount)
-            return
-
-        val cell = getCell(row, column)
-
-        val available = getAvailable(row, column).shuffled()
-        if (available.isEmpty()) {
-            cell.clearAfter()
-            return
-        }
-        available.forEach {
-
-            if (isCompleted())
-                return
-
-            if (!cell.isImmutable())
-                this[row, column] = it
-
-            if (column == columnCount - 1) {
-                generate(row + 1, 0)
-            } else {
-                generate(row, column + 1)
-            }
-        }
-    }
-
-    private fun CellEntity<Int>.clearAfter() {
-        val idx = toList().indexOf(this)
-        toList().subList(idx, size()).forEach {
-            if (it.isMutable())
-                it.toEmpty()
-        }
-    }
-
 
     /**
      * SudokuStrategyRule
