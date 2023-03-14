@@ -1,8 +1,10 @@
 package kr.co.hs.sudoku
 
+import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.MutableStage
 import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.model.stage.impl.AutoPlayStageImpl
 import kr.co.hs.sudoku.model.stage.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
 import kr.co.hs.sudoku.model.stage.impl.StageBuilderImpl
@@ -239,5 +241,22 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
         assertEquals(false, stage.isCompleted())
         assertEquals(0, stage.getDuplicatedCellCount())
 
+    }
+
+    @Test
+    fun testCPU() = runBlocking {
+        val stageBuilder = StageBuilderImpl()
+        stageBuilder.setBox(3, 3)
+        val stage = stageBuilder.build()
+        stage.setValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
+            override fun onChanged(cell: IntCoordinateCellEntity) {
+                println(cell)
+                println(stage)
+            }
+        })
+        val cpu = AutoPlayStageImpl(stage, 500)
+        cpu.play()
+
+        assertEquals(true, stage.isCompleted())
     }
 }
