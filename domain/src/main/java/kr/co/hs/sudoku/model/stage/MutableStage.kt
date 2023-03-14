@@ -6,5 +6,4 @@ interface MutableStage : Stage, MutableCellTable<Int> {
     override fun getRowLine(row: Int): MutableSudokuLine
     override fun getColumnLine(column: Int): MutableSudokuLine
     override fun getAroundBox(coordinate: Coordinate<Int>): List<MutableSudokuBox>
-    fun generate()
 }

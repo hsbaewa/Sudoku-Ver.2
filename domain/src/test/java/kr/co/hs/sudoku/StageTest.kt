@@ -5,7 +5,7 @@ import kr.co.hs.sudoku.model.stage.MutableStage
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.model.stage.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
-import kr.co.hs.sudoku.model.stage.impl.StageMaskImpl
+import kr.co.hs.sudoku.model.stage.impl.StageBuilderImpl
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -164,7 +164,7 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
     }
 
     @Test
-    fun testAuto() {
+    fun testBuilder() {
         val stage = buildStage()
         assertThrows(IllegalArgumentException::class.java) {
             stage.set(0, 0, 1)
@@ -174,11 +174,9 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
     }
 
     private fun buildStage(): Stage {
-        val sudoku = MutableStageImpl(3, 3)
-        sudoku.generate()
-        println(sudoku)
-        assertEquals(true, sudoku.isCompleted())
-        val stageMask = StageMaskImpl(
+        val stageBuilder = StageBuilderImpl()
+        stageBuilder.setBox(3, 3)
+        stageBuilder.autoGenerate(
             listOf(
                 listOf(1, 1, 0, 0, 1, 0, 0, 0, 0),
                 listOf(1, 0, 0, 1, 1, 1, 0, 0, 0),
@@ -191,8 +189,55 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 0, 1, 0, 0, 1, 1)
             )
         )
-        stageMask.setMask(sudoku)
+        stageBuilder.setStage(listOf(listOf(1, 2, 3, 4)))
+
+        val sudoku = stageBuilder.build()
+
         println(sudoku)
         return sudoku
+    }
+
+    @Test
+    fun testAutoFill() {
+        val stageBuilder = StageBuilderImpl()
+        stageBuilder.setBox(3, 3)
+        stageBuilder.autoGenerate(
+            listOf(
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1)
+            )
+        )
+        val stage = stageBuilder.build()
+        assertEquals(true, stage.isCompleted())
+    }
+
+    @Test
+    fun testCustomFill() {
+        val stageBuilder = StageBuilderImpl()
+        stageBuilder.setBox(3, 3)
+        stageBuilder.setStage(
+            listOf(
+                listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
+                listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
+                listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
+                listOf(8, 0, 0, 0, 6, 0, 0, 0, 3),
+                listOf(4, 0, 0, 8, 0, 3, 0, 0, 1),
+                listOf(7, 0, 0, 0, 2, 0, 0, 0, 6),
+                listOf(0, 6, 0, 0, 0, 0, 2, 8, 0),
+                listOf(0, 0, 0, 4, 1, 9, 0, 0, 5),
+                listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
+            )
+        )
+        val stage = stageBuilder.build()
+        assertEquals(false, stage.isCompleted())
+        assertEquals(0, stage.getDuplicatedCellCount())
+
     }
 }
