@@ -6,7 +6,7 @@ import kr.co.hs.sudoku.model.stage.Stage
 
 class AutoPlayStageImpl(
     private val stage: Stage,
-    private val threashold: Long
+    private var threashold: Long
 ) : AutoPlayStage {
 
     override suspend fun play() {
@@ -14,8 +14,10 @@ class AutoPlayStageImpl(
     }
 
     private suspend fun Stage.play(row: Int, column: Int) {
-        if (row == rowCount)
+        if (row == rowCount) {
+            threashold = 0
             return
+        }
 
         val cell = getCell(row, column)
 
@@ -33,8 +35,10 @@ class AutoPlayStageImpl(
         }
         available.forEach {
             delay((threashold / 5) + (available.size * (threashold / 8)))
-            if (isCompleted())
+            if (isCompleted()) {
+                threashold = 0
                 return
+            }
 
             if (!cell.isImmutable()) {
                 delay(threashold)
