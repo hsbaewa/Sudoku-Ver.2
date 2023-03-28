@@ -10,7 +10,7 @@ import android.widget.TextView
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ViewNumberpadBinding
 
-class NumberPadPopupWindow(context: Context) : PopupWindow(), OnClickListener {
+internal class NumberPadPopupWindow(context: Context) : PopupWindow(), OnClickListener {
 
     init {
         contentView = onCreateView(context)

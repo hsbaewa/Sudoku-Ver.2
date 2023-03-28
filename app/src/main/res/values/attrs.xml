@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Board">
+        <attr name="numberColor" format="color" />
+        <attr name="borderColor" format="color" />
+        <attr name="backgroundColor" format="color" />
+        <attr name="accentColor" format="color" />
+        <attr name="rowCount" format="integer" />
+    </declare-styleable>
+</resources>
