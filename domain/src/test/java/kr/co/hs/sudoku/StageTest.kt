@@ -4,10 +4,7 @@ import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.MutableStage
 import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.model.stage.impl.AutoPlayStageImpl
-import kr.co.hs.sudoku.model.stage.impl.IntCoordinateCellEntityImpl
-import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
-import kr.co.hs.sudoku.model.stage.impl.StageBuilderImpl
+import kr.co.hs.sudoku.model.stage.impl.*
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -172,7 +169,8 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
             stage.set(0, 0, 1)
         }
 
-        stage[0, 2] = 1
+        val cell = stage.getCell(0,2)
+        stage[0, 5] = 1
     }
 
     private fun buildStage(): Stage {
@@ -257,6 +255,65 @@ class StageTest : IntCoordinateCellEntity.ValueChangedListener {
         val cpu = AutoPlayStageImpl(stage, 500)
         cpu.play()
 
+        assertEquals(true, stage.isCompleted())
+    }
+
+    @Test
+    fun testCPU2() = runBlocking {
+        val stageBuilder = StageBuilderImpl()
+        stageBuilder.setBox(3, 3)
+//        stageBuilder.setStage(
+//            listOf(
+//                listOf(7,0,0,1,4,0,0,0,8),
+//                listOf(0,2,9,3,0,0,0,0,7),
+//                listOf(0,1,0,5,0,0,4,6,0),
+//                listOf(8,0,1,0,6,3,5,0,0),
+//                listOf(0,9,0,2,0,0,0,8,0),
+//                listOf(0,0,7,9,0,0,6,0,1),
+//                listOf(0,6,4,0,0,1,0,7,0),
+//                listOf(5,0,0,0,0,7,3,1,0),
+//                listOf(1,0,0,0,2,5,0,0,6)
+//            )
+//        )
+//        stageBuilder.setStage(
+//            listOf(
+//                listOf(0,0,3,7,0,4,5,0,0),
+//                listOf(0,2,0,0,0,0,0,6,0),
+//                listOf(0,8,0,3,1,6,0,2,0),
+//                listOf(0,0,0,0,0,0,0,0,0),
+//                listOf(3,7,0,0,0,0,0,9,2),
+//                listOf(2,0,4,0,0,0,8,0,6),
+//                listOf(0,4,0,1,3,5,0,7,0),
+//                listOf(0,5,0,0,0,0,0,4,0),
+//                listOf(0,0,1,6,0,7,2,0,0)
+//            )
+//        )
+        stageBuilder.setStage(
+            listOf(
+                listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
+                listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
+                listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
+                listOf(8, 0, 0, 0, 6, 0, 0, 0, 3),
+                listOf(4, 0, 0, 8, 0, 3, 0, 0, 1),
+                listOf(7, 0, 0, 0, 2, 0, 0, 0, 6),
+                listOf(0, 6, 0, 0, 0, 0, 2, 8, 0),
+                listOf(0, 0, 0, 4, 1, 9, 0, 0, 5),
+                listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
+            )
+        )
+        val stage = stageBuilder.build()
+
+
+        stage.setValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
+            override fun onChanged(cell: IntCoordinateCellEntity) {
+                println(cell)
+                println(stage)
+            }
+        })
+        val cpu = AutoPlayStageImpl(stage, 0)
+        cpu.play()
+
+//        println(stage)
         assertEquals(true, stage.isCompleted())
     }
 }

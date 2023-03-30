@@ -62,34 +62,52 @@ class StageBuilderImpl : StageBuilder {
         return stage
     }
 
-    private fun MutableStage.generate(row: Int, column: Int) {
-        if (row == rowCount)
+    private fun Stage.generate(row: Int, column: Int) {
+        if (isCompleted()) {
             return
+        }
 
-        val cell = getCell(row, column)
-
-        val available = getAvailable(row, column).shuffled()
-        if (available.isEmpty()) {
-            val flattenList = toList()
-            val idx = flattenList.indexOf(cell)
-            flattenList.subList(idx, size()).forEach {
-                if (it.isMutable())
-                    it.toEmpty()
+        var x = row
+        var y = column
+        var cell = this.getCell(x, y)
+        while (cell.isImmutable()) {
+            if (y == columnCount - 1) {
+                x += 1
+                y = 0
+            } else {
+                y += 1
             }
+            cell = this.getCell(x, y)
+        }
+
+        println("$x,$y, $row,$column")
+
+        val available = getAvailable(x, y).shuffled()
+        if (available.isEmpty()) {
             return
         }
         available.forEach {
-
-            if (isCompleted())
+            if (isCompleted()) {
                 return
+            }
 
-            if (!cell.isImmutable())
-                this[row, column] = it
+            with(toList()) {
+                val idx = indexOf(getCell(x, y))
+                subList(idx, size()).forEach { cell ->
+                    if (cell.isMutable()) {
+                        cell.toEmpty()
+                    }
+                }
+            }
 
-            if (column == columnCount - 1) {
-                generate(row + 1, 0)
+            if (!cell.isImmutable()) {
+                this[x, y] = it
+            }
+
+            if (y == columnCount - 1) {
+                generate(x + 1, 0)
             } else {
-                generate(row, column + 1)
+                generate(x, y + 1)
             }
         }
     }
