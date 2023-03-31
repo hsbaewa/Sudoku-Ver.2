@@ -14,23 +14,26 @@ class AutoPlayStageImpl(
     }
 
     private suspend fun Stage.play(row: Int, column: Int) {
-        if (row == rowCount) {
+        if (isCompleted()) {
             threashold = 0
             return
         }
 
-        val cell = getCell(row, column)
-
-        val available = getAvailable(row, column).shuffled()
-        if (available.isEmpty()) {
-            val flattenList = toList()
-            val idx = flattenList.indexOf(cell)
-            flattenList.subList(idx, size()).forEach {
-                if (it.isMutable()) {
-                    delay(threashold / 5)
-                    it.toEmpty()
-                }
+        var x = row
+        var y = column
+        var cell = this.getCell(x, y)
+        while (cell.isImmutable()) {
+            if (y == columnCount - 1) {
+                x += 1
+                y = 0
+            } else {
+                y += 1
             }
+            cell = this.getCell(x, y)
+        }
+
+        val available = getAvailable(x, y).shuffled()
+        if (available.isEmpty()) {
             return
         }
         available.forEach {
@@ -40,15 +43,24 @@ class AutoPlayStageImpl(
                 return
             }
 
-            if (!cell.isImmutable()) {
-                delay(threashold)
-                this[row, column] = it
+            with(toList()) {
+                val idx = indexOf(getCell(x, y))
+                subList(idx, size()).forEach { cell ->
+                    if (cell.isMutable()) {
+                        cell.toEmpty()
+                    }
+                }
             }
 
-            if (column == columnCount - 1) {
-                play(row + 1, 0)
+            if (!cell.isImmutable()) {
+                delay(threashold)
+                this[x, y] = it
+            }
+
+            if (y == columnCount - 1) {
+                play(x + 1, 0)
             } else {
-                play(row, column + 1)
+                play(x, y + 1)
             }
         }
     }
