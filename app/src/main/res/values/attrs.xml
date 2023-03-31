@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="Board">
-        <attr name="numberColor" format="color" />
-        <attr name="borderColor" format="color" />
+    <attr name="numberColor" format="color" />
+    <attr name="borderColor" format="color" />
+
+    <declare-styleable name="SudokuBoardView">
+        <attr name="numberColor" />
+        <attr name="borderColor" />
         <attr name="backgroundColor" format="color" />
         <attr name="accentColor" format="color" />
         <attr name="rowCount" format="integer" />
+        <attr name="numberErrorColor" format="color" />
+        <attr name="maxNumber" format="integer" />
+        <attr name="numberDisabledColor" format="color" />
     </declare-styleable>
 </resources>

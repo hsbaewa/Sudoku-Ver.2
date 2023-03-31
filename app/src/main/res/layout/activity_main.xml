@@ -7,15 +7,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <kr.co.hs.sudoku.view.NumberSelector
-            android:id="@+id/btn"
-            android:layout_width="100dp"
-            android:layout_height="50dp"
+        <kr.co.hs.sudoku.view.SudokuBoardView
+            android:id="@+id/board"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="30dp"
             android:background="@color/purple_200"
+            app:accentColor="@color/purple_200"
+            app:backgroundColor="@color/white"
+            app:borderColor="@color/purple_700"
+            app:layout_constrainedHeight="true"
+            app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:numberColor="@color/purple_700"
+            app:rowCount="9" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
