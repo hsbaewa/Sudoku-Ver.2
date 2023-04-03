@@ -8,7 +8,7 @@ import kr.co.hs.sudoku.model.stage.impl.*
 import org.junit.Assert.*
 import org.junit.Test
 
-class StageTest : IntCoordinateCellEntity.ValueChangedListener {
+class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 
     private var cell: IntCoordinateCellEntity? = null
 
