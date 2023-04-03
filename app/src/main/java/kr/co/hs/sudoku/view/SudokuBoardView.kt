@@ -59,13 +59,19 @@ class SudokuBoardView : ConstraintLayout {
 
         typeArray.recycle()
 
+        val outlineWidth = 10
+
         background = GradientDrawable().apply {
             setColor(backgroundColorResId)
-            setStroke(10, borderColorResId)
+            setStroke(outlineWidth, borderColorResId)
+        }
+
+        layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT).apply {
+            setPadding(outlineWidth, outlineWidth, outlineWidth, outlineWidth)
         }
 
         if (rowValueCount > 0) {
-            initBoard(rowValueCount)
+            setRowCount(rowValueCount)
         }
     }
 
@@ -77,7 +83,8 @@ class SudokuBoardView : ConstraintLayout {
     private var numberTextErrorColorResId = 0
     private var numberTextDisabledColorResId = 0
 
-    private fun initBoard(rowCount: Int) {
+    fun setRowCount(rowCount: Int) {
+        this.rowValueCount = rowCount
         removeAllViews()
         numberPopup = NumberPadPopup(rowCount)
 
@@ -294,11 +301,13 @@ class SudokuBoardView : ConstraintLayout {
         List(rowCount) { row ->
             List(rowCount) { column ->
                 val cell = createCell(row, column)
-                // accent rule
-                if (((row / sqrt(rowCount.toDouble()).toInt()) + (column / sqrt(rowCount.toDouble()).toInt())) % 2 == 0
-                ) {
-                    cell.setBackgroundColor(accentColorResId)
-                }
+
+                cell.setBackgroundColor(
+                    if (isAccentArea(row, column, rowValueCount))
+                        accentColorResId
+                    else
+                        backgroundColorResId
+                )
 
                 addView(cell)
                 cell
@@ -347,12 +356,14 @@ class SudokuBoardView : ConstraintLayout {
 
             setTextColor(numberTextColorResId)
 
-            setBackgroundColor(Color.WHITE)
-
             rippleColor = ColorStateList.valueOf(accentColorResId)
 
             strokeColor = ColorStateList.valueOf(borderColorResId)
             strokeWidth = 1
+
+            isClickable = this@SudokuBoardView.isClickable
+            isFocusable = this@SudokuBoardView.isFocusable
+            isFocusableInTouchMode = this@SudokuBoardView.isFocusableInTouchMode
         }
 
 
@@ -360,8 +371,10 @@ class SudokuBoardView : ConstraintLayout {
 
 
         override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
-            event?.run { onTouchEvent?.invoke(this) }
-            return super.dispatchTouchEvent(event)
+            val result = super.dispatchTouchEvent(event)
+            event.takeIf { it != null && result }
+                ?.run { onTouchEvent?.invoke(this) }
+            return result
         }
 
     }
@@ -510,6 +523,12 @@ class SudokuBoardView : ConstraintLayout {
         numberPopup.dismiss()
     }
 
+    private fun isAccentArea(row: Int, column: Int, rowCount: Int): Boolean {
+        val rowConditionFilter = row / sqrt(rowCount.toDouble()).toInt()
+        val columnConditionFilter = column / sqrt(rowCount.toDouble()).toInt()
+        return (rowConditionFilter + columnConditionFilter) % 2 == 0
+    }
+
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
@@ -551,9 +570,14 @@ class SudokuBoardView : ConstraintLayout {
         with(findCellWithCoordinate(row, column)) {
             this.isEnabled = isEnabled
             if (isEnabled) {
-                this.setTextColor(numberTextColorResId)
+                setBackgroundColor(
+                    if (isAccentArea(row, column, rowValueCount))
+                        accentColorResId
+                    else
+                        backgroundColorResId
+                )
             } else {
-                this.setTextColor(numberTextDisabledColorResId)
+                setBackgroundColor(numberTextDisabledColorResId)
             }
         }
 

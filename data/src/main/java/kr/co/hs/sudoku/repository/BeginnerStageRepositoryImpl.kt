@@ -1,22 +1,24 @@
 package kr.co.hs.sudoku.repository
 
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kr.co.hs.sudoku.datasource.StageRemoteSource
+import kr.co.hs.sudoku.datasource.impl.StageRemoteSourceFromConfig
 import kr.co.hs.sudoku.mapper.StageMapper.toDomain
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.repository.stage.StageRepository
 
-class BeginnerStageRepositoryImpl : StageRepository.BeginnerStageRepository {
+class BeginnerStageRepositoryImpl(
+    private val list: ArrayList<Stage> = ArrayList()
+) : StageRepository.BeginnerStageRepository,
+    List<Stage> by list {
 
-    private lateinit var stageList: List<Stage>
+    private var stageRemoteSource: StageRemoteSource =
+        StageRemoteSourceFromConfig(FirebaseRemoteConfig.getInstance())
 
-    suspend fun initialize(stageRemoteSource: StageRemoteSource) {
-        stageList = stageRemoteSource.getBeginnerGenerateMask()
-            .map { it.toDomain() }
+    internal fun setRemoteSource(stageRemoteSource: StageRemoteSource) {
+        this.stageRemoteSource = stageRemoteSource
     }
 
-    override fun getStage(level: Int) = takeIf { this::stageList.isInitialized }
-        ?.run { stageList[level] } ?: throw NotImplementedError("please call initialize first")
-
-    override fun getLastLevel() = takeIf { this::stageList.isInitialized }
-        ?.run { stageList.size } ?: 0
+    override suspend fun doRequestStageList() =
+        list.addAll(stageRemoteSource.getBeginnerGenerateMask().map { it.toDomain() })
 }
