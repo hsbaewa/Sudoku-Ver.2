@@ -1,7 +1,12 @@
 package kr.co.hs.sudoku.repository.stage
 
-interface StageRepository {
-    fun getBoxSize(): Int
-    fun getBoxCount(): Int
-    fun getAutoGenerateMaskList(): List<List<Int>>
+import kr.co.hs.sudoku.model.stage.Stage
+
+sealed interface StageRepository {
+    fun getStage(level: Int): Stage
+    fun getLastLevel(): Int
+
+    interface BeginnerStageRepository : StageRepository
+    interface IntermediateStageRepository : StageRepository
+    interface AdvancedStageRepository : StageRepository
 }

@@ -80,8 +80,6 @@ class StageBuilderImpl : StageBuilder {
             cell = this.getCell(x, y)
         }
 
-        println("$x,$y, $row,$column")
-
         val available = getAvailable(x, y).shuffled()
         if (available.isEmpty()) {
             return
