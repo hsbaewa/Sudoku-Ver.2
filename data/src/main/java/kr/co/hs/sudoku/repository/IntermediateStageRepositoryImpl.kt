@@ -18,6 +18,8 @@ class IntermediateStageRepositoryImpl(
         this.stageRemoteSource = stageRemoteSource
     }
 
-    override suspend fun doRequestStageList() =
-        list.addAll(stageRemoteSource.getIntermediateGenerateMask().map { it.toDomain() })
+    override suspend fun doRequestStageList() = with(list) {
+        clear()
+        addAll(stageRemoteSource.getIntermediateGenerateMask().map { it.toDomain() })
+    }
 }

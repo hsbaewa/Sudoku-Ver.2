@@ -9,6 +9,8 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.*
+import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.databinding.LayoutLevelInfoBinding
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.view.SudokuBoardView
@@ -36,7 +38,12 @@ class LevelInfoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         DataBindingUtil.getBinding<LayoutLevelInfoBinding>(view)?.run {
-            sudokuBoard.setupUI(getStage())
+            viewLifecycleOwner.lifecycleScope.launch {
+                withResumed {
+                    sudokuBoard.setupUI(getStage())
+                    progress.hide()
+                }
+            }
             tvTitle.setupUI(getStageLevel())
         }
     }

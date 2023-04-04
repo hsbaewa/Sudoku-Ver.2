@@ -19,6 +19,8 @@ class BeginnerStageRepositoryImpl(
         this.stageRemoteSource = stageRemoteSource
     }
 
-    override suspend fun doRequestStageList() =
-        list.addAll(stageRemoteSource.getBeginnerGenerateMask().map { it.toDomain() })
+    override suspend fun doRequestStageList() = with(list) {
+        clear()
+        addAll(stageRemoteSource.getBeginnerGenerateMask().map { it.toDomain() })
+    }
 }

@@ -7,7 +7,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withStarted
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kotlinx.coroutines.Dispatchers
@@ -39,13 +39,17 @@ class SelectLevelActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.viewpager_select_level)
         binding.lifecycleOwner = this
 
+        binding.viewPager.offscreenPageLimit = 1
+
         viewModel.stageList.observe(this) {
             binding.viewPager.adapter = PagerAdapter(supportFragmentManager, lifecycle, it)
             binding.viewPagerIndicator.attachTo(binding.viewPager)
         }
 
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) { doRequestStageList() }
+            withStarted {
+                launch { doRequestStageList() }
+            }
         }
     }
 
