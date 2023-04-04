@@ -5,4 +5,7 @@ interface StageBuilder {
     fun autoGenerate(generateFilter: List<List<Int>>?): StageBuilder
     fun setStage(stageTable: List<List<Int>>): StageBuilder
     fun build(): Stage
+    fun isImmutableCell(row: Int, column: Int): Boolean
+    fun getRowCount(): Int
+    fun getColumnCount(): Int
 }

@@ -7,12 +7,10 @@ object StageMapper {
     fun StageModel.AutoGenStageModel.toDomain() = with(StageBuilderImpl()) {
         setBox(boxSize, boxCount)
         autoGenerate(matrix)
-        build()
     }
 
     fun StageModel.CustomStageModel.toDomain() = with(StageBuilderImpl()) {
         setBox(boxSize, boxCount)
         setStage(matrix)
-        build()
     }
 }

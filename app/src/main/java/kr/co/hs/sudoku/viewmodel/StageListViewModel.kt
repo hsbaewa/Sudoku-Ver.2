@@ -3,13 +3,13 @@ package kr.co.hs.sudoku.viewmodel
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.model.stage.StageBuilder
 import kr.co.hs.sudoku.repository.stage.StageRepository
 
 class StageListViewModel(private val repository: StageRepository) : ViewModel() {
 
-    private val _stageList = MutableLiveData<List<Stage>>()
-    val stageList: LiveData<List<Stage>> by this::_stageList
+    private val _stageList = MutableLiveData<List<StageBuilder>>()
+    val stageList: LiveData<List<StageBuilder>> by this::_stageList
 
     suspend fun doRequestStageList() {
         withContext(Dispatchers.IO) { repository.doRequestStageList() }

@@ -4,12 +4,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kr.co.hs.sudoku.datasource.StageRemoteSource
 import kr.co.hs.sudoku.datasource.impl.StageRemoteSourceFromConfig
 import kr.co.hs.sudoku.mapper.StageMapper.toDomain
-import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.model.stage.StageBuilder
 import kr.co.hs.sudoku.repository.stage.StageRepository
 
 class IntermediateStageRepositoryImpl(
-    private val list: ArrayList<Stage> = ArrayList()
-) : StageRepository.IntermediateStageRepository, List<Stage> by list {
+    private val list: ArrayList<StageBuilder> = ArrayList()
+) : StageRepository.IntermediateStageRepository, List<StageBuilder> by list {
 
     private var stageRemoteSource: StageRemoteSource =
         StageRemoteSourceFromConfig(FirebaseRemoteConfig.getInstance())

@@ -28,7 +28,6 @@ class StageUseCaseTest {
                         listOf(0, 1, 1, 0)
                     )
                 )
-                build()
             }
         }
 
@@ -62,7 +61,6 @@ class StageUseCaseTest {
                         listOf(0, 1, 1, 0, 1, 0, 1, 1, 0)
                     )
                 )
-                build()
             }
         }
 
@@ -103,7 +101,6 @@ class StageUseCaseTest {
                         listOf(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0)
                     )
                 )
-                build()
             }
         }
 

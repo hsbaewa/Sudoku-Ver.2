@@ -110,4 +110,17 @@ class StageBuilderImpl : StageBuilder {
         }
     }
 
+    override fun isImmutableCell(row: Int, column: Int) =
+        hasAutoGenFilter(row, column) || hasValue(row, column)
+
+    private fun hasAutoGenFilter(row: Int, column: Int) =
+        autoGenFilter.runCatching { get(row) }.getOrDefault(listOf())
+            .runCatching { get(column) }.getOrDefault(0) > 0
+
+    private fun hasValue(row: Int, column: Int) =
+        stageTable.runCatching { get(row) }.getOrDefault(listOf())
+            .runCatching { get(column) }.getOrDefault(0) > 0
+
+    override fun getRowCount() = boxCount * boxSize
+    override fun getColumnCount() = boxCount * boxSize
 }

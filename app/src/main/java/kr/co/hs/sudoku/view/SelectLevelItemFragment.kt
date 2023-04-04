@@ -16,7 +16,7 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutLevelInfoBinding
-import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.model.stage.StageBuilder
 import kr.co.hs.sudoku.viewmodel.StageListViewModel
 
 class SelectLevelItemFragment : Fragment() {
@@ -42,13 +42,12 @@ class SelectLevelItemFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         DataBindingUtil.getBinding<LayoutLevelInfoBinding>(view)?.run {
             viewLifecycleOwner.lifecycleScope.launch {
-                withResumed {
+                withStarted {
                     sudokuBoard.setupUI(getStage())
-                    progress.hide()
+                    tvTitle.setupUI(getStageLevel())
+                    btnStart.setupUIStart()
                 }
             }
-            tvTitle.setupUI(getStageLevel())
-            btnStart.setupUIStart()
         }
     }
 
@@ -58,15 +57,14 @@ class SelectLevelItemFragment : Fragment() {
      * @comment 스도쿠 스테이지 ui setup
      * @param stage 선택된
      **/
-    private fun SudokuBoardView.setupUI(stage: Stage?) = stage?.let {
-        isVisible = true
-        setRowCount(it.rowCount)
-        (0 until it.rowCount).forEach { row ->
-            (0 until it.columnCount).forEach { column ->
-                val cell = it.getCell(row, column)
-                setEnabled(row, column, !cell.isImmutable())
+    private fun SudokuBoardView.setupUI(stage: StageBuilder?) = stage?.let {
+        setRowCount(it.getRowCount())
+        (0 until it.getRowCount()).forEach { row ->
+            (0 until it.getColumnCount()).forEach { column ->
+                post { setEnabled(row, column, !it.isImmutableCell(row, column)) }
             }
         }
+        isVisible = true
     } ?: kotlin.run { isVisible = false }
 
     /**

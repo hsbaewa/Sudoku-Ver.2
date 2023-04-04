@@ -19,7 +19,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ViewpagerSelectLevelBinding
-import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.model.stage.StageBuilder
 import kr.co.hs.sudoku.repository.AdvancedStageRepositoryImpl
 import kr.co.hs.sudoku.repository.BeginnerStageRepositoryImpl
 import kr.co.hs.sudoku.repository.IntermediateStageRepositoryImpl
@@ -119,7 +119,7 @@ class SelectLevelActivity : AppCompatActivity() {
     private class PagerAdapter(
         fragmentManager: FragmentManager,
         lifecycle: Lifecycle,
-        val stageList: List<Stage>
+        val stageList: List<StageBuilder>
     ) : FragmentStateAdapter(fragmentManager, lifecycle) {
         override fun getItemCount() = stageList.size
         override fun createFragment(position: Int) = SelectLevelItemFragment.newInstance(position)
