@@ -23,5 +23,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: report
-          path: domain/build/reports/tests
+          path: |
+            domain/build/reports/tests
+            data/build/reports/tests/testDebugUnitTest
           retention-days: 1
