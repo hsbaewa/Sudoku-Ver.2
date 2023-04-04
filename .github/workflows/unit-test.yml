@@ -1,0 +1,29 @@
+name: Unit Test Workflow
+
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Branch Checkout
+        uses: actions/checkout@v3
+      - name: Ruby init
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          bundler-cache: true
+      - name: Fastlane Action For Test
+        uses: maierj/fastlane-action@v3.0.0
+        with:
+          lane: 'test'
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: report
+          path: |
+            domain/build/reports/tests
+            data/build/reports/tests/testDebugUnitTest
+          retention-days: 1
