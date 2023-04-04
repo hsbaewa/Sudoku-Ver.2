@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutLevelInfoBinding
 import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.viewmodel.LevelInfoViewModel
+import kr.co.hs.sudoku.viewmodel.StageListViewModel
 
 class SelectLevelItemFragment : Fragment() {
     companion object {
@@ -85,8 +85,8 @@ class SelectLevelItemFragment : Fragment() {
      * @comment ViewModel Getter
      * @return LevelInfoViewModel
      **/
-    private fun getLevelInfoViewModel(): LevelInfoViewModel {
-        val viewModel: LevelInfoViewModel by activityViewModels()
+    private fun getLevelInfoViewModel(): StageListViewModel {
+        val viewModel: StageListViewModel by activityViewModels()
         return viewModel
     }
 
