@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.SettingsFragment
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         binding.navigationBar.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.selectStage -> replaceTabFragment(SelectStageFragment.newInstance())
+                R.id.settings -> replaceTabFragment(SettingsFragment.newInstance())
             }
             return@setOnItemSelectedListener true
         }
