@@ -6,6 +6,7 @@ on: [push]
 #      - master
 jobs:
   test:
+    runs-on: ubuntu-latest
     steps:
       - name: Branch Checkout
         uses: actions/checkout@v3
