@@ -23,7 +23,7 @@ import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.repository.AdvancedStageRepositoryImpl
 import kr.co.hs.sudoku.repository.BeginnerStageRepositoryImpl
 import kr.co.hs.sudoku.repository.IntermediateStageRepositoryImpl
-import kr.co.hs.sudoku.viewmodel.LevelInfoViewModel
+import kr.co.hs.sudoku.viewmodel.StageListViewModel
 
 class SelectLevelActivity : AppCompatActivity() {
     companion object {
@@ -35,8 +35,8 @@ class SelectLevelActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ViewpagerSelectLevelBinding
-    private val viewModel: LevelInfoViewModel
-            by viewModels { LevelInfoViewModel.Factory(getStageRepository()) }
+    private val viewModel: StageListViewModel
+            by viewModels { StageListViewModel.Factory(getStageRepository()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

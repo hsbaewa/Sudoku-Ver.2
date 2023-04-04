@@ -6,7 +6,7 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.repository.stage.StageRepository
 
-class LevelInfoViewModel(private val repository: StageRepository) : ViewModel() {
+class StageListViewModel(private val repository: StageRepository) : ViewModel() {
 
     private val _stageList = MutableLiveData<List<Stage>>()
     val stageList: LiveData<List<Stage>> by this::_stageList
@@ -19,8 +19,8 @@ class LevelInfoViewModel(private val repository: StageRepository) : ViewModel() 
     @Suppress("UNCHECKED_CAST")
     class Factory(private val repository: StageRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return modelClass.takeIf { it.isAssignableFrom(LevelInfoViewModel::class.java) }
-                ?.run { LevelInfoViewModel(repository) as T }
+            return modelClass.takeIf { it.isAssignableFrom(StageListViewModel::class.java) }
+                ?.run { StageListViewModel(repository) as T }
                 ?: throw IllegalArgumentException("unKnown ViewModel class")
         }
     }
