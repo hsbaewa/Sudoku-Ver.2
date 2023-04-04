@@ -17,7 +17,7 @@ class StageUseCaseTest {
     @Test
     fun testBeginnerRepository() = runTest {
         val stageRepository: StageRepository.BeginnerStageRepository = mockk()
-        every { stageRepository.getStage(0) } answers {
+        every { stageRepository[0] } answers {
             with(StageBuilderImpl()) {
                 setBox(2, 2)
                 autoGenerate(
@@ -46,7 +46,7 @@ class StageUseCaseTest {
     @Test
     fun testIntermediateRepository() = runTest {
         val stageRepository: StageRepository = mockk()
-        every { stageRepository.getStage(0) } answers {
+        every { stageRepository[0] } answers {
             with(StageBuilderImpl()) {
                 setBox(3, 3)
                 autoGenerate(
@@ -80,7 +80,7 @@ class StageUseCaseTest {
     @Test
     fun testAdvancedRepository() = runTest {
         val stageRepository: StageRepository = mockk()
-        every { stageRepository.getStage(0) } answers {
+        every { stageRepository[0] } answers {
             with(StageBuilderImpl()) {
                 setBox(4, 4)
                 autoGenerate(
