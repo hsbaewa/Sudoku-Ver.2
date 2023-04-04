@@ -17,14 +17,18 @@
             android:value="@string/game_services_project_id" />
 
         <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:screenOrientation="fullSensor">
+            android:name=".view.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".view.SelectLevelActivity"
+            android:exported="true"
+            android:label="" />
 
     </application>
 

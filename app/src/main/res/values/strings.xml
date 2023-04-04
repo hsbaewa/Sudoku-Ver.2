@@ -1,6 +1,13 @@
 <resources>
-    <string name="stage_format">Stage %1$d</string>
+    <string name="level_format">Level %1$d</string>
     <string name="start">Start</string>
+
+    <string name="stage_beginner">Beginner</string>
+    <string name="stage_intermediate">Intermediate</string>
+    <string name="stage_advanced">Advanced</string>
+
+    <string name="navigation_tab_select_stage">Stage</string>
+    <string name="navigation_tab_settings">Settings</string>
 
     <string name="app_name">HS-Sudoku2</string>
 </resources>
