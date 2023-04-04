@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
-import kr.co.hs.sudoku.SettingsFragment
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {

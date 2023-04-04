@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku
+package kr.co.hs.sudoku.view
 
 import android.os.Bundle
 import android.view.View
@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.view.MainActivity
+import kr.co.hs.sudoku.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -34,9 +34,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
             // 화면 진입 시 마다 currentUser 체크하여 표시
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                FirebaseAuth.getInstance().currentUser?.run {
-                    findSignInPreference()?.setupUISignIn(this)
-                }
+                FirebaseAuth.getInstance().currentUser?.run { onSignIn(this) }
             }
 
         }
@@ -91,7 +89,5 @@ class SettingsFragment : PreferenceFragmentCompat() {
         return true
     }
 
-    fun onSignIn(user: FirebaseUser) {
-        findSignInPreference()?.setupUISignIn(user)
-    }
+    fun onSignIn(user: FirebaseUser) = findSignInPreference()?.setupUISignIn(user)
 }
