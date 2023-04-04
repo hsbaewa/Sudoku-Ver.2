@@ -1,6 +1,10 @@
 package kr.co.hs.sudoku
 
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.gson.Gson
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -50,6 +54,9 @@ class Test {
             String(intermediateStream.toByteArray()),
             String(advancedStream.toByteArray())
         )
+
+        mockkStatic(FirebaseRemoteConfig::class)
+        every { FirebaseRemoteConfig.getInstance() } returns mockk(relaxed = true)
     }
 
     @Test
@@ -62,8 +69,9 @@ class Test {
     @Test
     fun testBeginnerStageRepository() = runTest {
         val stageRepository = BeginnerStageRepositoryImpl()
-        stageRepository.initialize(stageRemoteSource)
-        val stage = stageRepository.getStage(0)
+        stageRepository.setRemoteSource(stageRemoteSource)
+        stageRepository.doRequestStageList()
+        val stage = stageRepository[0]
 
         println(stage)
         assertEquals(false, stage.isCompleted())
@@ -80,8 +88,9 @@ class Test {
     @Test
     fun testIntermediateStageRepository() = runTest {
         val stageRepository = IntermediateStageRepositoryImpl()
-        stageRepository.initialize(stageRemoteSource)
-        val stage = stageRepository.getStage(0)
+        stageRepository.setRemoteSource(stageRemoteSource)
+        stageRepository.doRequestStageList()
+        val stage = stageRepository[0]
 
         println(stage)
         assertEquals(false, stage.isCompleted())

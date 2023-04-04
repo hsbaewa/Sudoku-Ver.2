@@ -11,7 +11,7 @@ class GetStageUseCaseImpl(
 
     override fun invoke(level: Int): Flow<Stage> {
         return flow {
-            emit(repository.getStage(level))
+            emit(repository[level])
         }
     }
 }

@@ -54,4 +54,18 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation project(path: ':domain')
+    implementation project(path: ':data')
+
+    implementation 'androidx.activity:activity-ktx:1.7.0'
+    implementation 'androidx.fragment:fragment-ktx:1.5.6'
+
+    // Import the Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:31.2.2')
+    // Add the dependency for the Firebase SDK for Google Analytics
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-config-ktx'
+
+    implementation 'com.tbuonomo:dotsindicator:4.3'
 }
