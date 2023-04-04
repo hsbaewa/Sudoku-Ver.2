@@ -1,19 +1,23 @@
-package kr.co.hs.sudoku
+package kr.co.hs.sudoku.view
 
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.google.android.material.appbar.AppBarLayout
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ViewpagerSelectLevelBinding
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.repository.AdvancedStageRepositoryImpl
@@ -39,6 +43,9 @@ class SelectLevelActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.viewpager_select_level)
         binding.lifecycleOwner = this
 
+        binding.toolbar.setupUI()
+        binding.appbarLayout.setupUI()
+
         binding.viewPager.offscreenPageLimit = 1
 
         viewModel.stageList.observe(this) {
@@ -50,6 +57,42 @@ class SelectLevelActivity : AppCompatActivity() {
             withStarted {
                 launch { doRequestStageList() }
             }
+        }
+    }
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/04
+     * @comment Toolbar 설정
+     **/
+    private fun Toolbar.setupUI() {
+        setSupportActionBar(this)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/04
+     * @comment AppBarLayout 설정
+     **/
+    private fun AppBarLayout.setupUI() {
+        outlineProvider = null
+    }
+
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/04
+     * @comment 옵션 클릭 이벤트로 back 버튼 클릭 이벤트때 화면 종료하기 위해 오버라이딩
+     **/
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -79,7 +122,7 @@ class SelectLevelActivity : AppCompatActivity() {
         val stageList: List<Stage>
     ) : FragmentStateAdapter(fragmentManager, lifecycle) {
         override fun getItemCount() = stageList.size
-        override fun createFragment(position: Int) = LevelInfoFragment.newInstance(position)
+        override fun createFragment(position: Int) = SelectLevelItemFragment.newInstance(position)
     }
 
     /**

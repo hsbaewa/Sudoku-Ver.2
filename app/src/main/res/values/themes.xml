@@ -2,8 +2,8 @@
     <!-- Base application theme. -->
     <style name="Theme.HSSudoku2" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">@color/gray_500</item>
+        <item name="colorPrimaryVariant">@color/gray_600</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
@@ -13,5 +13,20 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <!-- Customize your theme here. -->
         <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.HSSudoku2.BottomNavigation" parent="Theme.HSSudoku2">
+        <item name="colorPrimary">@color/black</item>
+        <item name="tabSelectedTextColor">@color/black</item>
+    </style>
+
+    <style name="Theme.HSSudoku2.OutlineButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeWidth">3dp</item>
+        <item name="strokeColor">@color/gray_500</item>
+        <item name="fontFamily">@font/goreyong_ddalgi</item>
+    </style>
+
+    <style name="Theme.HSSudoku2.BottomNavigation.TextAppearance" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">20sp</item>
     </style>
 </resources>
