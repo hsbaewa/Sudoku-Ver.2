@@ -12,7 +12,7 @@ abstract class FirebaseAuthActivity : GoogleGamesSignInActivity() {
      * @since 2023/04/04
      * @comment Games를 통해 FirebaseAuth 로그인
      **/
-    protected fun signInWithGames() = signInGames()
+    fun signInWithGames() = signInGames()
 
     /**
      * @author hsbaewa@gmail.com
@@ -23,7 +23,11 @@ abstract class FirebaseAuthActivity : GoogleGamesSignInActivity() {
     override fun onSignInGamesSuccess(isAuthenticated: Boolean) {
         if (isAuthenticated) {
             getServerAuthToken()
-                .addOnSuccessListener { signInWithCredential(PlayGamesAuthProvider.getCredential(it)) }
+                .addOnSuccessListener {
+                    signInWithCredential(PlayGamesAuthProvider.getCredential(it))
+                        .addOnSuccessListener { onSignInFirebaseAuth(it.user!!) }
+                        .addOnFailureListener { onSignInFirebaseError(it) }
+                }
                 .addOnFailureListener { onSignInGamesError(it) }
         }
     }
@@ -43,12 +47,9 @@ abstract class FirebaseAuthActivity : GoogleGamesSignInActivity() {
      * @comment credential 을 이용한 로그인
      * @param credential
      **/
-    private fun signInWithCredential(credential: AuthCredential) {
+    protected fun signInWithCredential(credential: AuthCredential) =
         FirebaseAuth.getInstance()
             .signInWithCredential(credential)
-            .addOnSuccessListener { onSignInFirebaseAuth(it.user!!) }
-            .addOnFailureListener { onSignInFirebaseError(it) }
-    }
 
     abstract fun onSignInFirebaseAuth(user: FirebaseUser)
     abstract fun onSignInFirebaseError(t: Throwable)
