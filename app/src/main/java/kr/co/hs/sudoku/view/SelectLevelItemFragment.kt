@@ -58,13 +58,8 @@ class SelectLevelItemFragment : Fragment() {
      * @param stage 선택된
      **/
     private fun SudokuBoardView.setupUI(stage: IntMatrix?) = stage?.let {
-        setRowCount(it.rowCount)
-        (0 until it.rowCount).forEach { row ->
-            (0 until it.columnCount).forEach { column ->
-                setEnabled(row, column, stage[row, column] == 0)
-            }
-        }
         isVisible = true
+        setRowCount(it.rowCount, stage)
     } ?: kotlin.run { isVisible = false }
 
     /**
