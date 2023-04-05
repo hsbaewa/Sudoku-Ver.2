@@ -1,10 +1,15 @@
 package kr.co.hs.sudoku
 
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.MutableStage
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.model.stage.impl.*
+import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
+import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -169,15 +174,19 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
             stage.set(0, 0, 1)
         }
 
-        val cell = stage.getCell(0,2)
+        val cell = stage.getCell(0, 2)
         stage[0, 5] = 1
     }
 
     private fun buildStage(): Stage {
-        val stageBuilder = StageBuilderImpl()
-        stageBuilder.setBox(3, 3)
-        stageBuilder.autoGenerate(
-            listOf(
+        val matrix = IntermediateMatrix(
+            boxSize = 3,
+            boxCount = 3,
+            matrix = listOf(listOf(1, 2, 3, 4)),
+        )
+        val buildUseCase = AutoGenerateSudokuUseCase(
+            matrix = matrix,
+            filterMask = listOf(
                 listOf(1, 1, 0, 0, 1, 0, 0, 0, 0),
                 listOf(1, 0, 0, 1, 1, 1, 0, 0, 0),
                 listOf(1, 1, 0, 0, 0, 0, 0, 1, 0),
@@ -189,20 +198,19 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 0, 1, 0, 0, 1, 1)
             )
         )
-        stageBuilder.setStage(listOf(listOf(1, 2, 3, 4)))
-
-        val sudoku = stageBuilder.build()
-
-        println(sudoku)
-        return sudoku
+        return runBlocking {
+            val stage = buildUseCase().first()
+            println(stage)
+            stage
+        }
     }
 
     @Test
     fun testAutoFill() {
-        val stageBuilder = StageBuilderImpl()
-        stageBuilder.setBox(3, 3)
-        stageBuilder.autoGenerate(
-            listOf(
+        val matrix = IntermediateMatrix()
+        val buildUseCase = AutoGenerateSudokuUseCase(
+            matrix = matrix,
+            filterMask = listOf(
                 listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
                 listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
                 listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
@@ -214,16 +222,14 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(1, 1, 1, 1, 1, 1, 1, 1, 1)
             )
         )
-        val stage = stageBuilder.build()
+        val stage = runBlocking { buildUseCase().first() }
         assertEquals(true, stage.isCompleted())
     }
 
     @Test
     fun testCustomFill() {
-        val stageBuilder = StageBuilderImpl()
-        stageBuilder.setBox(3, 3)
-        stageBuilder.setStage(
-            listOf(
+        val matrix = IntermediateMatrix(
+            matrix = listOf(
                 listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
                 listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
                 listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
@@ -235,7 +241,8 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
             )
         )
-        val stage = stageBuilder.build()
+        val buildUseCase = AutoGenerateSudokuUseCase(matrix)
+        val stage = runBlocking { buildUseCase().first() }
         assertEquals(false, stage.isCompleted())
         assertEquals(0, stage.getDuplicatedCellCount())
 
@@ -243,53 +250,21 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 
     @Test
     fun testCPU() = runBlocking {
-        val stageBuilder = StageBuilderImpl()
-        stageBuilder.setBox(3, 3)
-        val stage = stageBuilder.build()
-        stage.setValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
-            override fun onChanged(cell: IntCoordinateCellEntity) {
-                println(cell)
-                println(stage)
-            }
-        })
-        val cpu = AutoPlayStageImpl(stage, 500)
-        cpu.play()
+        val buildUseCase = AutoGenerateSudokuUseCase(IntermediateMatrix())
+        val stage = runBlocking { buildUseCase().first() }
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 500)
+        playUseCase().collect {
+            println(it)
+            println(stage)
+        }
 
         assertEquals(true, stage.isCompleted())
     }
 
     @Test
     fun testCPU2() = runBlocking {
-        val stageBuilder = StageBuilderImpl()
-        stageBuilder.setBox(3, 3)
-//        stageBuilder.setStage(
-//            listOf(
-//                listOf(7,0,0,1,4,0,0,0,8),
-//                listOf(0,2,9,3,0,0,0,0,7),
-//                listOf(0,1,0,5,0,0,4,6,0),
-//                listOf(8,0,1,0,6,3,5,0,0),
-//                listOf(0,9,0,2,0,0,0,8,0),
-//                listOf(0,0,7,9,0,0,6,0,1),
-//                listOf(0,6,4,0,0,1,0,7,0),
-//                listOf(5,0,0,0,0,7,3,1,0),
-//                listOf(1,0,0,0,2,5,0,0,6)
-//            )
-//        )
-//        stageBuilder.setStage(
-//            listOf(
-//                listOf(0,0,3,7,0,4,5,0,0),
-//                listOf(0,2,0,0,0,0,0,6,0),
-//                listOf(0,8,0,3,1,6,0,2,0),
-//                listOf(0,0,0,0,0,0,0,0,0),
-//                listOf(3,7,0,0,0,0,0,9,2),
-//                listOf(2,0,4,0,0,0,8,0,6),
-//                listOf(0,4,0,1,3,5,0,7,0),
-//                listOf(0,5,0,0,0,0,0,4,0),
-//                listOf(0,0,1,6,0,7,2,0,0)
-//            )
-//        )
-        stageBuilder.setStage(
-            listOf(
+        val matrix = IntermediateMatrix(
+            matrix = listOf(
                 listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
                 listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
                 listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
@@ -301,19 +276,66 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
             )
         )
-        val stage = stageBuilder.build()
+        val buildUseCase = AutoGenerateSudokuUseCase(matrix)
+        val stage = runBlocking { buildUseCase().first() }
+//        val stageBuilder = StageBuilderImpl()
+//        stageBuilder.setBox(3, 3)
+////        stageBuilder.setStage(
+////            listOf(
+////                listOf(7,0,0,1,4,0,0,0,8),
+////                listOf(0,2,9,3,0,0,0,0,7),
+////                listOf(0,1,0,5,0,0,4,6,0),
+////                listOf(8,0,1,0,6,3,5,0,0),
+////                listOf(0,9,0,2,0,0,0,8,0),
+////                listOf(0,0,7,9,0,0,6,0,1),
+////                listOf(0,6,4,0,0,1,0,7,0),
+////                listOf(5,0,0,0,0,7,3,1,0),
+////                listOf(1,0,0,0,2,5,0,0,6)
+////            )
+////        )
+////        stageBuilder.setStage(
+////            listOf(
+////                listOf(0,0,3,7,0,4,5,0,0),
+////                listOf(0,2,0,0,0,0,0,6,0),
+////                listOf(0,8,0,3,1,6,0,2,0),
+////                listOf(0,0,0,0,0,0,0,0,0),
+////                listOf(3,7,0,0,0,0,0,9,2),
+////                listOf(2,0,4,0,0,0,8,0,6),
+////                listOf(0,4,0,1,3,5,0,7,0),
+////                listOf(0,5,0,0,0,0,0,4,0),
+////                listOf(0,0,1,6,0,7,2,0,0)
+////            )
+////        )
+//        stageBuilder.setStage(
+//            listOf(
+//                listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
+//                listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
+//                listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
+//                listOf(8, 0, 0, 0, 6, 0, 0, 0, 3),
+//                listOf(4, 0, 0, 8, 0, 3, 0, 0, 1),
+//                listOf(7, 0, 0, 0, 2, 0, 0, 0, 6),
+//                listOf(0, 6, 0, 0, 0, 0, 2, 8, 0),
+//                listOf(0, 0, 0, 4, 1, 9, 0, 0, 5),
+//                listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
+//            )
+//        )
+//        val stage = stageBuilder.build()
 
 
-        stage.setValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
-            override fun onChanged(cell: IntCoordinateCellEntity) {
-                println(cell)
-                println(stage)
-            }
-        })
-        val cpu = AutoPlayStageImpl(stage, 0)
-        cpu.play()
+//        stage.setValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
+//            override fun onChanged(cell: IntCoordinateCellEntity) {
+//                println(cell)
+//                println(stage)
+//            }
+//        })
+//        val cpu = AutoPlayStageImpl(stage, 0)
+//        cpu.play()
 
-//        println(stage)
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+        playUseCase().collect()
+
+        println(stage)
+
         assertEquals(true, stage.isCompleted())
     }
 }

@@ -7,14 +7,17 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.datasource.impl.StageRemoteSourceImpl
-import kr.co.hs.sudoku.model.stage.impl.AutoPlayStageImpl
+import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.sudoku.impl.CustomStageModelImpl
-import kr.co.hs.sudoku.repository.BeginnerStageRepositoryImpl
-import kr.co.hs.sudoku.repository.CustomStageRepositoryImpl
-import kr.co.hs.sudoku.repository.IntermediateStageRepositoryImpl
+import kr.co.hs.sudoku.repository.*
+import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.GetSudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -68,18 +71,20 @@ class Test {
 
     @Test
     fun testBeginnerStageRepository() = runTest {
-        val stageRepository = BeginnerStageRepositoryImpl()
-        stageRepository.setRemoteSource(stageRemoteSource)
-        stageRepository.doRequestStageList()
-        val stage = stageRepository[0]
+        val matrixRepository = BeginnerMatrixRepository()
+        matrixRepository.setRemoteSource(stageRemoteSource)
 
+        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepository)
+        val stageBuilder = getSudokuUseCase(0).first()
+
+        val stage = stageBuilder().first()
         println(stage)
         assertEquals(false, stage.isCompleted())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
-        val autoPlay = AutoPlayStageImpl(stage, 0)
-        autoPlay.play()
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+        playUseCase().collect()
 
         println(stage)
         assertEquals(true, stage.isCompleted())
@@ -87,18 +92,20 @@ class Test {
 
     @Test
     fun testIntermediateStageRepository() = runTest {
-        val stageRepository = IntermediateStageRepositoryImpl()
-        stageRepository.setRemoteSource(stageRemoteSource)
-        stageRepository.doRequestStageList()
-        val stage = stageRepository[0]
+        val matrixRepository = IntermediateMatrixRepository()
+        matrixRepository.setRemoteSource(stageRemoteSource)
 
+        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepository)
+        val stageBuilder = getSudokuUseCase(0).first()
+
+        val stage = stageBuilder().first()
         println(stage)
         assertEquals(false, stage.isCompleted())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
-        val autoPlay = AutoPlayStageImpl(stage, 0)
-        autoPlay.play()
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+        playUseCase().collect()
 
         println(stage)
         assertEquals(true, stage.isCompleted())
@@ -115,17 +122,17 @@ class Test {
         }
         val model = Gson().fromJson(String(stream.toByteArray()), CustomStageModelImpl::class.java)
 
-        val stageRepository = CustomStageRepositoryImpl()
-        stageRepository.initialize(model)
-        val stage = stageRepository.getStage()
+        val customMatrix = CustomMatrix(matrix = model.matrix)
+        val buildUseCase = BuildSudokuUseCaseImpl(customMatrix)
+        val stage = buildUseCase().first()
 
         println(stage)
         assertEquals(false, stage.isCompleted())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
-        val autoPlay = AutoPlayStageImpl(stage, 0)
-        autoPlay.play()
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+        playUseCase().collect()
 
         println(stage)
         assertEquals(true, stage.isCompleted())

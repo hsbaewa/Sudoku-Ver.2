@@ -25,15 +25,16 @@ sealed class CellValueEntity<out ValueType>(
      */
     object Empty : CellValueEntity<Nothing>(null) {
         override fun getValue() = throw NotImplementedError()
+        override fun toString() = "empty value"
     }
 
-    class Immutable<ValueType>(
+    data class Immutable<ValueType>(
         private val value: ValueType
     ) : CellValueEntity<ValueType>(value) {
         override fun getValue() = value
     }
 
-    class Mutable<ValueType>(
+    data class Mutable<ValueType>(
         private var value: ValueType
     ) : CellValueEntity<ValueType>(value) {
         override fun getValue() = value

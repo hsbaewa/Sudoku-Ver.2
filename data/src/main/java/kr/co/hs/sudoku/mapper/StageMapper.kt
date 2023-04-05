@@ -1,16 +1,15 @@
 package kr.co.hs.sudoku.mapper
 
-import kr.co.hs.sudoku.model.stage.impl.StageBuilderImpl
-import kr.co.hs.sudoku.model.sudoku.StageModel
+import kr.co.hs.sudoku.model.matrix.IntMatrix
 
 object StageMapper {
-    fun StageModel.AutoGenStageModel.toDomain() = with(StageBuilderImpl()) {
-        setBox(boxSize, boxCount)
-        autoGenerate(matrix)
-    }
-
-    fun StageModel.CustomStageModel.toDomain() = with(StageBuilderImpl()) {
-        setBox(boxSize, boxCount)
-        setStage(matrix)
+    inline fun <reified T : IntMatrix> List<List<Int>>.toDomain(): T {
+        val instance = T::class.java.getConstructor().newInstance()
+        (0 until instance.rowCount).forEach { row ->
+            (0 until instance.columnCount).forEach { column ->
+                instance[row, column] = this[row][column]
+            }
+        }
+        return instance
     }
 }
