@@ -1,16 +1,25 @@
-package kr.co.hs.sudoku.model.stage.impl
+package kr.co.hs.sudoku.usecase
 
 import kotlinx.coroutines.delay
-import kr.co.hs.sudoku.model.stage.AutoPlayStage
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 
-class AutoPlayStageImpl(
+class PlaySudokuUseCaseImpl(
     private val stage: Stage,
     private var threashold: Long
-) : AutoPlayStage {
-
-    override suspend fun play() {
-        stage.play(0, 0)
+) : PlaySudokuUseCase {
+    override fun invoke(): Flow<IntCoordinateCellEntity> {
+        return callbackFlow {
+            stage.setValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
+                override fun onChanged(cell: IntCoordinateCellEntity) {
+                    trySend(cell)
+                }
+            })
+            stage.play(0, 0)
+            close()
+        }
     }
 
     private suspend fun Stage.play(row: Int, column: Int) {

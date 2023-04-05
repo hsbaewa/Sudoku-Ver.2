@@ -83,7 +83,7 @@ class SudokuBoardView : ConstraintLayout {
     private var numberTextErrorColorResId = 0
     private var numberTextDisabledColorResId = 0
 
-    fun setRowCount(rowCount: Int) {
+    fun setRowCount(rowCount: Int, disabledMatrix: List<List<Int>>? = null) {
         this.rowValueCount = rowCount
         removeAllViews()
         numberPopup = NumberPadPopup(rowCount)
@@ -91,7 +91,7 @@ class SudokuBoardView : ConstraintLayout {
         val set = ConstraintSet()
         set.clone(this)
 
-        val cellMatrix = createCellMatrix(rowCount)
+        val cellMatrix = createCellMatrix(rowCount, disabledMatrix)
         cellMatrix.forEachIndexed { row, columns ->
             columns.forEachIndexed { column, unit ->
                 if (row > 0) {
@@ -297,17 +297,13 @@ class SudokuBoardView : ConstraintLayout {
      * @param rowCount 행 갯수
      * @return cell 매트릭스
      **/
-    private fun createCellMatrix(rowCount: Int) =
+    private fun createCellMatrix(rowCount: Int, disabledMatrix: List<List<Int>>? = null) =
         List(rowCount) { row ->
             List(rowCount) { column ->
-                val cell = createCell(row, column)
-
-                cell.setBackgroundColor(
-                    if (isAccentArea(row, column, rowValueCount))
-                        accentColorResId
-                    else
-                        backgroundColorResId
-                )
+                val cell = createCell(row, column).apply {
+                    isAccentArea = isAccentArea(row, column, rowValueCount)
+                    isEnabled = (disabledMatrix?.getOrNull(row)?.getOrNull(column) ?: 0) == 0
+                }
 
                 addView(cell)
                 cell
@@ -376,6 +372,19 @@ class SudokuBoardView : ConstraintLayout {
                 ?.run { onTouchEvent?.invoke(this) }
             return result
         }
+
+        override fun setEnabled(enabled: Boolean) {
+            super.setEnabled(enabled)
+            setBackgroundColor(
+                when {
+                    !enabled -> numberTextDisabledColorResId
+                    isAccentArea -> accentColorResId
+                    else -> backgroundColorResId
+                }
+            )
+        }
+
+        var isAccentArea = false
 
     }
 
@@ -564,21 +573,6 @@ class SudokuBoardView : ConstraintLayout {
                     }
                 }
             )
-        }
-
-    fun setEnabled(row: Int, column: Int, isEnabled: Boolean) =
-        with(findCellWithCoordinate(row, column)) {
-            this.isEnabled = isEnabled
-            if (isEnabled) {
-                setBackgroundColor(
-                    if (isAccentArea(row, column, rowValueCount))
-                        accentColorResId
-                    else
-                        backgroundColorResId
-                )
-            } else {
-                setBackgroundColor(numberTextDisabledColorResId)
-            }
         }
 
 

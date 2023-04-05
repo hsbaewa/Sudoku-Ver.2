@@ -19,10 +19,8 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ViewpagerSelectLevelBinding
-import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.repository.AdvancedStageRepositoryImpl
-import kr.co.hs.sudoku.repository.BeginnerStageRepositoryImpl
-import kr.co.hs.sudoku.repository.IntermediateStageRepositoryImpl
+import kr.co.hs.sudoku.model.matrix.IntMatrix
+import kr.co.hs.sudoku.repository.*
 import kr.co.hs.sudoku.viewmodel.StageListViewModel
 
 class SelectLevelActivity : AppCompatActivity() {
@@ -103,9 +101,9 @@ class SelectLevelActivity : AppCompatActivity() {
      * @return StageRepository
      **/
     private fun getStageRepository() = when (intent.getStringExtra(EXTRA_DIFFICULTY)) {
-        DIFFICULTY_INTERMEDIATE -> IntermediateStageRepositoryImpl()
-        DIFFICULTY_ADVANCED -> AdvancedStageRepositoryImpl()
-        else -> BeginnerStageRepositoryImpl()
+        DIFFICULTY_INTERMEDIATE -> IntermediateMatrixRepository()
+        DIFFICULTY_ADVANCED -> AdvancedMatrixRepository()
+        else -> BeginnerMatrixRepository()
     }
 
     /**
@@ -119,7 +117,7 @@ class SelectLevelActivity : AppCompatActivity() {
     private class PagerAdapter(
         fragmentManager: FragmentManager,
         lifecycle: Lifecycle,
-        val stageList: List<Stage>
+        val stageList: List<IntMatrix>
     ) : FragmentStateAdapter(fragmentManager, lifecycle) {
         override fun getItemCount() = stageList.size
         override fun createFragment(position: Int) = SelectLevelItemFragment.newInstance(position)

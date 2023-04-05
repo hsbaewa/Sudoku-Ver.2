@@ -1,56 +1,60 @@
 package kr.co.hs.sudoku
 
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kr.co.hs.sudoku.model.stage.impl.AutoPlayStageImpl
-import kr.co.hs.sudoku.model.stage.impl.StageBuilderImpl
-import kr.co.hs.sudoku.repository.stage.StageRepository
-import kr.co.hs.sudoku.usecase.GetStageUseCaseImpl
+import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
+import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
+import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
+import kr.co.hs.sudoku.repository.stage.MatrixRepository
+import kr.co.hs.sudoku.usecase.GetSudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StageUseCaseTest {
     @Test
-    fun testBeginnerRepository() = runTest {
-        val stageRepository: StageRepository.BeginnerStageRepository = mockk()
-        every { stageRepository[0] } answers {
-            with(StageBuilderImpl()) {
-                setBox(2, 2)
-                autoGenerate(
-                    listOf(
+    fun testBeginnerRepository() = runBlocking {
+        val matrixRepo: MatrixRepository<BeginnerMatrix> = mockk()
+        coEvery { matrixRepo.getList() } answers {
+            listOf(
+                BeginnerMatrix(
+                    matrix = listOf(
                         listOf(0, 1, 1, 0),
                         listOf(1, 0, 0, 1),
                         listOf(1, 0, 0, 1),
                         listOf(0, 1, 1, 0)
                     )
                 )
-                build()
-            }
+            )
         }
 
-        val usecase = GetStageUseCaseImpl(stageRepository)
-        val stage = usecase(0).first()
+        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepo)
+        val stage = getSudokuUseCase(0).first().invoke().first()
+
         println(stage)
         assertEquals(false, stage.isCompleted())
 
-        val autoPlayStage = AutoPlayStageImpl(stage, 0)
-        autoPlayStage.play()
-        println(stage)
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 300)
+        playUseCase().collect {
+            println(it)
+            println(stage)
+        }
         assertEquals(true, stage.isCompleted())
     }
 
     @Test
     fun testIntermediateRepository() = runTest {
-        val stageRepository: StageRepository = mockk()
-        every { stageRepository[0] } answers {
-            with(StageBuilderImpl()) {
-                setBox(3, 3)
-                autoGenerate(
-                    listOf(
+        val matrixRepo: MatrixRepository<IntermediateMatrix> = mockk()
+        coEvery { matrixRepo.getList() } answers {
+            listOf(
+                IntermediateMatrix(
+                    matrix = listOf(
                         listOf(0, 1, 1, 0, 1, 0, 1, 1, 0),
                         listOf(1, 1, 0, 1, 0, 1, 0, 1, 1),
                         listOf(0, 1, 0, 0, 1, 0, 0, 1, 0),
@@ -62,29 +66,63 @@ class StageUseCaseTest {
                         listOf(0, 1, 1, 0, 1, 0, 1, 1, 0)
                     )
                 )
-                build()
-            }
+            )
         }
 
-        val usecase = GetStageUseCaseImpl(stageRepository)
-        val stage = usecase(0).first()
+        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepo)
+        val stage = getSudokuUseCase(0).first()().first()
+
         println(stage)
         assertEquals(false, stage.isCompleted())
 
-        val autoPlayStage = AutoPlayStageImpl(stage, 0)
-        autoPlayStage.play()
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+        playUseCase().collect()
         println(stage)
         assertEquals(true, stage.isCompleted())
     }
 
     @Test
+    fun testIntermediatePlay() = runBlocking {
+        val matrixRepo: MatrixRepository<IntermediateMatrix> = mockk()
+        coEvery { matrixRepo.getList() } answers {
+            listOf(
+                IntermediateMatrix(
+                    matrix = listOf(
+                        listOf(0, 1, 1, 0, 1, 0, 1, 1, 0),
+                        listOf(1, 1, 0, 1, 0, 1, 0, 1, 1),
+                        listOf(0, 1, 0, 0, 1, 0, 0, 1, 0),
+                        listOf(0, 1, 0, 1, 0, 1, 0, 1, 0),
+                        listOf(1, 0, 1, 0, 1, 0, 1, 0, 1),
+                        listOf(0, 1, 0, 1, 0, 1, 0, 1, 0),
+                        listOf(0, 1, 0, 0, 1, 0, 0, 1, 0),
+                        listOf(1, 1, 0, 1, 0, 1, 0, 1, 1),
+                        listOf(0, 1, 1, 0, 1, 0, 1, 1, 0)
+                    )
+                )
+            )
+        }
+
+        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepo)
+        val stage = getSudokuUseCase(0).first()().first()
+
+        println(stage)
+        assertEquals(false, stage.isCompleted())
+
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 300)
+        playUseCase().collect {
+            println(it)
+            println(stage)
+        }
+        assertEquals(true, stage.isCompleted())
+    }
+
+    @Test
     fun testAdvancedRepository() = runTest {
-        val stageRepository: StageRepository = mockk()
-        every { stageRepository[0] } answers {
-            with(StageBuilderImpl()) {
-                setBox(4, 4)
-                autoGenerate(
-                    listOf(
+        val matrixRepo: MatrixRepository<AdvancedMatrix> = mockk()
+        coEvery { matrixRepo.getList() } answers {
+            listOf(
+                AdvancedMatrix(
+                    matrix = listOf(
                         listOf(1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0),
                         listOf(0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0),
                         listOf(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0),
@@ -103,17 +141,18 @@ class StageUseCaseTest {
                         listOf(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0)
                     )
                 )
-                build()
-            }
+            )
         }
 
-        val usecase = GetStageUseCaseImpl(stageRepository)
-        val stage = usecase(0).first()
+        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepo)
+        val stage = getSudokuUseCase(0).first()().first()
+
+
         println(stage)
         assertEquals(false, stage.isCompleted())
 
-        val autoPlayStage = AutoPlayStageImpl(stage, 0)
-        autoPlayStage.play()
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+        playUseCase().collect()
         println(stage)
         assertEquals(true, stage.isCompleted())
     }

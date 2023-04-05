@@ -4,14 +4,10 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kr.co.hs.sudoku.datasource.StageRemoteSource
 import kr.co.hs.sudoku.datasource.impl.StageRemoteSourceFromConfig
 import kr.co.hs.sudoku.mapper.StageMapper.toDomain
-import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.repository.stage.StageRepository
+import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
+import kr.co.hs.sudoku.repository.stage.MatrixRepository
 
-class BeginnerStageRepositoryImpl(
-    private val list: ArrayList<Stage> = ArrayList()
-) : StageRepository.BeginnerStageRepository,
-    List<Stage> by list {
-
+class BeginnerMatrixRepository : MatrixRepository<BeginnerMatrix> {
     private var stageRemoteSource: StageRemoteSource =
         StageRemoteSourceFromConfig(FirebaseRemoteConfig.getInstance())
 
@@ -19,8 +15,6 @@ class BeginnerStageRepositoryImpl(
         this.stageRemoteSource = stageRemoteSource
     }
 
-    override suspend fun doRequestStageList() = with(list) {
-        clear()
-        addAll(stageRemoteSource.getBeginnerGenerateMask().map { it.toDomain() })
-    }
+    override suspend fun getList(): List<BeginnerMatrix> =
+        stageRemoteSource.getBeginnerGenerateMask().map { it.matrix.toDomain() }
 }

@@ -3,9 +3,9 @@ package kr.co.hs.sudoku.model.stage.impl
 import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.CellValueEntity
 
-class IntCellEntityImpl : CellEntity<Int> {
-
+data class IntCellEntityImpl(
     override var value: CellValueEntity<Int> = CellValueEntity.Empty
+) : CellEntity<Int> {
 
     override fun isMutable() = value is CellValueEntity.Mutable
     override fun toMutable() {
