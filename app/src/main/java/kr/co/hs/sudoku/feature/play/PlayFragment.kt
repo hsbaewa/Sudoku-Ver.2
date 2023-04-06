@@ -17,6 +17,8 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicato
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.views.SudokuBoardView
+import java.util.*
+import kotlin.collections.HashSet
 
 class PlayFragment : Fragment() {
     companion object {
@@ -99,10 +101,8 @@ class PlayFragment : Fragment() {
     ) = { row: Int, column: Int, value: Int? ->
         stage[row, column] = value ?: 0
 
-        currentErrorCell.forEach {
-            setError(it.first, it.second, false)
-            currentErrorCell.remove(it)
-        }
+        currentErrorCell.forEach { setError(it.first, it.second, false) }
+        currentErrorCell.clear()
 
         stage.getDuplicatedCells().toList().forEach {
             val cell = (it as IntCoordinateCellEntity)
