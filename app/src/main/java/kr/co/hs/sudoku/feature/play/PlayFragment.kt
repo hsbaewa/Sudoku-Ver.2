@@ -17,7 +17,6 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicato
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.views.SudokuBoardView
-import java.util.*
 import kotlin.collections.HashSet
 
 class PlayFragment : Fragment() {
