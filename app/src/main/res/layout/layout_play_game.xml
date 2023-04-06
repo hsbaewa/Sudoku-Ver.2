@@ -15,8 +15,9 @@
             android:clickable="true"
             android:focusable="true"
             android:visibility="invisible"
-            app:accentColor="@color/white"
+            app:accentColor="@color/gray_300"
             app:borderColor="@color/gray_600"
+            app:disabledColor="@color/gray_600"
             app:layout_constrainedHeight="true"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -26,7 +27,8 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintWidth_default="wrap"
-            app:numberDisabledColor="@color/gray_400" />
+            app:numberColor="@color/gray_600"
+            app:numberDisabledColor="@color/white" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -6,11 +6,8 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
-import android.view.Gravity
+import android.view.*
 import android.view.Gravity.NO_GRAVITY
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -18,6 +15,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.*
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.children
 import com.google.android.material.button.MaterialButton
 import kr.co.hs.sudoku.R
@@ -54,7 +52,9 @@ class SudokuBoardView : ConstraintLayout {
         numberTextErrorColorResId =
             typeArray.getColor(R.styleable.SudokuBoardView_numberErrorColor, Color.RED)
         numberTextDisabledColorResId =
-            typeArray.getColor(R.styleable.SudokuBoardView_numberDisabledColor, Color.LTGRAY)
+            typeArray.getColor(R.styleable.SudokuBoardView_numberDisabledColor, Color.WHITE)
+        disabledColorResId =
+            typeArray.getColor(R.styleable.SudokuBoardView_disabledColor, Color.BLACK)
 
         typeArray.recycle()
 
@@ -81,6 +81,7 @@ class SudokuBoardView : ConstraintLayout {
     private var accentColorResId = 0
     private var numberTextErrorColorResId = 0
     private var numberTextDisabledColorResId = 0
+    private var disabledColorResId = 0
 
     fun setRowCount(rowCount: Int, disabledMatrix: List<List<Int>>? = null) {
         this.rowValueCount = rowCount
@@ -183,8 +184,9 @@ class SudokuBoardView : ConstraintLayout {
             set.connect(deleteBtn.id, END, PARENT_ID, END)
             set.connect(deleteBtn.id, BOTTOM, PARENT_ID, BOTTOM)
             set.connect(deleteBtn.id, START, PARENT_ID, START)
-            set.constrainWidth(deleteBtn.id, WRAP_CONTENT)
-            set.setHorizontalBias(deleteBtn.id, 1f)
+            // 우측으로 쏠리게 하고 싶으면 아래 주석 해제
+//            set.constrainWidth(deleteBtn.id, WRAP_CONTENT)
+//            set.setHorizontalBias(deleteBtn.id, 1f)
 
 
             val sideCount = ceil(sqrt(maxNumber.toDouble())).toInt()
@@ -244,6 +246,8 @@ class SudokuBoardView : ConstraintLayout {
                 setColor(backgroundColorResId)
             }
             setTextColor(numberTextColorResId)
+
+            typeface = ResourcesCompat.getFont(context, R.font.goreyong_ddalgi)
         }
 
         private fun createNumberButton(row: Int, column: Int, maxRow: Int) =
@@ -270,11 +274,14 @@ class SudokuBoardView : ConstraintLayout {
 
             strokeColor = ColorStateList.valueOf(borderColorResId)
             strokeWidth = 1
+
+            typeface = ResourcesCompat.getFont(context, R.font.goreyong_ddalgi)
         }
 
         private fun createDeleteButton() = createButton().apply {
             layoutParams = LayoutParams(0, MATCH_PARENT)
             text = "Del"
+            typeface = ResourcesCompat.getFont(context, R.font.goreyong_ddalgi)
         }
 
         fun setPreview(text: String) {
@@ -350,6 +357,8 @@ class SudokuBoardView : ConstraintLayout {
             isClickable = this@SudokuBoardView.isClickable
             isFocusable = this@SudokuBoardView.isFocusable
             isFocusableInTouchMode = this@SudokuBoardView.isFocusableInTouchMode
+
+            typeface = ResourcesCompat.getFont(context, R.font.goreyong_ddalgi)
         }
 
 
@@ -365,13 +374,20 @@ class SudokuBoardView : ConstraintLayout {
 
         override fun setEnabled(enabled: Boolean) {
             super.setEnabled(enabled)
-            setBackgroundColor(
-                when {
-                    !enabled -> numberTextDisabledColorResId
-                    isAccentArea -> accentColorResId
-                    else -> backgroundColorResId
+            when {
+                !enabled -> {
+                    setBackgroundColor(disabledColorResId)
+                    setTextColor(numberTextDisabledColorResId)
                 }
-            )
+                isAccentArea -> {
+                    setBackgroundColor(accentColorResId)
+                    setTextColor(numberTextColorResId)
+                }
+                else -> {
+                    setBackgroundColor(backgroundColorResId)
+                    setTextColor(numberTextColorResId)
+                }
+            }
         }
 
         var isAccentArea = false
@@ -391,12 +407,16 @@ class SudokuBoardView : ConstraintLayout {
         cellTouchDownListener?.run {
             val coordinate = getCoordinate()
             if (this(coordinate.first, coordinate.second)) {
+                performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                 numberPopup.show(lastTouchDownX, lastTouchDownY)
             } else {
                 lastTouchDownX = 0f
                 lastTouchDownY = 0f
             }
-        } ?: numberPopup.show(lastTouchDownX, lastTouchDownY)
+        } ?: kotlin.run {
+            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            numberPopup.show(lastTouchDownX, lastTouchDownY)
+        }
     }
 
     private var lastTouchDownX = 0f
@@ -478,6 +498,9 @@ class SudokuBoardView : ConstraintLayout {
                     it.getHitRect(hitRect)
                     hitRect.contains(x, y)
                 }?.run {
+                    if (!isPressed) {
+                        performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    }
                     isPressed = true
                     numberPopup.setPreView(tag?.toString() ?: "")
                 } ?: kotlin.run { numberPadCell.isPressed = false }
@@ -556,7 +579,11 @@ class SudokuBoardView : ConstraintLayout {
                 if (isError) {
                     numberTextErrorColorResId
                 } else {
-                    numberTextColorResId
+                    if (isEnabled) {
+                        numberTextColorResId
+                    } else {
+                        numberTextDisabledColorResId
+                    }
                 }
             )
         }

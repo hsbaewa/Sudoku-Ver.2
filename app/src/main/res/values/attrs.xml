@@ -12,5 +12,6 @@
         <attr name="numberErrorColor" format="color" />
         <attr name="maxNumber" format="integer" />
         <attr name="numberDisabledColor" format="color" />
+        <attr name="disabledColor" format="color" />
     </declare-styleable>
 </resources>
