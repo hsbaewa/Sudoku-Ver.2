@@ -566,11 +566,7 @@ class SudokuBoardView : ConstraintLayout {
                 if (isError) {
                     numberTextErrorColorResId
                 } else {
-                    if (isEnabled) {
-                        numberTextColorResId
-                    } else {
-                        numberTextDisabledColorResId
-                    }
+                    numberTextColorResId
                 }
             )
         }

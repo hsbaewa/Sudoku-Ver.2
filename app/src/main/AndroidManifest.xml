@@ -30,6 +30,9 @@
             android:exported="true"
             android:label="" />
 
+
+        <activity android:name=".feature.play.PlayActivity" />
+
     </application>
 
 </manifest>
