@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.extension
+package kr.co.hs.sudoku.extension.platform
 
 import android.app.Activity
 import android.view.Gravity

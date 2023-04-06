@@ -1,16 +1,21 @@
-package kr.co.hs.sudoku
+package kr.co.hs.sudoku.core
 
 import android.content.Intent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.games.PlayGames
+import com.google.firebase.auth.FirebaseAuth
+import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
-import kr.co.hs.sudoku.viewmodel.StageListViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuViewModel
 
 abstract class Activity : AppCompatActivity() {
+    enum class Difficulty { BEGINNER, INTERMEDIATE, ADVANCED }
+
     //--------------------------------------------------------------------------------------------\\
     //-----------------------------------------  ViewModel Provider 관련  ----------------------------------\\
     //--------------------------------------------------------------------------------------------\\
@@ -21,12 +26,12 @@ abstract class Activity : AppCompatActivity() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    fun getStageListViewModel(repository: MatrixRepository<IntMatrix>): StageListViewModel {
-        val viewModel: StageListViewModel by viewModels { StageListViewModel.Factory(repository) }
+    private fun sudokuViewModels(repository: MatrixRepository<IntMatrix>): SudokuViewModel {
+        val viewModel: SudokuViewModel by viewModels { SudokuViewModel.Factory(repository) }
         return viewModel
     }
 
-    fun getStageListViewModel(difficulty: Difficulty) = getStageListViewModel(
+    protected fun sudokuViewModels(difficulty: Difficulty) = sudokuViewModels(
         when (difficulty) {
             Difficulty.BEGINNER -> BeginnerMatrixRepository()
             Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
@@ -34,8 +39,8 @@ abstract class Activity : AppCompatActivity() {
         }
     )
 
-    fun getStageListViewModel(): StageListViewModel {
-        val viewModel: StageListViewModel by viewModels()
+    private fun sudokuViewModels(): SudokuViewModel {
+        val viewModel: SudokuViewModel by viewModels()
         return viewModel
     }
 
@@ -55,7 +60,7 @@ abstract class Activity : AppCompatActivity() {
      * @comment Intent로 전달 받은 Difficulty
      * @return Difficulty
      **/
-    fun getDifficulty() = intent.getStringExtra(EXTRA_DIFFICULTY)
+    protected fun getDifficulty() = intent.getStringExtra(EXTRA_DIFFICULTY)
         ?.runCatching { Difficulty.valueOf(this) }
         ?.getOrDefault(Difficulty.BEGINNER)
         ?: Difficulty.BEGINNER
@@ -68,7 +73,7 @@ abstract class Activity : AppCompatActivity() {
      * @comment 전달받은 Level을 intent로부터 반환
      * @return 전달받은 Level Int 값
      **/
-    fun getLevel() = intent.getIntExtra(EXTRA_LEVEL, 0)
+    protected fun getLevel() = intent.getIntExtra(EXTRA_LEVEL, 0)
 
     /**
      * @author hsbaewa@gmail.com
@@ -78,4 +83,23 @@ abstract class Activity : AppCompatActivity() {
      * @return Intent
      **/
     fun Intent.putLevel(level: Int) = putExtra(EXTRA_LEVEL, level)
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/04
+     * @comment Games 계정과 Firebase 계정 마이그레이션, Games 계정이 로그인 되어 있는 경우 해당 Credential로 Firebase에 로그인 시킨다
+     **/
+    protected suspend fun syncAuthenticate() = createAuthenticateMediator().sync()
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/06
+     * @comment AuthenticateMediator 생성
+     * @return AuthenticateMediator
+     **/
+    private fun createAuthenticateMediator() = AuthenticateMediator(
+        PlayGames.getGamesSignInClient(this),
+        FirebaseAuth.getInstance(),
+        getString(R.string.default_web_client_id)
+    )
 }

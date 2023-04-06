@@ -1,9 +1,9 @@
-package kr.co.hs.sudoku.extension
+package kr.co.hs.sudoku.extension.platform
 
 import androidx.fragment.app.Fragment
-import kr.co.hs.sudoku.extension.ActivityExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.ActivityExtension.showProgressIndicator
-import kr.co.hs.sudoku.extension.ActivityExtension.showSnackBar
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 
 object FragmentExtension {
     //--------------------------------------------------------------------------------------------\\

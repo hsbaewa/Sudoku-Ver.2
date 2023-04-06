@@ -6,12 +6,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.Activity
-import kr.co.hs.sudoku.Difficulty
+import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ActivityPlayBinding
-import kr.co.hs.sudoku.extension.ActivityExtension.replaceFragment
-import kr.co.hs.sudoku.viewmodel.StageListViewModel
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
+import kr.co.hs.sudoku.viewmodel.SudokuViewModel
 
 class PlayActivity : Activity() {
     companion object {
@@ -23,17 +24,23 @@ class PlayActivity : Activity() {
             )
     }
 
-    private val stageListViewModel: StageListViewModel
-            by lazy { getStageListViewModel(getDifficulty()) }
+    private val sudokuViewModel: SudokuViewModel
+            by lazy { sudokuViewModels(getDifficulty()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DataBindingUtil.setContentView<ActivityPlayBinding>(this, R.layout.activity_play)
 
-        lifecycleScope.launch {
-            stageListViewModel.doRequestStageList()
-            withStarted { replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel())) }
+        sudokuViewModel.matrixList.observe(this) {
+            dismissProgressIndicator()
+            replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
         }
 
+        lifecycleScope.launch {
+            withStarted {
+                showProgressIndicator()
+                sudokuViewModel.requestStageList()
+            }
+        }
     }
 }

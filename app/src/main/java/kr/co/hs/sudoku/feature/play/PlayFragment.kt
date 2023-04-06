@@ -10,16 +10,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.Fragment
+import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutPlayGameBinding
-import kr.co.hs.sudoku.extension.FragmentExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.view.SudokuBoardView
+import kr.co.hs.sudoku.views.SudokuBoardView
 
 class PlayFragment : Fragment() {
-
     companion object {
         fun new(level: Int) = PlayFragment().apply {
             arguments = Bundle().apply { putLevel(level) }
@@ -40,7 +39,7 @@ class PlayFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        getStageListViewModel().stage.observe(viewLifecycleOwner) {
+        sudokuViewModels().sudoku.observe(viewLifecycleOwner) {
             dismissProgressIndicator()
             view.getBinding()?.sudokuBoard?.setupUI(it)
         }
@@ -48,7 +47,7 @@ class PlayFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             withStarted {
                 showProgressIndicator()
-                getStageListViewModel().loadStage(getLevel())
+                sudokuViewModels().loadStage(getLevel())
             }
         }
     }

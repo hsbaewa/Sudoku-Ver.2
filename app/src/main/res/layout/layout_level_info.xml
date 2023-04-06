@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <kr.co.hs.sudoku.view.SudokuBoardView
+        <kr.co.hs.sudoku.views.SudokuBoardView
             android:id="@+id/sudokuBoard"
             android:layout_width="0dp"
             android:layout_height="0dp"

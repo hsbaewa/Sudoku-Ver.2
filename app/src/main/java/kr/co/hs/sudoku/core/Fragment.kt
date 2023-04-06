@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku
+package kr.co.hs.sudoku.core
 
 import android.os.Bundle
 import androidx.fragment.app.activityViewModels
@@ -7,7 +7,7 @@ import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
-import kr.co.hs.sudoku.viewmodel.StageListViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuViewModel
 
 abstract class Fragment : androidx.fragment.app.Fragment() {
     //--------------------------------------------------------------------------------------------\\
@@ -20,22 +20,22 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    fun getStageListViewModel(repository: MatrixRepository<IntMatrix>): StageListViewModel {
-        val viewModel: StageListViewModel
-                by activityViewModels { StageListViewModel.Factory(repository) }
+    private fun sudokuViewModels(repository: MatrixRepository<IntMatrix>): SudokuViewModel {
+        val viewModel: SudokuViewModel
+                by activityViewModels { SudokuViewModel.Factory(repository) }
         return viewModel
     }
 
-    fun getStageListViewModel(difficulty: Difficulty) = getStageListViewModel(
+    protected fun sudokuViewModels(difficulty: Activity.Difficulty) = sudokuViewModels(
         when (difficulty) {
-            Difficulty.BEGINNER -> BeginnerMatrixRepository()
-            Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
-            Difficulty.ADVANCED -> AdvancedMatrixRepository()
+            Activity.Difficulty.BEGINNER -> BeginnerMatrixRepository()
+            Activity.Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
+            Activity.Difficulty.ADVANCED -> AdvancedMatrixRepository()
         }
     )
 
-    fun getStageListViewModel(): StageListViewModel {
-        val viewModel: StageListViewModel by activityViewModels()
+    protected fun sudokuViewModels(): SudokuViewModel {
+        val viewModel: SudokuViewModel by activityViewModels()
         return viewModel
     }
 
@@ -44,12 +44,12 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
     //--------------------------------------------------------------------------------------------\\
 
     companion object {
-        private const val EXTRA_LEVEL = "kr.co.hs.sudoku.Fragment.EXTRA_LEVEL"
+        private const val EXTRA_LEVEL = "kr.co.hs.sudoku.platform.Fragment.EXTRA_LEVEL"
     }
 
-    val activity: Activity
+    protected val activity: Activity
         get() = super.getActivity() as Activity
 
     fun Bundle.putLevel(level: Int) = putInt(EXTRA_LEVEL, level)
-    fun getLevel() = arguments?.getInt(EXTRA_LEVEL, 0) ?: 0
+    protected fun getLevel() = arguments?.getInt(EXTRA_LEVEL, 0) ?: 0
 }
