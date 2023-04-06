@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.view
+package kr.co.hs.sudoku.feature.settings
 
 import android.os.Bundle
 import android.view.View
@@ -6,26 +6,28 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import coil.Coil
-import coil.request.ImageRequest
-import com.google.firebase.auth.FirebaseAuth
+import coil.transform.CircleCropTransformation
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.extension.CoilExt.loadIcon
+import kr.co.hs.sudoku.extension.firebase.FirebaseAuthExt.getCurrentUser
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
+import kr.co.hs.sudoku.core.PreferenceFragment
 
-class SettingsFragment : PreferenceFragmentCompat() {
+class SettingsFragment : PreferenceFragment() {
 
     companion object {
-        fun newInstance() = SettingsFragment()
+        fun new() = SettingsFragment()
     }
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) =
         addPreferencesFromResource(R.xml.preferences_settings)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,11 +36,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
             // 화면 진입 시 마다 currentUser 체크하여 표시
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                FirebaseAuth.getInstance().currentUser?.run { onSignIn(this) }
+                getCurrentUser()?.run { onSignIn(this) }
             }
-
         }
     }
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/06
+     * @comment 로그인 된 사용자 표시
+     **/
+    fun onSignIn(user: FirebaseUser) = findSignInPreference()?.setupUISignIn(user)
 
     /**
      * @author hsbaewa@gmail.com
@@ -52,28 +60,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun Preference.setupUISignIn(user: FirebaseUser) {
         title = user.displayName
-        viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, _ ->
-            icon = null
-        }) {
-            icon = null
-            icon = withContext(Dispatchers.IO) {
-                user.doGetPhoto()
-            }
+        loadIcon(user.photoUrl) {
+            crossfade(true)
+            transformations(CircleCropTransformation())
         }
     }
 
-    private suspend fun FirebaseUser.doGetPhoto() = context
-        .takeIf { it != null }
-        ?.run {
-            ImageRequest.Builder(this)
-                .data(photoUrl)
-                .build()
-        }
-        ?.run {
-            Coil.imageLoader(context).execute(this).drawable
-        }
-
-
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/06
+     * @comment 설정 아이템 클릭 이벤트
+     **/
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
         return when (preference.key) {
             getString(R.string.preferences_key_sign_in) -> onClickSignIn()
@@ -82,12 +79,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun onClickSignIn(): Boolean {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val authResult = (activity as MainActivity).doSignInGames()
-            authResult?.user?.run { onSignIn(this) }
+        viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, t ->
+            showSnackBar(t.message.toString())
+            dismissProgressIndicator()
+        }
+        ) {
+            showProgressIndicator()
+            val auth = withContext(Dispatchers.IO) { signIn() }
+            auth?.user?.run { onSignIn(this) }
+            dismissProgressIndicator()
         }
         return true
     }
 
-    fun onSignIn(user: FirebaseUser) = findSignInPreference()?.setupUISignIn(user)
 }

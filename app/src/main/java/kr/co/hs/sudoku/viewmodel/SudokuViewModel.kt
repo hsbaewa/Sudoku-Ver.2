@@ -10,35 +10,33 @@ import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 
-class StageListViewModel(private val repository: MatrixRepository<IntMatrix>) : ViewModel() {
+class SudokuViewModel(private val repository: MatrixRepository<IntMatrix>) : ViewModel() {
     @Suppress("UNCHECKED_CAST")
     class Factory(private val repository: MatrixRepository<IntMatrix>) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return modelClass.takeIf { it.isAssignableFrom(StageListViewModel::class.java) }
-                ?.run { StageListViewModel(repository) as T }
+            return modelClass.takeIf { it.isAssignableFrom(SudokuViewModel::class.java) }
+                ?.run { SudokuViewModel(repository) as T }
                 ?: throw IllegalArgumentException("unKnown ViewModel class")
         }
     }
 
 
-    private val _stageList = MutableLiveData<List<IntMatrix>>()
-    val stageList: LiveData<List<IntMatrix>> by this::_stageList
+    private val _matrixList = MutableLiveData<List<IntMatrix>>()
+    val matrixList: LiveData<List<IntMatrix>> by this::_matrixList
 
-    suspend fun doRequestStageList() {
+    fun requestStageList() = viewModelScope.launch {
         val list = withContext(Dispatchers.IO) { repository.getList() }
-        _stageList.value = list
+        _matrixList.value = list
     }
 
-    fun getMatrix(level: Int) = stageList.value?.get(level)
-
-    private val _stage = MutableLiveData<Stage>()
-    val stage: LiveData<Stage> by this::_stage
+    private val _sudoku = MutableLiveData<Stage>()
+    val sudoku: LiveData<Stage> by this::_sudoku
 
     fun loadStage(level: Int) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
-            getMatrix(level).takeIf { it != null }
+            matrixList.value?.get(level).takeIf { it != null }
                 ?.let { AutoGenerateSudokuUseCase(it.boxSize, it.boxCount, it) }
                 ?.let { it().first() }
-        }?.let { _stage.value = it }
+        }?.let { _sudoku.value = it }
     }
 }

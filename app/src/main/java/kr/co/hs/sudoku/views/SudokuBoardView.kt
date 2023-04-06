@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.view
+package kr.co.hs.sudoku.views
 
 import android.content.Context
 import android.content.res.ColorStateList
@@ -19,10 +19,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.*
 import androidx.core.view.children
-import androidx.core.widget.TextViewCompat
-import androidx.core.widget.TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM
 import com.google.android.material.button.MaterialButton
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -237,7 +236,7 @@ class SudokuBoardView : ConstraintLayout {
 
         private fun createPreview() = AppCompatTextView(context).apply {
             id = View.generateViewId()
-            enabledAutoSizeText()
+            setAutoSizeText()
             gravity = Gravity.CENTER
             layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             background = GradientDrawable().apply {
@@ -246,12 +245,6 @@ class SudokuBoardView : ConstraintLayout {
             }
             setTextColor(numberTextColorResId)
         }
-
-        private fun TextView.enabledAutoSizeText() =
-            TextViewCompat.setAutoSizeTextTypeWithDefaults(
-                this,
-                AUTO_SIZE_TEXT_TYPE_UNIFORM
-            )
 
         private fun createNumberButton(row: Int, column: Int, maxRow: Int) =
             createButton().apply {
@@ -269,7 +262,7 @@ class SudokuBoardView : ConstraintLayout {
             minHeight = 0
             maxHeight = 0
             setPadding(0, 0, 0, 0)
-            enabledAutoSizeText()
+            setAutoSizeText()
 
             setBackgroundColor(backgroundColorResId)
             rippleColor = ColorStateList.valueOf(accentColorResId)
@@ -345,10 +338,7 @@ class SudokuBoardView : ConstraintLayout {
             minHeight = 0
             maxHeight = 0
             setPadding(0, 0, 0, 0)
-            TextViewCompat.setAutoSizeTextTypeWithDefaults(
-                this,
-                TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM
-            )
+            setAutoSizeText()
 
             setTextColor(numberTextColorResId)
 

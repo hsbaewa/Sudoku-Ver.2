@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.extension
+package kr.co.hs.sudoku.extension.platform
 
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
