@@ -19,6 +19,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.children
 import com.google.android.material.button.MaterialButton
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.extension.NumberExtension.toPx
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -54,20 +55,11 @@ class SudokuBoardView : ConstraintLayout {
         numberTextDisabledColorResId =
             typeArray.getColor(R.styleable.SudokuBoardView_numberDisabledColor, Color.WHITE)
         disabledColorResId =
-            typeArray.getColor(R.styleable.SudokuBoardView_disabledColor, Color.BLACK)
+            typeArray.getColor(R.styleable.SudokuBoardView_disabledColor, -1)
 
         typeArray.recycle()
 
-        val outlineWidth = 10
-
-        background = GradientDrawable().apply {
-            setColor(backgroundColorResId)
-            setStroke(outlineWidth, borderColorResId)
-        }
-
-        layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT).apply {
-            setPadding(outlineWidth, outlineWidth, outlineWidth, outlineWidth)
-        }
+        setBackgroundColor(borderColorResId)
 
         if (rowValueCount > 0) {
             setRowCount(rowValueCount)
@@ -96,26 +88,34 @@ class SudokuBoardView : ConstraintLayout {
             columns.forEachIndexed { column, unit ->
                 if (row > 0) {
                     set.connect(unit.id, TOP, cellMatrix[row - 1][column].id, BOTTOM)
+                    if (row % sqrt(rowCount.toDouble()).toInt() == 0)
+                        set.setMargin(unit.id, TOP, 2.toPx)
                 } else {
                     set.connect(unit.id, TOP, PARENT_ID, TOP)
+                    set.setMargin(unit.id, TOP, 5.toPx)
                 }
 
                 if (row < rowCount - 1) {
                     set.connect(unit.id, BOTTOM, cellMatrix[row + 1][column].id, TOP)
                 } else {
                     set.connect(unit.id, BOTTOM, PARENT_ID, BOTTOM)
+                    set.setMargin(unit.id, BOTTOM, 5.toPx)
                 }
 
                 if (column > 0) {
                     set.connect(unit.id, START, cellMatrix[row][column - 1].id, END)
+                    if (column % sqrt(rowCount.toDouble()).toInt() == 0)
+                        set.setMargin(unit.id, START, 2.toPx)
                 } else {
                     set.connect(unit.id, START, PARENT_ID, START)
+                    set.setMargin(unit.id, START, 5.toPx)
                 }
 
                 if (column < rowCount - 1) {
                     set.connect(unit.id, END, cellMatrix[row][column + 1].id, START)
                 } else {
                     set.connect(unit.id, END, PARENT_ID, END)
+                    set.setMargin(unit.id, END, 5.toPx)
                 }
 
                 set.constrainedWidth(unit.id, true)
@@ -269,7 +269,7 @@ class SudokuBoardView : ConstraintLayout {
             setAutoSizeText()
 
             setBackgroundColor(backgroundColorResId)
-            rippleColor = ColorStateList.valueOf(accentColorResId)
+            rippleColor = ColorStateList.valueOf(numberTextColorResId)
             setTextColor(numberTextColorResId)
 
             strokeColor = ColorStateList.valueOf(borderColorResId)
@@ -349,7 +349,7 @@ class SudokuBoardView : ConstraintLayout {
 
             setTextColor(numberTextColorResId)
 
-            rippleColor = ColorStateList.valueOf(accentColorResId)
+            rippleColor = ColorStateList.valueOf(numberTextColorResId)
 
             strokeColor = ColorStateList.valueOf(borderColorResId)
             strokeWidth = 1
@@ -376,7 +376,15 @@ class SudokuBoardView : ConstraintLayout {
             super.setEnabled(enabled)
             when {
                 !enabled -> {
-                    setBackgroundColor(disabledColorResId)
+                    if (disabledColorResId == -1) {
+                        if (isAccentArea) {
+                            setBackgroundColor(accentColorResId)
+                        } else {
+                            setBackgroundColor(backgroundColorResId)
+                        }
+                    } else {
+                        setBackgroundColor(disabledColorResId)
+                    }
                     setTextColor(numberTextDisabledColorResId)
                 }
                 isAccentArea -> {
