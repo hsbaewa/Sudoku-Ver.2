@@ -13,6 +13,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.viewmodel.SudokuViewModel
+import kr.co.hs.sudoku.viewmodel.TimerViewModel
 
 class PlayActivity : Activity() {
     companion object {
@@ -26,20 +27,29 @@ class PlayActivity : Activity() {
 
     private val sudokuViewModel: SudokuViewModel
             by lazy { sudokuViewModels(getDifficulty()) }
+    private val timerViewModel: TimerViewModel by lazy { timerViewModels() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DataBindingUtil.setContentView<ActivityPlayBinding>(this, R.layout.activity_play)
+        val binding =
+            DataBindingUtil.setContentView<ActivityPlayBinding>(this, R.layout.activity_play)
 
         sudokuViewModel.matrixList.observe(this) {
             dismissProgressIndicator()
             replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
         }
 
+        timerViewModel.time.observe(this) {
+            binding.tvTimer.text = it
+        }
+
         lifecycleScope.launch {
             withStarted {
                 showProgressIndicator()
                 sudokuViewModel.requestStageList()
+
+                // 타이머 시작
+                timerViewModel.start()
             }
         }
     }
