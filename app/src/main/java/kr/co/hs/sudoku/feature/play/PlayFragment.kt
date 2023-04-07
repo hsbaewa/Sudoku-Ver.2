@@ -8,7 +8,6 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutPlayGameBinding
@@ -17,7 +16,6 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicato
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.views.SudokuBoardView
-import java.util.*
 import kotlin.collections.HashSet
 
 class PlayFragment : Fragment() {
@@ -44,6 +42,7 @@ class PlayFragment : Fragment() {
         sudokuViewModels().sudoku.observe(viewLifecycleOwner) {
             dismissProgressIndicator()
             view.getBinding()?.sudokuBoard?.setupUI(it)
+            getPlayPresenter().onStartSudoku()
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -53,6 +52,8 @@ class PlayFragment : Fragment() {
             }
         }
     }
+
+    private fun getPlayPresenter() = activity as PlayPresenter
 
 
     /**
@@ -112,20 +113,13 @@ class PlayFragment : Fragment() {
             setError(x, y, true)
         }
 
+        value.takeIf { it != null && it > 0 }?.run {
+            getPlayPresenter().onChangedSudokuCell(row, column, this)
+        }
+
         if (stage.isCompleted()) {
-            onCompleted()
+            getPlayPresenter().onCompleteSudoku()
         }
         true
-    }
-
-    private fun onCompleted() {
-        MaterialAlertDialogBuilder(activity)
-            .setTitle("완료")
-            .setMessage("완료")
-            .setPositiveButton("확인") { _, _ ->
-                activity.finish()
-            }
-            .setCancelable(false)
-            .show()
     }
 }

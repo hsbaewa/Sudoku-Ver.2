@@ -12,6 +12,7 @@ import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.viewmodel.SudokuViewModel
+import kr.co.hs.sudoku.viewmodel.TimerViewModel
 
 abstract class Activity : AppCompatActivity() {
     enum class Difficulty { BEGINNER, INTERMEDIATE, ADVANCED }
@@ -41,6 +42,11 @@ abstract class Activity : AppCompatActivity() {
 
     private fun sudokuViewModels(): SudokuViewModel {
         val viewModel: SudokuViewModel by viewModels()
+        return viewModel
+    }
+
+    protected fun timerViewModels(): TimerViewModel {
+        val viewModel: TimerViewModel by viewModels()
         return viewModel
     }
 
