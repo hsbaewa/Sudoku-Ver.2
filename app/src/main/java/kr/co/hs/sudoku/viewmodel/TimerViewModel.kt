@@ -44,12 +44,12 @@ class TimerViewModel : ViewModel() {
 
     private lateinit var timerJob: Job
 
-    private fun stop() = takeIf { isRunning() }?.run {
+    fun stop() = takeIf { isRunning() }?.run {
         this@TimerViewModel.timerJob.cancel()
         (SystemClock.elapsedRealtime() - from)
             .toTimerFormat()
             .run { _time.value = this }
     }
 
-    private fun isRunning() = this@TimerViewModel::timerJob.isInitialized && timerJob.isActive
+    fun isRunning() = this@TimerViewModel::timerJob.isInitialized && timerJob.isActive
 }
