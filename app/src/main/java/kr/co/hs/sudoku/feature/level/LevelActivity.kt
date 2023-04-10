@@ -63,7 +63,7 @@ class LevelActivity : Activity() {
             withStarted {
                 showProgressIndicator()
                 // 스테이지 리스트 요청
-                viewModel.requestStageList()
+                viewModel.requestMatrix()
             }
         }
     }
