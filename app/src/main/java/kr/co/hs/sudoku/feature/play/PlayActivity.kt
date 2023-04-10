@@ -57,7 +57,6 @@ class PlayActivity : Activity() {
                         showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
                     }
                     SudokuViewModel.SudokuStatus.Completed -> onCompleteSudoku()
-                    is SudokuViewModel.SudokuStatus.OnReady -> {}
                     is SudokuViewModel.SudokuStatus.OnStart -> onStartSudoku()
                     else -> {}
                 }
