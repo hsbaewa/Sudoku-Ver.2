@@ -13,10 +13,11 @@ import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutPlayGameBinding
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.viewmodel.SudokuViewModel
 import kr.co.hs.sudoku.views.SudokuBoardView
-import kotlin.collections.HashSet
 
 class PlayFragment : Fragment() {
     companion object {
@@ -38,23 +39,35 @@ class PlayFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        sudokuViewModels().sudoku.observe(viewLifecycleOwner) {
-            dismissProgressIndicator()
-            view.getBinding()?.sudokuBoard?.setupUI(it)
-            getPlayPresenter().onStartSudoku()
-        }
-
         viewLifecycleOwner.lifecycleScope.launch {
             withStarted {
                 showProgressIndicator()
-                sudokuViewModels().loadStage(getLevel())
+                sudokuViewModel.loadStage(getLevel())
+            }
+            sudokuViewModel.sudokuStatusFlow.collect {
+                val sudokuBoard = view.getBinding()?.sudokuBoard ?: return@collect
+                when (it) {
+                    is SudokuViewModel.SudokuStatus.OnReady -> sudokuBoard.readySudoku(it.stage)
+                    is SudokuViewModel.SudokuStatus.ToCorrect -> sudokuBoard.toCorrect(it.set)
+                    is SudokuViewModel.SudokuStatus.ToError -> sudokuBoard.toError(it.set)
+                    else -> {}
+                }
             }
         }
     }
 
-    private fun getPlayPresenter() = activity as PlayPresenter
+    private val sudokuViewModel: SudokuViewModel by lazy { sudokuViewModels() }
 
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
+     * @comment 게임 준비
+     * @param stage
+     **/
+    private fun SudokuBoardView.readySudoku(stage: Stage) {
+        dismissProgressIndicator()
+        setupUI(stage)
+    }
 
     /**
      * @author hsbaewa@gmail.com
@@ -72,9 +85,8 @@ class PlayFragment : Fragment() {
             }
         }
         isVisible = true
-        val errorCell = HashSet<Pair<Int, Int>>()
-        cellTouchDownListener = onCellTouchDown(stage)
-        cellValueChangedListener = onCellValueChangedListener(stage, errorCell)
+        cellTouchDownListener = onCellTouchDown()
+        cellValueChangedListener = onCellValueChangedListener()
     }
 
 
@@ -85,41 +97,34 @@ class PlayFragment : Fragment() {
      * @param
      * @return
      **/
-    private fun onCellTouchDown(stage: Stage) = { row: Int, column: Int ->
-        !stage.getCell(row, column).isImmutable()
-    }
+    private fun onCellTouchDown() =
+        { row: Int, column: Int -> sudokuViewModel.isMutableCell(row, column) }
 
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/06
      * @comment SudokuBoardView의 셀 값이 변경 된 경우 콜백
-     * @param stage 대상 Stage
-     * @param currentErrorCell 에러 셀 정보
      **/
-    private fun SudokuBoardView.onCellValueChangedListener(
-        stage: Stage,
-        currentErrorCell: HashSet<Pair<Int, Int>>
-    ) = { row: Int, column: Int, value: Int? ->
-        stage[row, column] = value ?: 0
+    private fun onCellValueChangedListener() =
+        { row: Int, column: Int, value: Int? -> sudokuViewModel[row, column] = value ?: 0; true }
 
-        currentErrorCell.forEach { setError(it.first, it.second, false) }
-        currentErrorCell.clear()
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
+     * @comment 에러 셀 해제
+     * @param set 대상이 되는 셀 정보
+     **/
+    private fun SudokuBoardView.toCorrect(set: Set<CellEntity<Int>>) =
+        set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
+            .forEach { setError(it.first, it.second, false) }
 
-        stage.getDuplicatedCells().toList().forEach {
-            val cell = (it as IntCoordinateCellEntity)
-            val x = cell.coordinate.x
-            val y = cell.coordinate.y
-            currentErrorCell.add(x to y)
-            setError(x, y, true)
-        }
-
-        value.takeIf { it != null && it > 0 }?.run {
-            getPlayPresenter().onChangedSudokuCell(row, column, this)
-        }
-
-        if (stage.isCompleted()) {
-            getPlayPresenter().onCompleteSudoku()
-        }
-        true
-    }
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
+     * @comment 에러 셀로 변환
+     * @param set 대상이 되는 셀 정보
+     **/
+    private fun SudokuBoardView.toError(set: Set<CellEntity<Int>>) =
+        set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
+            .forEach { setError(it.first, it.second, true) }
 }
