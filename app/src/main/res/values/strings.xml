@@ -18,5 +18,9 @@
     <string name="complete_message">Congratulation!\nClear this level!!</string>
     <string name="record">Your Record</string>
 
+    <string name="confirm">Confirm</string>
+    <string name="retry">Retry</string>
+    <string name="show_replay">Show Replay</string>
+
     <string name="app_name">HS-Sudoku2</string>
 </resources>
