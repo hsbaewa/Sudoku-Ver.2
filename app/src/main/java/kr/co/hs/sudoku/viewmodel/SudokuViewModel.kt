@@ -112,8 +112,9 @@ class SudokuViewModel(private val repository: MatrixRepository<IntMatrix>) : Vie
      * @comment 스도쿠 게임 상태의 대한 정보인 seald interface
      **/
     sealed interface SudokuStatus {
-        data class OnReady(val stage: Stage) : SudokuStatus
         object OnInit : SudokuStatus
+        data class OnReady(val stage: Stage) : SudokuStatus
+        data class OnStart(val stage: Stage) : SudokuStatus
         data class ToCorrect(val set: Set<CellEntity<Int>>) : SudokuStatus
         data class ToError(val set: Set<CellEntity<Int>>) : SudokuStatus
         object Completed : SudokuStatus
@@ -140,4 +141,7 @@ class SudokuViewModel(private val repository: MatrixRepository<IntMatrix>) : Vie
         super.onCleared()
         takeIf { this::sudoku.isInitialized }?.run { sudoku.setValueChangedListener(null) }
     }
+
+    fun start() = takeIf { this::sudoku.isInitialized }
+        ?.run { sudokuStatusFlow.value = SudokuStatus.OnStart(stage = sudoku) }
 }

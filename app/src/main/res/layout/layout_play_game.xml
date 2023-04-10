@@ -31,5 +31,43 @@
             app:numberColor="@color/gray_600"
             app:numberDisabledColor="@color/white" />
 
+        <View
+            android:id="@+id/viewSilhouette"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#AAFFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
+            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
+            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
+            app:layout_constraintTop_toTopOf="@id/sudokuBoard" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReadyComplete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:text="@string/ready_complete"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
+            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
+            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
+            app:layout_constraintTop_toTopOf="@id/sudokuBoard" />
+
+        <kr.co.hs.sudoku.views.CountDownView
+            android:id="@+id/tvCountDown"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:textSize="50sp"
+            app:fontFamily="@font/goreyong_ddalgi"
+            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
+            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
+            app:layout_constraintTop_toTopOf="@id/sudokuBoard"
+            app:layout_constraintWidth_default="wrap" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
