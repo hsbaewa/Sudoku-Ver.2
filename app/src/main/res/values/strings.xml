@@ -13,5 +13,7 @@
     <string name="preferences_key_sign_in">key_sign_in</string>
     <string name="preferences_sign_in">SignIn</string>
 
+    <string name="ready_complete">Ready Complete!</string>
+
     <string name="app_name">HS-Sudoku2</string>
 </resources>

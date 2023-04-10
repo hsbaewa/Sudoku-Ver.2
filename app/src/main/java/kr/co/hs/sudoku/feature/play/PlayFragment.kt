@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.core.view.isVisible
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
@@ -17,6 +17,7 @@ import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.viewmodel.SudokuViewModel
+import kr.co.hs.sudoku.views.CountDownView
 import kr.co.hs.sudoku.views.SudokuBoardView
 
 class PlayFragment : Fragment() {
@@ -31,11 +32,12 @@ class PlayFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ) = with(LayoutPlayGameBinding.inflate(inflater, container, false)) {
+        binding = this
         lifecycleOwner = this@PlayFragment
         root
     }
 
-    private fun View.getBinding() = DataBindingUtil.getBinding<LayoutPlayGameBinding>(this)
+    private lateinit var binding: LayoutPlayGameBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -45,15 +47,22 @@ class PlayFragment : Fragment() {
                 sudokuViewModel.loadStage(getLevel())
             }
             sudokuViewModel.sudokuStatusFlow.collect {
-                val sudokuBoard = view.getBinding()?.sudokuBoard ?: return@collect
                 when (it) {
-                    is SudokuViewModel.SudokuStatus.OnReady -> sudokuBoard.readySudoku(it.stage)
-                    is SudokuViewModel.SudokuStatus.ToCorrect -> sudokuBoard.toCorrect(it.set)
-                    is SudokuViewModel.SudokuStatus.ToError -> sudokuBoard.toError(it.set)
+                    is SudokuViewModel.SudokuStatus.OnReady -> binding.sudokuBoard.readySudoku(it.stage)
+                    is SudokuViewModel.SudokuStatus.OnStart -> {
+                        binding.sudokuBoard.fillCellValue(it.stage)
+                        binding.viewSilhouette.isVisible = false
+                        binding.btnReadyComplete.isVisible = false
+                        binding.tvCountDown.isVisible = false
+                    }
+                    is SudokuViewModel.SudokuStatus.ToCorrect -> binding.sudokuBoard.toCorrect(it.set)
+                    is SudokuViewModel.SudokuStatus.ToError -> binding.sudokuBoard.toError(it.set)
                     else -> {}
                 }
             }
         }
+
+        binding.btnReadyComplete.setupUIReady(binding.tvCountDown)
     }
 
     private val sudokuViewModel: SudokuViewModel by lazy { sudokuViewModels() }
@@ -77,13 +86,6 @@ class PlayFragment : Fragment() {
      **/
     private fun SudokuBoardView.setupUI(stage: Stage) {
         setRowCount(stage.rowCount, stage.toValueTable())
-        (0 until stage.rowCount).forEach { row ->
-            (0 until stage.columnCount).forEach { column ->
-                runCatching { stage[row, column] }.getOrNull()
-                    ?.takeIf { it > 0 }
-                    ?.run { setCellValue(row, column, this) }
-            }
-        }
         isVisible = true
         cellTouchDownListener = onCellTouchDown()
         cellValueChangedListener = onCellValueChangedListener()
@@ -111,6 +113,22 @@ class PlayFragment : Fragment() {
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/10
+     * @comment 셀 내부의 값들을 초기화 함
+     * @param stage
+     **/
+    private fun SudokuBoardView.fillCellValue(stage: Stage) {
+        (0 until stage.rowCount).forEach { row ->
+            (0 until stage.columnCount).forEach { column ->
+                runCatching { stage[row, column] }.getOrNull()
+                    ?.takeIf { it > 0 }
+                    ?.run { setCellValue(row, column, this) }
+            }
+        }
+    }
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
      * @comment 에러 셀 해제
      * @param set 대상이 되는 셀 정보
      **/
@@ -127,4 +145,17 @@ class PlayFragment : Fragment() {
     private fun SudokuBoardView.toError(set: Set<CellEntity<Int>>) =
         set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
             .forEach { setError(it.first, it.second, true) }
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
+     * @comment 준비 버튼 ui 설정
+     * @param with 카운트다운 표시를 위한 view
+     **/
+    private fun Button.setupUIReady(with: CountDownView) {
+        setOnClickListener {
+            isVisible = false
+            with.start(3) { sudokuViewModel.start() }
+        }
+    }
 }
