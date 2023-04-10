@@ -15,5 +15,8 @@
 
     <string name="ready_complete">Ready Complete!</string>
 
+    <string name="complete_message">Congratulation!\nClear this level!!</string>
+    <string name="record">Your Record</string>
+
     <string name="app_name">HS-Sudoku2</string>
 </resources>

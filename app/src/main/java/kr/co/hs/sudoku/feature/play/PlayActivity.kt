@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.feature.play
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
@@ -10,6 +11,7 @@ import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ActivityPlayBinding
+import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
@@ -71,9 +73,10 @@ class PlayActivity : Activity() {
 
     private fun onCompleteSudoku() {
         timerViewModel.takeIf { it.isRunning() }?.run { stop() }
+        val dlgBinding = LayoutCompleteBinding.inflate(LayoutInflater.from(this))
+        dlgBinding.tvRecord.text = timerViewModel.time.value
         MaterialAlertDialogBuilder(this)
-            .setTitle("완료")
-            .setMessage("기록 : ${timerViewModel.time.value}")
+            .setView(dlgBinding.root)
             .setPositiveButton("확인") { _, _ -> finish() }
             .setCancelable(false)
             .show()

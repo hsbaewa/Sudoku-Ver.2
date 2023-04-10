@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/tvCongratulation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:gravity="center"
+            android:text="@string/complete_message"
+            android:textSize="25sp"
+            app:layout_constraintBottom_toTopOf="@id/tvRecordTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/tvRecordTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:text="@string/record"
+            android:textSize="17sp"
+            app:layout_constraintBottom_toTopOf="@id/tvRecord"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCongratulation" />
+
+        <TextView
+            android:id="@+id/tvRecord"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:gravity="center"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvRecordTitle" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieAnim"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            app:layout_constraintBottom_toBottomOf="@id/tvRecord"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvRecord"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/lottie_symbol_congratulation" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
