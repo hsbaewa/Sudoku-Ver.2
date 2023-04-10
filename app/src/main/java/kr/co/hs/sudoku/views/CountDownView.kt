@@ -7,6 +7,7 @@ import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
 import android.view.animation.ScaleAnimation
 import androidx.appcompat.widget.AppCompatTextView
+import kr.co.hs.sudoku.R
 
 class CountDownView : AppCompatTextView {
     constructor(context: Context) : super(context)
@@ -19,14 +20,21 @@ class CountDownView : AppCompatTextView {
 
     fun start(number: Int, onAfter: (() -> Unit)? = null) {
         post {
-            text = number.toString()
+            if (number == 0) {
+                text = context.getString(R.string.start)
+            } else {
+                text = number.toString()
+            }
             startCountDownAnimation {
-                var currentNumber = text.toString().toInt()
-                if (currentNumber-- > 1) {
-                    start(currentNumber, onAfter)
-                } else {
-                    onAfter?.invoke()
-                }
+                var currentNumber = text.toString().toIntOrNull()
+                currentNumber?.let {
+                    if (currentNumber-- > 0) {
+                        start(currentNumber, onAfter)
+                    } else {
+                        onAfter?.invoke()
+                    }
+                } ?: onAfter?.invoke()
+
             }
         }
     }
