@@ -132,5 +132,12 @@ class SudokuViewModel(private val repository: MatrixRepository<IntMatrix>) : Vie
      * @param column
      * @return 변경 가능 여부
      **/
-    fun isMutableCell(row: Int, column: Int) = !sudoku.getCell(row, column).isImmutable()
+    fun isMutableCell(row: Int, column: Int) =
+        takeIf { this::sudoku.isInitialized }
+            ?.run { !sudoku.getCell(row, column).isImmutable() } ?: false
+
+    override fun onCleared() {
+        super.onCleared()
+        takeIf { this::sudoku.isInitialized }?.run { sudoku.setValueChangedListener(null) }
+    }
 }
