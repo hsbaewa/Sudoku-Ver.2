@@ -48,24 +48,36 @@ class PlayFragment : Fragment() {
             }
             sudokuViewModel.sudokuStatusFlow.collect {
                 when (it) {
-                    is SudokuViewModel.SudokuStatus.OnReady -> binding.sudokuBoard.readySudoku(it.stage)
-                    is SudokuViewModel.SudokuStatus.OnStart -> {
-                        binding.sudokuBoard.fillCellValue(it.stage)
-                        binding.viewSilhouette.isVisible = false
-                        binding.btnReadyComplete.isVisible = false
-                        binding.tvCountDown.isVisible = false
-                    }
+                    is SudokuViewModel.SudokuStatus.OnReady -> binding.setupUIForReady(it.stage)
+                    is SudokuViewModel.SudokuStatus.OnStart -> binding.setupUIForStart(it.stage)
                     is SudokuViewModel.SudokuStatus.ToCorrect -> binding.sudokuBoard.toCorrect(it.set)
                     is SudokuViewModel.SudokuStatus.ToError -> binding.sudokuBoard.toError(it.set)
                     else -> {}
                 }
             }
         }
-
-        binding.btnReadyComplete.setupUIReady(binding.tvCountDown)
     }
 
     private val sudokuViewModel: SudokuViewModel by lazy { sudokuViewModels() }
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
+     * @comment 게임 준비를 위한 view 노출
+     * @param
+     * @return
+     **/
+    private fun LayoutPlayGameBinding.setupUIForReady(stage: Stage) {
+        sudokuBoard.readySudoku(stage)
+        sudokuBoard.clearAllCellValue(stage)
+
+//        viewSilhouette.setupUISilhouette(true)
+        viewSilhouette.isVisible = true
+        tvCountDown.isVisible = true
+        btnReadyComplete.isVisible = true
+        btnReadyComplete.setupUIReady(binding.tvCountDown)
+//        setupUI(true)
+    }
 
     /**
      * @author hsbaewa@gmail.com
@@ -116,6 +128,42 @@ class PlayFragment : Fragment() {
      * @comment 셀 내부의 값들을 초기화 함
      * @param stage
      **/
+    private fun SudokuBoardView.clearAllCellValue(stage: Stage) {
+        (0 until stage.rowCount).forEach { row ->
+            (0 until stage.columnCount).forEach { column ->
+                setCellValue(row, column, 0)
+            }
+        }
+    }
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
+     * @comment 준비 버튼 ui 설정
+     * @param with 카운트다운 표시를 위한 view
+     **/
+    private fun Button.setupUIReady(with: CountDownView) {
+//        isVisible = visible
+        setOnClickListener {
+            isVisible = false
+            with.start(3) { sudokuViewModel.start() }
+        }
+    }
+
+    private fun LayoutPlayGameBinding.setupUIForStart(stage: Stage) {
+        sudokuBoard.fillCellValue(stage)
+
+        viewSilhouette.isVisible = false
+        btnReadyComplete.isVisible = false
+        tvCountDown.isVisible = false
+    }
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/10
+     * @comment 셀 내부의 값들을 초기화 함
+     * @param stage
+     **/
     private fun SudokuBoardView.fillCellValue(stage: Stage) {
         (0 until stage.rowCount).forEach { row ->
             (0 until stage.columnCount).forEach { column ->
@@ -145,17 +193,4 @@ class PlayFragment : Fragment() {
     private fun SudokuBoardView.toError(set: Set<CellEntity<Int>>) =
         set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
             .forEach { setError(it.first, it.second, true) }
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/10
-     * @comment 준비 버튼 ui 설정
-     * @param with 카운트다운 표시를 위한 view
-     **/
-    private fun Button.setupUIReady(with: CountDownView) {
-        setOnClickListener {
-            isVisible = false
-            with.start(3) { sudokuViewModel.start() }
-        }
-    }
 }

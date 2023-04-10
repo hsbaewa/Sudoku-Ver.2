@@ -77,7 +77,12 @@ class PlayActivity : Activity() {
         dlgBinding.tvRecord.text = timerViewModel.time.value
         MaterialAlertDialogBuilder(this)
             .setView(dlgBinding.root)
-            .setPositiveButton("확인") { _, _ -> finish() }
+            .setNegativeButton(R.string.confirm) { _, _ -> finish() }
+            .setNeutralButton(R.string.show_replay) { _, _ -> }
+            .setPositiveButton(R.string.retry) { _, _ ->
+                showProgressIndicator()
+                sudokuViewModel.loadStage(getLevel())
+            }
             .setCancelable(false)
             .show()
     }
