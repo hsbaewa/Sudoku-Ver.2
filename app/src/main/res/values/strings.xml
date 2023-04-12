@@ -22,5 +22,10 @@
     <string name="retry">Retry</string>
     <string name="show_replay">Show Replay</string>
 
+    <string name="memo_status_on">Memo Off</string>
+    <string name="memo_status_off">Memo</string>
+    <string name="memo_format">Memo %1$s</string>
+    <string name="Delete">Del</string>
+
     <string name="app_name">HS-Sudoku2</string>
 </resources>
