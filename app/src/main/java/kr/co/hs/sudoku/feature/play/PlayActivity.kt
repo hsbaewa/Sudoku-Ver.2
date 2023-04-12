@@ -3,6 +3,7 @@ package kr.co.hs.sudoku.feature.play
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.widget.ImageButton
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
@@ -64,6 +65,8 @@ class PlayActivity : Activity() {
                 }
             }
         }
+
+        binding.btnRetry.setupUIRetry()
     }
 
     private fun onStartSudoku() {
@@ -79,11 +82,26 @@ class PlayActivity : Activity() {
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }
             .setNeutralButton(R.string.show_replay) { _, _ -> }
-            .setPositiveButton(R.string.retry) { _, _ ->
-                showProgressIndicator()
-                sudokuViewModel.loadStage(getLevel())
-            }
+            .setPositiveButton(R.string.retry) { _, _ -> retry() }
             .setCancelable(false)
             .show()
     }
+
+    private fun retry() {
+        showProgressIndicator()
+        timerViewModel.stop()
+        sudokuViewModel.loadStage(getLevel())
+    }
+
+    private fun ImageButton.setupUIRetry() {
+        setOnClickListener { showRetryPopup() }
+    }
+
+    private fun showRetryPopup() =
+        MaterialAlertDialogBuilder(this)
+            .setMessage(R.string.retry_message)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.confirm) { _, _ -> retry() }
+            .setCancelable(false)
+            .show()
 }
