@@ -6,8 +6,10 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.*
 import android.view.Gravity.NO_GRAVITY
+import android.view.View.MeasureSpec.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -20,12 +22,20 @@ import androidx.core.view.children
 import com.google.android.material.button.MaterialButton
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.extension.NumberExtension.toPx
+import kr.co.hs.sudoku.extension.platform.TextViewExtension.isAutoSizeText
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
+import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeTextNone
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-class SudokuBoardView : ConstraintLayout {
+class SudokuBoardView : ViewGroup {
+    companion object {
+        const val BORDER_WIDTH = 1
+        const val BOX_BORDER_WIDTH = 3
+
+        private fun log(message: String) = Log.d("SudokuBoardView", message)
+    }
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
@@ -79,51 +89,7 @@ class SudokuBoardView : ConstraintLayout {
         this.rowValueCount = rowCount
         removeAllViews()
         numberPopup = NumberPadPopup(rowCount)
-
-        val set = ConstraintSet()
-        set.clone(this)
-
-        val cellMatrix = createCellMatrix(rowCount, disabledMatrix)
-        cellMatrix.forEachIndexed { row, columns ->
-            columns.forEachIndexed { column, unit ->
-                if (row > 0) {
-                    set.connect(unit.id, TOP, cellMatrix[row - 1][column].id, BOTTOM)
-                    if (row % sqrt(rowCount.toDouble()).toInt() == 0)
-                        set.setMargin(unit.id, TOP, 2.toPx)
-                } else {
-                    set.connect(unit.id, TOP, PARENT_ID, TOP)
-                    set.setMargin(unit.id, TOP, 5.toPx)
-                }
-
-                if (row < rowCount - 1) {
-                    set.connect(unit.id, BOTTOM, cellMatrix[row + 1][column].id, TOP)
-                } else {
-                    set.connect(unit.id, BOTTOM, PARENT_ID, BOTTOM)
-                    set.setMargin(unit.id, BOTTOM, 5.toPx)
-                }
-
-                if (column > 0) {
-                    set.connect(unit.id, START, cellMatrix[row][column - 1].id, END)
-                    if (column % sqrt(rowCount.toDouble()).toInt() == 0)
-                        set.setMargin(unit.id, START, 2.toPx)
-                } else {
-                    set.connect(unit.id, START, PARENT_ID, START)
-                    set.setMargin(unit.id, START, 5.toPx)
-                }
-
-                if (column < rowCount - 1) {
-                    set.connect(unit.id, END, cellMatrix[row][column + 1].id, START)
-                } else {
-                    set.connect(unit.id, END, PARENT_ID, END)
-                    set.setMargin(unit.id, END, 5.toPx)
-                }
-
-                set.constrainedWidth(unit.id, true)
-                set.constrainedHeight(unit.id, true)
-            }
-        }
-
-        set.applyTo(this)
+        createCellMatrix(rowCount, disabledMatrix)
     }
 
     private lateinit var numberPopup: NumberPadPopup
@@ -148,6 +114,20 @@ class SudokuBoardView : ConstraintLayout {
         fun centerY() = height.toFloat() / 2
         fun children() = (contentView as? ViewGroup)?.children ?: sequence { }
         fun setPreView(text: String) = (contentView as NumberPadView).setPreview(text)
+        fun memoModeOn() = findMemoButton()?.run {
+            isSelected = true
+            text = context.getString(R.string.memo_status_on)
+            setBackgroundColor(Color.LTGRAY)
+        }
+
+        private fun findMemoButton() = contentView.findViewWithTag<MaterialButton>(-1)
+        fun memoModeOff() = findMemoButton()?.run {
+            isSelected = false
+            text = context.getString(R.string.memo_status_off)
+            setBackgroundColor(backgroundColorResId)
+        }
+
+        fun isMemoMode() = findMemoButton()?.run { isSelected } ?: false
     }
 
     /**
@@ -183,10 +163,18 @@ class SudokuBoardView : ConstraintLayout {
             addView(deleteBtn)
             set.connect(deleteBtn.id, END, PARENT_ID, END)
             set.connect(deleteBtn.id, BOTTOM, PARENT_ID, BOTTOM)
-            set.connect(deleteBtn.id, START, PARENT_ID, START)
+//            set.connect(deleteBtn.id, START, PARENT_ID, START)
             // 우측으로 쏠리게 하고 싶으면 아래 주석 해제
 //            set.constrainWidth(deleteBtn.id, WRAP_CONTENT)
 //            set.setHorizontalBias(deleteBtn.id, 1f)
+
+            val memoBtn = createMemoButton()
+            addView(memoBtn)
+            set.connect(memoBtn.id, START, PARENT_ID, START)
+            set.connect(memoBtn.id, BOTTOM, PARENT_ID, BOTTOM)
+            set.connect(memoBtn.id, END, deleteBtn.id, START)
+            set.connect(deleteBtn.id, START, memoBtn.id, END)
+//            set.constrainWidth(optionBtn.id, WRAP_CONTENT)
 
 
             val sideCount = ceil(sqrt(maxNumber.toDouble())).toInt()
@@ -212,6 +200,7 @@ class SudokuBoardView : ConstraintLayout {
                     } else {
                         set.connect(unit.id, BOTTOM, deleteBtn.id, TOP)
                         set.connect(deleteBtn.id, TOP, unit.id, BOTTOM)
+                        set.connect(memoBtn.id, TOP, unit.id, BOTTOM)
                     }
 
                     if (column > 0) {
@@ -238,7 +227,7 @@ class SudokuBoardView : ConstraintLayout {
 
         private fun createPreview() = AppCompatTextView(context).apply {
             id = View.generateViewId()
-            setAutoSizeText()
+            textSize = 8f.toPx
             gravity = Gravity.CENTER
             layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             background = GradientDrawable().apply {
@@ -256,6 +245,7 @@ class SudokuBoardView : ConstraintLayout {
                 val number = ((row * maxRow) + column + 1)
                 tag = number
                 text = number.toString()
+                setAutoSizeText()
             }
 
         private fun createButton() = MaterialButton(context).apply {
@@ -266,27 +256,51 @@ class SudokuBoardView : ConstraintLayout {
             minHeight = 0
             maxHeight = 0
             setPadding(0, 0, 0, 0)
-            setAutoSizeText()
 
             setBackgroundColor(backgroundColorResId)
             rippleColor = ColorStateList.valueOf(numberTextColorResId)
             setTextColor(numberTextColorResId)
 
             strokeColor = ColorStateList.valueOf(borderColorResId)
-            strokeWidth = 1
+            strokeWidth = 3
 
             typeface = ResourcesCompat.getFont(context, R.font.goreyong_ddalgi)
         }
 
+        /**
+         * @author hsbaewa@gmail.com
+         * @since 2023/04/12
+         * @comment 메모 버튼
+         **/
+        private fun createMemoButton() = createButton().apply {
+            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            text = context.getString(R.string.memo_status_on)
+            tag = -1
+            isSelected = false
+            textSize = 8f.toPx
+        }
+
+        /**
+         * @author hsbaewa@gmail.com
+         * @since 2023/04/11
+         * @comment 삭제 버튼 생성
+         * @return MaterialButton
+         **/
         private fun createDeleteButton() = createButton().apply {
-            layoutParams = LayoutParams(0, MATCH_PARENT)
-            text = "Del"
-            typeface = ResourcesCompat.getFont(context, R.font.goreyong_ddalgi)
+            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            text = context.getString(R.string.Delete)
+            textSize = 8f.toPx
         }
 
         fun setPreview(text: String) {
-            this.preview.text = text
+            this.preview.text = if (isMemoMode()) {
+                context.getString(R.string.memo_format, text)
+            } else {
+                text
+            }
         }
+
+        fun isMemoMode() = findViewWithTag<MaterialButton>(-1)?.isSelected ?: false
     }
 
 
@@ -311,8 +325,8 @@ class SudokuBoardView : ConstraintLayout {
         }
 
     private fun createCell(row: Int, column: Int) = SudokuCellView(context).apply {
-        id = View.generateViewId()
-        layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        setLineSpacing(0f, 0.8f)
+        letterSpacing = -0.05f
         tag = row to column
         onTouchEvent = {
             when (it.action) {
@@ -485,8 +499,10 @@ class SudokuBoardView : ConstraintLayout {
     private fun SudokuCellView.getCoordinate() =
         with(tag as Pair<*, *>) { first as Int to second as Int }
 
-    private fun NumberPadPopup.show(centerX: Float, centerY: Float) =
+    private fun NumberPadPopup.show(centerX: Float, centerY: Float) {
+        memoModeOff()
         showAtLocation(rootView, NO_GRAVITY, centerX.roundToInt(), centerY.roundToInt())
+    }
 
 
     /**
@@ -499,20 +515,33 @@ class SudokuBoardView : ConstraintLayout {
         val x = (event.rawX - lastTouchDownX).roundToInt()
         val y = (event.rawY - lastTouchDownY).roundToInt()
 
-        numberPopup
-            .children()
-            .forEach { numberPadCell ->
-                numberPadCell.takeIf {
-                    it.getHitRect(hitRect)
-                    hitRect.contains(x, y)
-                }?.run {
-                    if (!isPressed) {
-                        performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        with(numberPopup) {
+            children().forEach { numberPadCell ->
+                numberPadCell
+                    .takeIf { it.getHitRect(hitRect); hitRect.contains(x, y) }
+                    ?.let {
+                        if (!it.isPressed) {
+                            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            onMoveNumberPad(it)
+                        }
+                        it.isPressed = true
                     }
-                    isPressed = true
-                    numberPopup.setPreView(tag?.toString() ?: "")
-                } ?: kotlin.run { numberPadCell.isPressed = false }
+                    ?: kotlin.run { numberPadCell.isPressed = false }
             }
+        }
+    }
+
+    private fun NumberPadPopup.onMoveNumberPad(numberPadCell: View) {
+        val number = numberPadCell.tag?.toString() ?: ""
+        if (number.toIntOrNull() == -1) {
+            if (isMemoMode()) {
+                memoModeOff()
+            } else {
+                memoModeOn()
+            }
+        } else {
+            setPreView(number)
+        }
     }
 
     private val hitRect = Rect()
@@ -531,19 +560,26 @@ class SudokuBoardView : ConstraintLayout {
         // 터치 up 했을때의 pad의 숫자를 cell 에 표기
         numberPopup
             .children()
-            .find {
-                it.getHitRect(hitRect)
-                hitRect.contains(x, y)
-            }
+            .find { it.getHitRect(hitRect); hitRect.contains(x, y) }
             ?.let { numberPadCell ->
                 val selectedNumber = numberPadCell.tag as? Int
-                cellValueChangedListener?.run {
-                    val cellCoordinate = getCoordinate()
-                    if (this(cellCoordinate.first, cellCoordinate.second, selectedNumber)) {
-                        text = selectedNumber?.toString() ?: ""
+                if (numberPopup.isMemoMode()) {
+                    if (!isInitMemo()) {
+                        initMemo()
                     }
-                } ?: run {
-                    text = selectedNumber?.toString() ?: ""
+                    selectedNumber?.run { toggleNumberInMemo(this) }
+                    cellValueChangedListener?.run {
+                        val cellCoordinate = getCoordinate()
+                        this(cellCoordinate.first, cellCoordinate.second, null)
+                    }
+                } else {
+                    clearMemo()
+                    cellValueChangedListener?.run {
+                        val cellCoordinate = getCoordinate()
+                        if (this(cellCoordinate.first, cellCoordinate.second, selectedNumber)) {
+                            text = selectedNumber?.toString() ?: ""
+                        }
+                    } ?: run { text = selectedNumber?.toString() ?: "" }
                 }
                 performClick()
             }
@@ -551,6 +587,51 @@ class SudokuBoardView : ConstraintLayout {
         lastTouchDownX = 0f
         lastTouchDownY = 0f
         numberPopup.dismiss()
+    }
+
+    private fun SudokuCellView.isInitMemo() = !isAutoSizeText()
+    private fun SudokuCellView.initMemo() {
+        setAutoSizeTextNone()
+        typeface = null
+        textSize = measuredHeight / 9f
+        text = ""
+    }
+
+    private fun SudokuCellView.getMemoList() =
+        text.split(" ", "\n")
+            .mapNotNull { it.toIntOrNull() }
+            .toMutableList()
+
+    private fun SudokuCellView.toggleNumberInMemo(number: Int) =
+        getMemoList()
+            .also {
+                if (it.contains(number)) {
+                    it.remove(number)
+                } else {
+                    it.add(number)
+                }
+            }
+            .let {
+                text = buildString {
+                    it.sort()
+                    it.forEachIndexed { index, i ->
+                        if (index > 0) {
+                            if (index % sqrt(rowValueCount.toDouble()).toInt() == 0) {
+                                append("\n")
+                            } else {
+                                append(" ")
+                            }
+                        }
+                        append(i)
+                    }
+                }
+            }
+
+    private fun SudokuCellView.clearMemo() {
+        setAutoSizeText()
+        val typeFace = ResourcesCompat.getFont(context, R.font.goreyong_ddalgi)
+        typeface = typeFace
+        text = ""
     }
 
     private fun isAccentArea(row: Int, column: Int, rowCount: Int): Boolean {
@@ -561,18 +642,86 @@ class SudokuBoardView : ConstraintLayout {
 
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
-        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+        val sizeOfWidth = getSize(widthMeasureSpec)
+        val modeOfWidth = getMode(widthMeasureSpec)
+        val sizeOfHeight = getSize(heightMeasureSpec)
+        val modeOfHeight = getMode(heightMeasureSpec)
 
         val sizeSpec = when {
-            widthSize < heightSize -> MeasureSpec.makeMeasureSpec(widthSize, MeasureSpec.EXACTLY)
-            else -> MeasureSpec.makeMeasureSpec(heightSize, MeasureSpec.EXACTLY)
+            sizeOfWidth < sizeOfHeight -> makeMeasureSpec(sizeOfWidth, modeOfWidth)
+            else -> makeMeasureSpec(sizeOfHeight, modeOfHeight)
         }
 
-        super.onMeasure(sizeSpec, sizeSpec)
+        val size = getSize(sizeSpec)
+        val mode = getMode(sizeSpec)
+        log("onMeasure(board Size = $size)")
+
+        rowValueCount.takeIf { it > 0 }?.run {
+            val cellSize = calculateCellSize(size)
+            log("onMeasure(cell Size = $cellSize)")
+
+            children.forEach {
+                val cellSizeSpec = makeMeasureSpec(cellSize, mode)
+                it.measure(cellSizeSpec, cellSizeSpec)
+            }
+        }
+
+        setMeasuredDimension(sizeSpec, sizeSpec)
     }
 
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/12
+     * @comment 구분선 너비
+     * @return 구분선 너비
+     **/
+    private fun getBorderWidth() = BORDER_WIDTH
 
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/12
+     * @comment 구분선 갯수
+     * @return 구분선 갯수
+     **/
+    private fun getBorderCount() = rowValueCount.takeIf { it > 0 }?.run { this + 1 } ?: 0
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/12
+     * @comment box Border를 위한 추가 width
+     * @return border
+     **/
+    private fun getAdditionalBoxBorderWidth() =
+        (BOX_BORDER_WIDTH - BORDER_WIDTH).takeIf { it > 0 } ?: 0
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/12
+     * @comment 박스 구분선 갯수(외곽 제외)
+     * @return 박스 구분선 갯수(외곽 제외)
+     **/
+    private fun getBoxBorderCount() = rowValueCount.takeIf { it > 0 }
+        ?.run { sqrt(this.toDouble()).toInt() - 1 }
+        ?: 0
+
+    private fun calculateCellSize(backgroundSize: Int) =
+        rowValueCount.takeIf { it > 0 }
+            ?.run {
+                val borderWidth = getBorderWidth() // 구분선 너비
+                val borderCount = getBorderCount() // 구분선 갯수
+
+                val boxBorderWidth = getAdditionalBoxBorderWidth() // 박스 구분선 추가 너비
+                val boxBorderCount = getBoxBorderCount() // 박스 구분선 갯수(외곽 제외)
+
+                // 보더 사이즈 총합
+                val allBorderSize = (borderWidth * borderCount) + (boxBorderWidth * boxBorderCount)
+
+                log("onMeasure(borderWidth:$borderWidth, borderCount:$borderCount, boxBorderWidth:$boxBorderWidth, boxBorderCount:$boxBorderCount)")
+                // 소수점 이하 짜름(integer 형태여야 함)
+                (backgroundSize - allBorderSize) / this
+            } ?: 0
+
+    //
     fun setCellValue(row: Int, column: Int, value: Int) =
         with(findCellWithCoordinate(row, column)) {
             text = value.takeIf { it > 0 }?.run { this.toString() }
@@ -599,4 +748,56 @@ class SudokuBoardView : ConstraintLayout {
 
     var cellTouchDownListener: ((row: Int, column: Int) -> Boolean)? = null
     var cellValueChangedListener: ((row: Int, column: Int, value: Int?) -> Boolean)? = null
+
+    override fun onLayout(p0: Boolean, p1: Int, p2: Int, p3: Int, p4: Int) {
+        val layoutWidth = p3 - p1
+        val layoutHeight = p4 - p2
+        log("onLayout(layoutWidth:$layoutWidth, layoutHeight:$layoutHeight)")
+        rowValueCount.takeIf { it > 0 }?.run {
+            val borderWidth = getBorderWidth() // 구분선 너비
+            val borderCount = getBorderCount() // 구분선 갯수
+
+            val boxBorderWidth = getAdditionalBoxBorderWidth() // 박스 구분선 추가 너비
+            val boxBorderCount = getBoxBorderCount() // 박스 구분선 갯수(외곽 제외)
+
+            // 보더 사이즈 총합
+            val allBorderSize = (borderWidth * borderCount) + (boxBorderWidth * boxBorderCount)
+
+            // 소수점 이하 짜름(integer 형태여야 함)
+            val cellWidth = (layoutWidth - allBorderSize) / this
+            val cellHeight = (layoutHeight - allBorderSize) / this
+            log("onLayout(cellWidth:$cellWidth, cellHeight:$cellHeight)")
+
+            // 보더 와 셀 사이즈를 제외한 나머지 사이즈를 outlineWidth로 한다.
+            val remainWidth = layoutWidth - (cellWidth * this) - allBorderSize
+            val remainHeight = layoutHeight - (cellHeight * this) - allBorderSize
+
+            val outlineWidth = remainWidth / 2 // 보드 외곽
+            val outlineHeight = remainHeight / 2
+
+            log("onLayout(outlineWidth:$outlineWidth, outlineHeight:$outlineHeight)")
+
+            children.forEach {
+                val cellViewCoordinate = (it as SudokuCellView).getCoordinate()
+                val column = cellViewCoordinate.second
+                val row = cellViewCoordinate.first
+
+                var start = outlineWidth + getBorderWidth()  // 맨 왼쪽 Border 사이즈
+                start += column * cellWidth // column 에 따라 증가
+                start += column * getBorderWidth() // 구분선
+                start += (column / sqrt(this.toDouble())).toInt() * getAdditionalBoxBorderWidth()
+
+                val end = start + cellWidth
+
+                var top = outlineHeight + getBorderWidth()  // 맨 왼쪽 Border 사이즈
+                top += row * cellHeight // column 에 따라 증가
+                top += row * getBorderWidth() // 구분선
+                top += (row / sqrt(this.toDouble())).toInt() * getAdditionalBoxBorderWidth()
+
+                val bottom = top + cellHeight
+
+                it.layout(start, top, end, bottom)
+            }
+        }
+    }
 }

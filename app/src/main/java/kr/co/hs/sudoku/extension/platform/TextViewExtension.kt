@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.extension.platform
 
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
+import androidx.core.widget.TextViewCompat.AUTO_SIZE_TEXT_TYPE_NONE
 import androidx.core.widget.TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM
 
 object TextViewExtension {
@@ -13,4 +14,10 @@ object TextViewExtension {
      **/
     fun TextView.setAutoSizeText() =
         TextViewCompat.setAutoSizeTextTypeWithDefaults(this, AUTO_SIZE_TEXT_TYPE_UNIFORM)
+
+    fun TextView.setAutoSizeTextNone() =
+        TextViewCompat.setAutoSizeTextTypeWithDefaults(this, AUTO_SIZE_TEXT_TYPE_NONE)
+
+    fun TextView.isAutoSizeText() =
+        TextViewCompat.getAutoSizeTextType(this) == AUTO_SIZE_TEXT_TYPE_UNIFORM
 }
