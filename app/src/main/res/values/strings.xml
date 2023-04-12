@@ -27,5 +27,8 @@
     <string name="memo_format">Memo %1$s</string>
     <string name="Delete">Del</string>
 
+    <string name="retry_message">are you sure retry this game?</string>
+    <string name="cancel">Cancel</string>
+
     <string name="app_name">HS-Sudoku2</string>
 </resources>
