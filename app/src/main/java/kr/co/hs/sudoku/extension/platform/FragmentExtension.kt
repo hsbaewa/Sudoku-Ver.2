@@ -1,9 +1,12 @@
 package kr.co.hs.sudoku.extension.platform
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
+import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
 
 object FragmentExtension {
     //--------------------------------------------------------------------------------------------\\
@@ -28,4 +31,10 @@ object FragmentExtension {
     //----------------------------------------- SnackBar -----------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
     fun Fragment.showSnackBar(message: String) = requireActivity().showSnackBar(message)
+
+    //--------------------------------------------------------------------------------------------\\
+    //----------------------------------------- Preference ----------------------------------------\\
+    //--------------------------------------------------------------------------------------------\\
+    val Fragment.dataStore: DataStore<Preferences>
+        get() = requireContext().dataStore
 }

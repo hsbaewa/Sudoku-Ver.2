@@ -11,11 +11,13 @@ import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutPlayGameBinding
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.viewmodel.SudokuViewModel
 import kr.co.hs.sudoku.views.CountDownView
 import kr.co.hs.sudoku.views.SudokuBoardView
@@ -71,12 +73,14 @@ class PlayFragment : Fragment() {
         sudokuBoard.readySudoku(stage)
         sudokuBoard.clearAllCellValue(stage)
 
-//        viewSilhouette.setupUISilhouette(true)
         viewSilhouette.isVisible = true
         tvCountDown.isVisible = true
         btnReadyComplete.isVisible = true
         btnReadyComplete.setupUIReady(binding.tvCountDown)
-//        setupUI(true)
+
+        gameSettingsViewModel.gameSettings.observe(viewLifecycleOwner) {
+            sudokuBoard.enabledHapticFeedback = it.enabledHapticFeedback
+        }
     }
 
     /**
@@ -149,6 +153,9 @@ class PlayFragment : Fragment() {
             with.start(3) { sudokuViewModel.start() }
         }
     }
+
+    private val gameSettingsViewModel
+            by lazy { gameSettingsViewModels(GameSettingsRepositoryImpl(dataStore)) }
 
     private fun LayoutPlayGameBinding.setupUIForStart(stage: Stage) {
         sudokuBoard.fillCellValue(stage)

@@ -429,17 +429,24 @@ class SudokuBoardView : ViewGroup {
         cellTouchDownListener?.run {
             val coordinate = getCoordinate()
             if (this(coordinate.first, coordinate.second)) {
-                performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                performHapticFeedback()
                 numberPopup.show(lastTouchDownX, lastTouchDownY)
             } else {
                 lastTouchDownX = 0f
                 lastTouchDownY = 0f
             }
         } ?: kotlin.run {
-            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            performHapticFeedback()
             numberPopup.show(lastTouchDownX, lastTouchDownY)
         }
     }
+
+    private fun View.performHapticFeedback() =
+        enabledHapticFeedback
+            .takeIf { it }
+            ?.run {
+                performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            }
 
     private var lastTouchDownX = 0f
     private var lastTouchDownY = 0f
@@ -521,7 +528,7 @@ class SudokuBoardView : ViewGroup {
                     .takeIf { it.getHitRect(hitRect); hitRect.contains(x, y) }
                     ?.let {
                         if (!it.isPressed) {
-                            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            performHapticFeedback()
                             onMoveNumberPad(it)
                         }
                         it.isPressed = true
@@ -800,4 +807,6 @@ class SudokuBoardView : ViewGroup {
             }
         }
     }
+
+    var enabledHapticFeedback = true
 }

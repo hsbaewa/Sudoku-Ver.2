@@ -12,6 +12,9 @@
     <string name="preferences_category_auth">Auth</string>
     <string name="preferences_key_sign_in">key_sign_in</string>
     <string name="preferences_sign_in">SignIn</string>
+    <string name="preferences_category_game_settings">Game</string>
+    <string name="preferences_key_enabled_haptic_feedback">key_enabled_haptic</string>
+    <string name="preferences_enabled_haptic_feedback">Enable vibrate</string>
 
     <string name="ready_complete">Ready Complete!</string>
 
