@@ -1,11 +1,23 @@
 package kr.co.hs.sudoku.core
 
+import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.gms.games.PlayGames
 import com.google.firebase.auth.FirebaseAuth
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
+import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 
 abstract class PreferenceFragment : PreferenceFragmentCompat() {
+    //--------------------------------------------------------------------------------------------\\
+    //----------------------------------------- ViewModelProvider -------------------------------------\\
+    //--------------------------------------------------------------------------------------------\\
+    protected fun gameSettingsViewModels(repository: GameSettingsRepository): GameSettingsViewModel {
+        val viewModel: GameSettingsViewModel
+                by activityViewModels { GameSettingsViewModel.Factory(repository) }
+        return viewModel
+    }
+
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- conv -------------------------------------------\\
     //--------------------------------------------------------------------------------------------\\

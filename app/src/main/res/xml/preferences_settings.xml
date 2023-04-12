@@ -8,4 +8,11 @@
             android:title="@string/preferences_sign_in" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/preferences_category_game_settings">
+        <SwitchPreferenceCompat
+            android:icon="@drawable/ic_vibration"
+            android:key="@string/preferences_key_enabled_haptic_feedback"
+            android:title="@string/preferences_enabled_haptic_feedback" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

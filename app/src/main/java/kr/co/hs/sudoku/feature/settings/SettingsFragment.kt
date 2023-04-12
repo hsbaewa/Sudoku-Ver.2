@@ -6,6 +6,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.Preference
+import androidx.preference.SwitchPreferenceCompat
 import coil.transform.CircleCropTransformation
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -19,6 +20,9 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
 import kr.co.hs.sudoku.core.PreferenceFragment
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
+import kr.co.hs.sudoku.model.settings.GameSettingsEntity
+import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 
 class SettingsFragment : PreferenceFragment() {
 
@@ -38,6 +42,10 @@ class SettingsFragment : PreferenceFragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 getCurrentUser()?.run { onSignIn(this) }
             }
+        }
+
+        gameSettingsViewModel.gameSettings.observe(viewLifecycleOwner) {
+            findEnabledHapticFeedbackPreference()?.isChecked = it.enabledHapticFeedback
         }
     }
 
@@ -66,6 +74,13 @@ class SettingsFragment : PreferenceFragment() {
         }
     }
 
+    private val gameSettingsViewModel by lazy {
+        gameSettingsViewModels(GameSettingsRepositoryImpl(dataStore))
+    }
+
+    private fun findEnabledHapticFeedbackPreference() =
+        findPreference<SwitchPreferenceCompat>(getString(R.string.preferences_key_enabled_haptic_feedback))
+
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/06
@@ -74,6 +89,10 @@ class SettingsFragment : PreferenceFragment() {
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
         return when (preference.key) {
             getString(R.string.preferences_key_sign_in) -> onClickSignIn()
+            getString(R.string.preferences_key_enabled_haptic_feedback) -> {
+                val enabled = (preference as SwitchPreferenceCompat).isChecked
+                onClickEnableHapticFeedback(enabled)
+            }
             else -> super.onPreferenceTreeClick(preference)
         }
     }
@@ -92,4 +111,8 @@ class SettingsFragment : PreferenceFragment() {
         return true
     }
 
+    private fun onClickEnableHapticFeedback(on: Boolean): Boolean {
+        gameSettingsViewModel.setGameSettings(GameSettingsEntity(enabledHapticFeedback = on))
+        return true
+    }
 }

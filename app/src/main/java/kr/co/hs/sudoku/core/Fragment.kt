@@ -6,7 +6,9 @@ import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
+import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
+import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuViewModel
 
 abstract class Fragment : androidx.fragment.app.Fragment() {
@@ -36,6 +38,12 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
 
     protected fun sudokuViewModels(): SudokuViewModel {
         val viewModel: SudokuViewModel by activityViewModels()
+        return viewModel
+    }
+
+    protected fun gameSettingsViewModels(repository: GameSettingsRepository): GameSettingsViewModel {
+        val viewModel: GameSettingsViewModel
+                by activityViewModels { GameSettingsViewModel.Factory(repository) }
         return viewModel
     }
 
