@@ -17,8 +17,10 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.viewmodel.SudokuViewModel
-import kr.co.hs.sudoku.viewmodel.TimerViewModel
+import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
 
 class PlayActivity : Activity() {
     companion object {
@@ -30,37 +32,38 @@ class PlayActivity : Activity() {
             )
     }
 
-    private val sudokuViewModel: SudokuViewModel
-            by lazy { sudokuViewModels(getDifficulty()) }
-    private val timerViewModel: TimerViewModel by lazy { timerViewModels() }
+    private val sudokuStageViewModel: SudokuStageViewModel
+            by lazy { sudokuStageViewModels(getDifficulty()) }
+    private val timerLogViewModel: TimerLogViewModel
+            by lazy { timerLogViewModels() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding =
             DataBindingUtil.setContentView<ActivityPlayBinding>(this, R.layout.activity_play)
 
-        sudokuViewModel.matrixList.observe(this) {
+        sudokuStageViewModel.matrixList.observe(this) {
             dismissProgressIndicator()
             replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
         }
 
-        timerViewModel.time.observe(this) {
+        timerLogViewModel.time.observe(this) {
             binding.tvTimer.text = it
         }
 
         lifecycleScope.launch {
             withStarted {
                 showProgressIndicator()
-                sudokuViewModel.requestMatrix()
+                sudokuStageViewModel.requestMatrix()
             }
 
-            sudokuViewModel.sudokuStatusFlow.collect {
+            sudokuStageViewModel.statusFlow.collect {
                 when (it) {
-                    is SudokuViewModel.SudokuStatus.ChangedCell -> {
+                    is SudokuStatusViewModel.Status.ChangedCell -> {
                         showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
                     }
-                    SudokuViewModel.SudokuStatus.Completed -> onCompleteSudoku()
-                    is SudokuViewModel.SudokuStatus.OnStart -> onStartSudoku()
+                    SudokuStatusViewModel.Status.Completed -> onCompleteSudoku()
+                    is SudokuStatusViewModel.Status.OnStart -> onStartSudoku(it.stage)
                     else -> {}
                 }
             }
@@ -69,28 +72,34 @@ class PlayActivity : Activity() {
         binding.btnRetry.setupUIRetry()
     }
 
-    private fun onStartSudoku() {
+    private fun onStartSudoku(stage: Stage) {
         // 타이머 시작
-        timerViewModel.start()
+        timerLogViewModel.startWithRecord(stage)
     }
 
     private fun onCompleteSudoku() {
-        timerViewModel.takeIf { it.isRunning() }?.run { stop() }
+        timerLogViewModel.takeIf { it.isRunning() }?.run { stop() }
         val dlgBinding = LayoutCompleteBinding.inflate(LayoutInflater.from(this))
-        dlgBinding.tvRecord.text = timerViewModel.time.value
+        dlgBinding.tvRecord.text = timerLogViewModel.time.value
         MaterialAlertDialogBuilder(this)
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }
-            .setNeutralButton(R.string.show_replay) { _, _ -> }
+            .setNeutralButton(R.string.show_replay) { _, _ -> replay() }
             .setPositiveButton(R.string.retry) { _, _ -> retry() }
             .setCancelable(false)
             .show()
     }
 
+    private fun replay() {
+        replaceFragment(R.id.rootLayout, ReplayFragment.new())
+        timerLogViewModel.start()
+    }
+
     private fun retry() {
         showProgressIndicator()
-        timerViewModel.stop()
-        sudokuViewModel.loadStage(getLevel())
+        replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
+        timerLogViewModel.stop()
+        sudokuStageViewModel.loadStage(getLevel())
     }
 
     private fun ImageButton.setupUIRetry() {

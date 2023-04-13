@@ -11,8 +11,8 @@ import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
-import kr.co.hs.sudoku.viewmodel.SudokuViewModel
-import kr.co.hs.sudoku.viewmodel.TimerViewModel
+import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
 
 abstract class Activity : AppCompatActivity() {
     enum class Difficulty { BEGINNER, INTERMEDIATE, ADVANCED }
@@ -27,12 +27,12 @@ abstract class Activity : AppCompatActivity() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    private fun sudokuViewModels(repository: MatrixRepository<IntMatrix>): SudokuViewModel {
-        val viewModel: SudokuViewModel by viewModels { SudokuViewModel.Factory(repository) }
+    private fun sudokuStageViewModels(repository: MatrixRepository<IntMatrix>): SudokuStageViewModel {
+        val viewModel: SudokuStageViewModel by viewModels { SudokuStageViewModel.Factory(repository) }
         return viewModel
     }
 
-    protected fun sudokuViewModels(difficulty: Difficulty) = sudokuViewModels(
+    protected fun sudokuStageViewModels(difficulty: Difficulty) = sudokuStageViewModels(
         when (difficulty) {
             Difficulty.BEGINNER -> BeginnerMatrixRepository()
             Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
@@ -40,13 +40,13 @@ abstract class Activity : AppCompatActivity() {
         }
     )
 
-    private fun sudokuViewModels(): SudokuViewModel {
-        val viewModel: SudokuViewModel by viewModels()
+    private fun sudokuStageViewModels(): SudokuStageViewModel {
+        val viewModel: SudokuStageViewModel by viewModels()
         return viewModel
     }
 
-    protected fun timerViewModels(): TimerViewModel {
-        val viewModel: TimerViewModel by viewModels()
+    protected fun timerLogViewModels(): TimerLogViewModel {
+        val viewModel: TimerLogViewModel by viewModels()
         return viewModel
     }
 

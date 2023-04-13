@@ -14,7 +14,7 @@ class MutableStageImpl(
     MutableSudokuCellTableImpl(boxSize * boxCount, boxSize * boxCount, table),
     IntCoordinateCellEntity.ValueChangedListener {
 
-    private var valueChangedListener: IntCoordinateCellEntity.ValueChangedListener? = null
+    private val listenerSet = HashSet<IntCoordinateCellEntity.ValueChangedListener>()
 
     constructor(
         boxSize: Int,
@@ -107,14 +107,13 @@ class MutableStageImpl(
 
     override fun minValue() = 1
     override fun maxValue() = boxSize.toDouble().pow(2).toInt()
-    override fun setValueChangedListener(valueChangedListener: IntCoordinateCellEntity.ValueChangedListener?) {
-        if (valueChangedListener != null) {
-            this.table.flatten().forEach { it.valueChangedListener = this }
-            this.valueChangedListener = valueChangedListener
-        } else {
-            this.table.flatten().forEach { it.valueChangedListener = null }
-            this.valueChangedListener = null
-        }
+    override fun addValueChangedListener(valueChangedListener: IntCoordinateCellEntity.ValueChangedListener) {
+        this.table.flatten().forEach { it.valueChangedListener = this }
+        this.listenerSet.add(valueChangedListener)
+    }
+
+    override fun removeValueChangedListener(valueChangedListener: IntCoordinateCellEntity.ValueChangedListener) {
+        this.listenerSet.remove(valueChangedListener)
     }
 
     override fun getAvailable(row: Int, column: Int): List<Int> {
@@ -170,6 +169,7 @@ class MutableStageImpl(
      * ValueChangeListener
      */
     override fun onChanged(cell: IntCoordinateCellEntity) {
-        this.valueChangedListener?.onChanged(cell)
+        val list = this.listenerSet.toList()
+        list.forEach { it.onChanged(cell) }
     }
 }

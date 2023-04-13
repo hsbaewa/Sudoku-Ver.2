@@ -104,7 +104,7 @@ class LevelFragment : Fragment() {
      * @comment 선택된 스테이지 리턴
      * @return 선택된 스테이지 리턴
      **/
-    private fun getMatrix() = with(sudokuViewModels()) {
+    private fun getMatrix() = with(sudokuStageViewModels()) {
         matrixList.value?.get(getLevel())
     }
 

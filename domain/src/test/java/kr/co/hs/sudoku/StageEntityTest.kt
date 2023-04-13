@@ -25,7 +25,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
             }
         }
         val sudoku: MutableStage = MutableStageImpl(3, 3, table)
-        sudoku.setValueChangedListener(this)
+        sudoku.addValueChangedListener(this)
 
         assertEquals(81, sudoku.getEmptyCellCount())
         sudoku[1, 1] = 2
@@ -68,7 +68,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
     @Test
     fun testMutableSudokuStageMod2() {
         val sudoku: Stage = MutableStageImpl(2, 2)
-        sudoku.setValueChangedListener(this)
+        sudoku.addValueChangedListener(this)
         assertEquals(16, sudoku.getEmptyCellCount())
         assertEquals(0, sudoku.getDuplicatedCellCount())
 
