@@ -23,7 +23,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.viewmodel.SudokuViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
 
 class LevelActivity : Activity() {
     companion object {
@@ -36,8 +36,8 @@ class LevelActivity : Activity() {
 
     private val binding: ViewpagerSelectLevelBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.viewpager_select_level) }
-    private val viewModel: SudokuViewModel
-            by lazy { sudokuViewModels(getDifficulty()) }
+    private val viewModel: SudokuStageViewModel
+            by lazy { sudokuStageViewModels(getDifficulty()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

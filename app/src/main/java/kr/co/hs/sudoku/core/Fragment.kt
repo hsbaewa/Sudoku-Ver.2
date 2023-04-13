@@ -9,7 +9,9 @@ import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
+import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
+import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
 
 abstract class Fragment : androidx.fragment.app.Fragment() {
     //--------------------------------------------------------------------------------------------\\
@@ -22,13 +24,13 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    private fun sudokuViewModels(repository: MatrixRepository<IntMatrix>): SudokuViewModel {
-        val viewModel: SudokuViewModel
-                by activityViewModels { SudokuViewModel.Factory(repository) }
+    private fun sudokuStageViewModels(repository: MatrixRepository<IntMatrix>): SudokuStageViewModel {
+        val viewModel: SudokuStageViewModel
+                by activityViewModels { SudokuStageViewModel.Factory(repository) }
         return viewModel
     }
 
-    protected fun sudokuViewModels(difficulty: Activity.Difficulty) = sudokuViewModels(
+    protected fun sudokuStageViewModels(difficulty: Activity.Difficulty) = sudokuStageViewModels(
         when (difficulty) {
             Activity.Difficulty.BEGINNER -> BeginnerMatrixRepository()
             Activity.Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
@@ -36,14 +38,24 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
         }
     )
 
-    protected fun sudokuViewModels(): SudokuViewModel {
-        val viewModel: SudokuViewModel by activityViewModels()
+    protected fun sudokuStageViewModels(): SudokuStageViewModel {
+        val viewModel: SudokuStageViewModel by activityViewModels()
         return viewModel
     }
 
     protected fun gameSettingsViewModels(repository: GameSettingsRepository): GameSettingsViewModel {
         val viewModel: GameSettingsViewModel
                 by activityViewModels { GameSettingsViewModel.Factory(repository) }
+        return viewModel
+    }
+
+    protected fun sudokuStatusViewModels(): SudokuStatusViewModel {
+        val viewModel: SudokuStatusViewModel by activityViewModels()
+        return viewModel
+    }
+
+    protected fun timerLogViewModels(): TimerLogViewModel {
+        val viewModel: TimerLogViewModel by activityViewModels()
         return viewModel
     }
 

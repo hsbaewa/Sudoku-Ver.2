@@ -730,15 +730,15 @@ class SudokuBoardView : ViewGroup {
 
     //
     fun setCellValue(row: Int, column: Int, value: Int) =
-        with(findCellWithCoordinate(row, column)) {
-            text = value.takeIf { it > 0 }?.run { this.toString() }
+        findCellWithCoordinate(row, column)?.run {
+            text = value.takeIf { it > 0 }?.run { toString() }
         }
 
     private fun findCellWithCoordinate(row: Int, column: Int) =
         findViewWithTag<SudokuCellView>(row to column)
 
     fun setError(row: Int, column: Int, isError: Boolean) =
-        with(findCellWithCoordinate(row, column)) {
+        findCellWithCoordinate(row, column)?.run {
             setTextColor(
                 if (isError) {
                     numberTextErrorColorResId

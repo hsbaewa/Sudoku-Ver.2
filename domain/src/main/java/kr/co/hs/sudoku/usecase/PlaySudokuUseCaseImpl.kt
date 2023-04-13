@@ -12,7 +12,7 @@ class PlaySudokuUseCaseImpl(
 ) : PlaySudokuUseCase {
     override fun invoke(): Flow<IntCoordinateCellEntity> {
         return callbackFlow {
-            stage.setValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
+            stage.addValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
                 override fun onChanged(cell: IntCoordinateCellEntity) {
                     trySend(cell)
                 }

@@ -21,7 +21,8 @@ interface Stage : CellTable<Int>, SudokuStrategyRule {
         }
     }
 
-    fun setValueChangedListener(valueChangedListener: IntCoordinateCellEntity.ValueChangedListener?)
+    fun addValueChangedListener(valueChangedListener: IntCoordinateCellEntity.ValueChangedListener)
+    fun removeValueChangedListener(valueChangedListener: IntCoordinateCellEntity.ValueChangedListener)
 
     fun getAvailable(row: Int, column: Int): List<Int>
 }
