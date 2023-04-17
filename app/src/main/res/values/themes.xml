@@ -13,6 +13,8 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <!-- Customize your theme here. -->
         <item name="android:windowLightStatusBar">true</item>
+
+        <item name="bottomSheetDialogTheme">@style/Theme.HSSudoku2.BottomSheetDialog</item>
     </style>
 
     <style name="Theme.HSSudoku2.BottomNavigation" parent="Theme.HSSudoku2">
@@ -28,5 +30,14 @@
 
     <style name="Theme.HSSudoku2.BottomNavigation.TextAppearance" parent="TextAppearance.AppCompat">
         <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="Theme.HSSudoku2.BottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Theme.HSSudoku2.BottomSheet</item>
+        <item name="android:colorBackground">@color/white</item>
+    </style>
+
+    <style name="Theme.HSSudoku2.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="backgroundTint">@android:color/transparent</item>
     </style>
 </resources>

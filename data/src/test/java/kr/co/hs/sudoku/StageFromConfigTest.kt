@@ -12,7 +12,7 @@ import org.junit.Test
 import java.io.ByteArrayOutputStream
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RemoteSourceTest {
+class StageFromConfigTest {
 
     private lateinit var remoteConfig: FirebaseRemoteConfig
 

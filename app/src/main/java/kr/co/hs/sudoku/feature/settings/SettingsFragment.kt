@@ -2,26 +2,30 @@ package kr.co.hs.sudoku.feature.settings
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.*
 import androidx.preference.Preference
+import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.SwitchPreferenceCompat
 import coil.transform.CircleCropTransformation
+import com.google.android.gms.games.PlayGames
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.auth.FirebaseAuthMediatorImpl
 import kr.co.hs.sudoku.extension.CoilExt.loadIcon
-import kr.co.hs.sudoku.extension.firebase.FirebaseAuthExt.getCurrentUser
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
 import kr.co.hs.sudoku.core.PreferenceFragment
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.getDrawable
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
+import kr.co.hs.sudoku.feature.profile.ProfileDialog
 import kr.co.hs.sudoku.model.settings.GameSettingsEntity
+import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 
 class SettingsFragment : PreferenceFragment() {
@@ -35,84 +39,163 @@ class SettingsFragment : PreferenceFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            // 화면 진입 시 마다 currentUser 체크하여 표시
+        viewLifecycleOwner.lifecycleScope.launch(coroutineExceptionHandler) {
+            // 화면 진입 시 마다 currentUser 체크 하여 표시
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                getCurrentUser()?.run { onSignIn(this) }
+                showProgressIndicator()
+                withContext(Dispatchers.IO) {
+                    getFirebaseUser().takeIf { it != null }
+                        ?.run { getProfile() }
+                }?.run { onChangedProfile(this) }
+                dismissProgressIndicator()
             }
         }
 
-        gameSettingsViewModel.gameSettings.observe(viewLifecycleOwner) {
-            findEnabledHapticFeedbackPreference()?.isChecked = it.enabledHapticFeedback
-        }
+        findSignInPreference()?.onPreferenceClickListener = clickSignInCallback
+        findEditProfilePreference()?.onPreferenceClickListener = clickEditProfileCallback
+        findHapticFeedbackPreference()?.onPreferenceClickListener = clickSettingsHapticFeedback
+
+        // 게임 설정 관련 변경시 적용 하기 위한 observer
+        gameSettingsViewModel.gameSettings.observe(viewLifecycleOwner, gameSettingsChangedObserver)
+    }
+
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, t ->
+        dismissProgressIndicator()
+        showSnackBar(t.message.toString())
+    }
+
+    private suspend fun FirebaseUser.getProfile() = createFirebaseAuthMediator().run {
+        runCatching { getProfile(uid) }
+            .onFailure {
+                if (it is NullPointerException) {
+                    // 프로필 이 없는 경우 디폴트 값으로 채워 준다.
+                    val profile = toDomain()
+                    updateProfile(profile)
+                    onChangedProfile(profile)
+                }
+            }
+            .getOrNull()
     }
 
     /**
      * @author hsbaewa@gmail.com
-     * @since 2023/04/06
-     * @comment 로그인 된 사용자 표시
+     * @since 2023/04/15
+     * @comment 현재 로그인 된 firebase user
+     * @return FirebaseUser
      **/
-    fun onSignIn(user: FirebaseUser) = findSignInPreference()?.setupUISignIn(user)
+    private fun getFirebaseUser() = FirebaseAuth.getInstance().currentUser
+
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/16
+     * @comment 로그인 된 사용자 profile 이 변경 되었을 때 호출 됨
+     * @param profileEntity
+     **/
+    private fun onChangedProfile(profileEntity: ProfileEntity?) {
+        findSignInPreference()?.setupUISignInPreference(profileEntity)
+        findEditProfilePreference()?.setupUIEditProfile(profileEntity)
+    }
 
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/04
      * @comment 로그인 Preference 찾기
-     * @return Preference for signin
+     * @return Preference for sign in
      **/
     private fun findSignInPreference() =
         findPreference<Preference>(getString(R.string.preferences_key_sign_in))
 
-
-    private fun Preference.setupUISignIn(user: FirebaseUser) {
-        title = user.displayName
-        loadIcon(user.photoUrl) {
-            crossfade(true)
-            transformations(CircleCropTransformation())
+    private fun Preference.setupUISignInPreference(profileEntity: ProfileEntity?) {
+        profileEntity?.let {
+            title = it.displayName
+            summary = it.message
+            loadIcon(it.iconUrl) {
+                crossfade(true)
+                transformations(CircleCropTransformation())
+            }
+        } ?: kotlin.run {
+            title = getString(R.string.preferences_sign_in)
+            summary = null
+            icon = getDrawable(R.drawable.games_controller)
         }
     }
-
-    private val gameSettingsViewModel by lazy {
-        gameSettingsViewModels(GameSettingsRepositoryImpl(dataStore))
-    }
-
-    private fun findEnabledHapticFeedbackPreference() =
-        findPreference<SwitchPreferenceCompat>(getString(R.string.preferences_key_enabled_haptic_feedback))
 
     /**
      * @author hsbaewa@gmail.com
-     * @since 2023/04/06
-     * @comment 설정 아이템 클릭 이벤트
+     * @since 2023/04/14
+     * @comment 프로필 수정 설정 버튼
+     * @return 프로필 수정 Preference
      **/
-    override fun onPreferenceTreeClick(preference: Preference): Boolean {
-        return when (preference.key) {
-            getString(R.string.preferences_key_sign_in) -> onClickSignIn()
-            getString(R.string.preferences_key_enabled_haptic_feedback) -> {
-                val enabled = (preference as SwitchPreferenceCompat).isChecked
-                onClickEnableHapticFeedback(enabled)
-            }
-            else -> super.onPreferenceTreeClick(preference)
-        }
+    private fun findEditProfilePreference() =
+        findPreference<Preference>(getString(R.string.preferences_key_profile))
+
+    private fun Preference.setupUIEditProfile(profileEntity: ProfileEntity?) {
+        isVisible = profileEntity != null
     }
 
-    private fun onClickSignIn(): Boolean {
-        viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, t ->
-            showSnackBar(t.message.toString())
-            dismissProgressIndicator()
-        }
-        ) {
+    private val clickSignInCallback = OnPreferenceClickListener {
+        viewLifecycleOwner.lifecycleScope.launch(coroutineExceptionHandler) {
             showProgressIndicator()
-            val auth = withContext(Dispatchers.IO) { signIn() }
-            auth?.user?.run { onSignIn(this) }
+            with(createFirebaseAuthMediator()) {
+                withContext(Dispatchers.IO) {
+                    signIn()
+                }
+                    ?.run { getProfile() }
+                    ?.run { onChangedProfile(this) }
+            }
+
             dismissProgressIndicator()
         }
-        return true
+        return@OnPreferenceClickListener true
     }
 
-    private fun onClickEnableHapticFeedback(on: Boolean): Boolean {
-        gameSettingsViewModel.setGameSettings(GameSettingsEntity(enabledHapticFeedback = on))
-        return true
+
+    private val clickEditProfileCallback = OnPreferenceClickListener {
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            val profile = withContext(Dispatchers.IO) {
+                getFirebaseUser()?.getProfile()
+            }
+            profile?.let {
+                val onSubmit = { resultProfile: ProfileEntity ->
+                    updateProfile(resultProfile)
+                }
+                ProfileDialog(requireContext(), it, true, onSubmit).show()
+            }
+        }
+        return@OnPreferenceClickListener true
     }
+
+    private fun updateProfile(profileEntity: ProfileEntity) {
+        viewLifecycleOwner.lifecycleScope.launch(coroutineExceptionHandler) {
+            showProgressIndicator()
+
+            onChangedProfile(withContext(Dispatchers.IO) {
+                with(createFirebaseAuthMediator()) { updateProfile(profileEntity) }
+            })
+
+            dismissProgressIndicator()
+        }
+    }
+
+    private fun findHapticFeedbackPreference() =
+        findPreference<SwitchPreferenceCompat>(getString(R.string.preferences_key_enabled_haptic_feedback))
+
+    private val clickSettingsHapticFeedback = OnPreferenceClickListener {
+        val enabled = (it as SwitchPreferenceCompat).isChecked
+        gameSettingsViewModel.setGameSettings(GameSettingsEntity(enabledHapticFeedback = enabled))
+        return@OnPreferenceClickListener true
+    }
+
+    private val gameSettingsViewModel
+            by lazy { gameSettingsViewModels(GameSettingsRepositoryImpl(dataStore)) }
+
+    private val gameSettingsChangedObserver: Observer<GameSettingsEntity> =
+        Observer { findHapticFeedbackPreference()?.isChecked = it.enabledHapticFeedback }
+
+    private fun createFirebaseAuthMediator() = FirebaseAuthMediatorImpl(
+        FirebaseAuth.getInstance(),
+        PlayGames.getGamesSignInClient(activity),
+        getString(R.string.default_web_client_id)
+    )
 }

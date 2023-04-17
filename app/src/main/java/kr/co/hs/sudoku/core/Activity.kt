@@ -3,9 +3,6 @@ package kr.co.hs.sudoku.core
 import android.content.Intent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.games.PlayGames
-import com.google.firebase.auth.FirebaseAuth
-import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
@@ -89,23 +86,4 @@ abstract class Activity : AppCompatActivity() {
      * @return Intent
      **/
     fun Intent.putLevel(level: Int) = putExtra(EXTRA_LEVEL, level)
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/04
-     * @comment Games 계정과 Firebase 계정 마이그레이션, Games 계정이 로그인 되어 있는 경우 해당 Credential로 Firebase에 로그인 시킨다
-     **/
-    protected suspend fun syncAuthenticate() = createAuthenticateMediator().sync()
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/06
-     * @comment AuthenticateMediator 생성
-     * @return AuthenticateMediator
-     **/
-    private fun createAuthenticateMediator() = AuthenticateMediator(
-        PlayGames.getGamesSignInClient(this),
-        FirebaseAuth.getInstance(),
-        getString(R.string.default_web_client_id)
-    )
 }

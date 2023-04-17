@@ -24,7 +24,7 @@ import org.junit.Test
 import java.io.ByteArrayOutputStream
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class Test {
+class StageTest {
 
     lateinit var stageRemoteSource: StageRemoteSourceImpl
 
