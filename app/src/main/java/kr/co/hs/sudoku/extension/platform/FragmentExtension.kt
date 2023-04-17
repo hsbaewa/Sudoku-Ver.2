@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.extension.platform
 
+import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
@@ -37,4 +38,9 @@ object FragmentExtension {
     //--------------------------------------------------------------------------------------------\\
     val Fragment.dataStore: DataStore<Preferences>
         get() = requireContext().dataStore
+
+    //--------------------------------------------------------------------------------------------\\
+    //----------------------------------------- conv -------------------------------------------\\
+    //--------------------------------------------------------------------------------------------\\
+    fun Fragment.getDrawable(res: Int) = ContextCompat.getDrawable(requireContext(), res)
 }

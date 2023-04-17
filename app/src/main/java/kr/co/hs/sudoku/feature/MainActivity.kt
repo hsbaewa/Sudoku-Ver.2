@@ -6,11 +6,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.gms.games.PlayGames
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.auth.FirebaseAuthMediatorImpl
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
@@ -23,9 +26,7 @@ import kr.co.hs.sudoku.core.Activity
 class MainActivity : Activity() {
 
     private val binding: ActivityMainBinding
-            by lazy {
-                DataBindingUtil.setContentView(this, R.layout.activity_main)
-            }
+            by lazy { DataBindingUtil.setContentView(this, R.layout.activity_main) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,16 +43,10 @@ class MainActivity : Activity() {
         }
 
         // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
-        lifecycleScope.launch(CoroutineExceptionHandler { _, t ->
-            showSnackBar(t.message.toString())
-            dismissProgressIndicator()
-        }) {
+        lifecycleScope.launch(coroutineExceptionHandler) {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 showProgressIndicator()
-                val authResult = withContext(Dispatchers.IO) { syncAuthenticate() }
-                authResult?.user?.run {
-                    findSettingsFragment()?.onSignIn(this)
-                }
+                withContext(Dispatchers.IO) { doCheckAuthenticate() }
                 dismissProgressIndicator()
             }
         }
@@ -67,14 +62,32 @@ class MainActivity : Activity() {
         replaceFragment(R.id.tabContentLayout, fragment)
 
 
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/06
-     * @comment 메인화면에 존재하는 설정 Fragment 반환
-     * @return
-     **/
-    private fun findSettingsFragment() = with(supportFragmentManager) {
-        findFragmentByTag(SettingsFragment::class.java.simpleName) as? SettingsFragment
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, t ->
+        dismissProgressIndicator()
+        showSnackBar(t.message.toString())
     }
 
+    /**
+     * @author hsbaewa@gmail.com
+     * @since 2023/04/17
+     * @comment Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
+     **/
+    private suspend fun doCheckAuthenticate() = with(createAuthenticateMediator()) {
+        takeIf { it.needMigrationWithPlayGames() }
+            ?.run { migrationWithPlayGames() }
+            ?.run {
+                runCatching { getProfile(uid) }
+                    .onFailure {
+                        if (it is NullPointerException) {
+                            updateProfile(toDomain())
+                        }
+                    }
+            }
+    }
+
+    private fun createAuthenticateMediator() = FirebaseAuthMediatorImpl(
+        FirebaseAuth.getInstance(),
+        PlayGames.getGamesSignInClient(this),
+        getString(R.string.default_web_client_id)
+    )
 }

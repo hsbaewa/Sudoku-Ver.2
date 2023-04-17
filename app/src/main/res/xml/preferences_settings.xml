@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory android:title="@string/preferences_category_auth">
+    <PreferenceCategory android:title="@string/preferences_category_account">
         <Preference
             android:icon="@drawable/games_controller"
             android:key="@string/preferences_key_sign_in"
             android:title="@string/preferences_sign_in" />
+        <Preference
+            android:key="@string/preferences_key_profile"
+            android:title="@string/preferences_profile"
+            app:isPreferenceVisible="false" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences_category_game_settings">

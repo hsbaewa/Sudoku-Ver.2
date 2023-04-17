@@ -37,7 +37,7 @@ object ActivityExtension {
      * @comment Progress Indicator가 표시되고 있는지 여부
      * @return 표시여부 Boolean
      **/
-    fun Activity.isShowingProgressIndicator() =
+    private fun Activity.isShowingProgressIndicator() =
         getRootViewGroup().findProgressIndicator() != null
 
     /**
@@ -46,7 +46,7 @@ object ActivityExtension {
      * @comment Activity의 최상위 rootView 의 Group 리턴
      * @return ViewGroup
      **/
-    fun Activity.getRootViewGroup() = window.decorView.rootView as ViewGroup
+    private fun Activity.getRootViewGroup() = window.decorView.rootView as ViewGroup
 
     /**
      * @author hsbaewa@gmail.com
