@@ -2,11 +2,11 @@ package kr.co.hs.sudoku.feature.settings
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.SwitchPreferenceCompat
-import coil.transform.CircleCropTransformation
 import com.google.android.gms.games.PlayGames
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.auth.FirebaseAuthMediatorImpl
-import kr.co.hs.sudoku.extension.CoilExt.loadIcon
 import kr.co.hs.sudoku.core.PreferenceFragment
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
@@ -27,6 +26,8 @@ import kr.co.hs.sudoku.feature.profile.ProfileDialog
 import kr.co.hs.sudoku.model.settings.GameSettingsEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
+import kr.co.hs.sudoku.views.ProfilePreference
+import java.net.URL
 
 class SettingsFragment : PreferenceFragment() {
 
@@ -103,16 +104,14 @@ class SettingsFragment : PreferenceFragment() {
      * @return Preference for sign in
      **/
     private fun findSignInPreference() =
-        findPreference<Preference>(getString(R.string.preferences_key_sign_in))
+        findPreference<ProfilePreference>(getString(R.string.preferences_key_sign_in))
 
-    private fun Preference.setupUISignInPreference(profileEntity: ProfileEntity?) {
+    private fun ProfilePreference.setupUISignInPreference(profileEntity: ProfileEntity?) {
         profileEntity?.let {
             title = it.displayName
             summary = it.message
-            loadIcon(it.iconUrl) {
-                crossfade(true)
-                transformations(CircleCropTransformation())
-            }
+            val errorDrawable = ContextCompat.getDrawable(context, R.drawable.games_controller)
+            loadIcon(URL(it.iconUrl), errorDrawable)
         } ?: kotlin.run {
             title = getString(R.string.preferences_sign_in)
             summary = null

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/preferences_category_account">
-        <Preference
+        <kr.co.hs.sudoku.views.ProfilePreference
             android:icon="@drawable/games_controller"
             android:key="@string/preferences_key_sign_in"
             android:title="@string/preferences_sign_in" />
