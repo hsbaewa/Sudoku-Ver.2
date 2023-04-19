@@ -2,13 +2,11 @@ package kr.co.hs.sudoku.core
 
 import android.os.Bundle
 import androidx.fragment.app.activityViewModels
-import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
-import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
-import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
+import com.google.firebase.auth.FirebaseAuth
+import kr.co.hs.sudoku.di.Repositories
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
-import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
+import kr.co.hs.sudoku.viewmodel.RankingViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
 import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
@@ -24,20 +22,6 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    private fun sudokuStageViewModels(repository: MatrixRepository<IntMatrix>): SudokuStageViewModel {
-        val viewModel: SudokuStageViewModel
-                by activityViewModels { SudokuStageViewModel.Factory(repository) }
-        return viewModel
-    }
-
-    protected fun sudokuStageViewModels(difficulty: Activity.Difficulty) = sudokuStageViewModels(
-        when (difficulty) {
-            Activity.Difficulty.BEGINNER -> BeginnerMatrixRepository()
-            Activity.Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
-            Activity.Difficulty.ADVANCED -> AdvancedMatrixRepository()
-        }
-    )
-
     protected fun sudokuStageViewModels(): SudokuStageViewModel {
         val viewModel: SudokuStageViewModel by activityViewModels()
         return viewModel
@@ -56,6 +40,15 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
 
     protected fun timerLogViewModels(): TimerLogViewModel {
         val viewModel: TimerLogViewModel by activityViewModels()
+        return viewModel
+    }
+
+    protected fun challengeRankingViewModels(): RankingViewModel {
+        val factory = RankingViewModel.Factory(
+            Repositories.getChallengeRankingRepository(),
+            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        )
+        val viewModel: RankingViewModel by activityViewModels { factory }
         return viewModel
     }
 

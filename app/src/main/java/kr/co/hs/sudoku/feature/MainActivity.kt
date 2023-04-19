@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withStarted
 import com.google.android.gms.games.PlayGames
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -22,6 +23,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.feature.level.DifficultyFragment
 import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
+import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
 
 class MainActivity : Activity() {
 
@@ -37,6 +39,7 @@ class MainActivity : Activity() {
         binding.navigationBar.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.selectStage -> replaceTabFragment(DifficultyFragment.new())
+                R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.new())
                 R.id.settings -> replaceTabFragment(SettingsFragment.new())
             }
             return@setOnItemSelectedListener true
@@ -44,6 +47,11 @@ class MainActivity : Activity() {
 
         // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
         lifecycleScope.launch(coroutineExceptionHandler) {
+
+            withStarted {
+                challengeRankingViewModels().requestRanking()
+            }
+
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 showProgressIndicator()
                 withContext(Dispatchers.IO) { doCheckAuthenticate() }

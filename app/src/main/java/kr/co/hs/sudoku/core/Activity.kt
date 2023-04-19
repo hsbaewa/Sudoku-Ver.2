@@ -3,11 +3,14 @@ package kr.co.hs.sudoku.core
 import android.content.Intent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
+import kr.co.hs.sudoku.di.Repositories
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
+import kr.co.hs.sudoku.viewmodel.RankingViewModel
 import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
 
@@ -37,16 +40,19 @@ abstract class Activity : AppCompatActivity() {
         }
     )
 
-    private fun sudokuStageViewModels(): SudokuStageViewModel {
-        val viewModel: SudokuStageViewModel by viewModels()
-        return viewModel
-    }
-
     protected fun timerLogViewModels(): TimerLogViewModel {
         val viewModel: TimerLogViewModel by viewModels()
         return viewModel
     }
 
+    protected fun challengeRankingViewModels(): RankingViewModel {
+        val factory = RankingViewModel.Factory(
+            Repositories.getChallengeRankingRepository(),
+            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        )
+        val viewModel: RankingViewModel by viewModels { factory }
+        return viewModel
+    }
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- conv -------------------------------------------\\
