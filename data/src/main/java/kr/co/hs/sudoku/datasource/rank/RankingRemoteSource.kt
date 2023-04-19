@@ -6,5 +6,4 @@ interface RankingRemoteSource {
     suspend fun getRecords(): List<ClearTimeRecordModel>
     suspend fun addRecord(record: ClearTimeRecordModel): Boolean
     suspend fun getRecord(uid: String): ClearTimeRecordModel
-    suspend fun getRank(uid: String): Long
 }

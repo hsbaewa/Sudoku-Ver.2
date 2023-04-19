@@ -1,8 +1,8 @@
 package kr.co.hs.sudoku.mapper
 
+import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
-import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 
 object RecordMapper {
     fun ClearTimeRecordModel.toDomain() = RankerEntity(
@@ -10,7 +10,8 @@ object RecordMapper {
         displayName = name,
         message = message,
         iconUrl = iconUrl,
-        locale = LocaleEntityImpl(locale?.lang ?: "", locale?.region ?: ""),
+        locale = locale.toDomain(),
+        rank = rank,
         clearTime = clearTime
     )
 }

@@ -28,4 +28,6 @@ class ChallengeRankingRepository(challengeId: String) : RankingRepository {
         this?.lang ?: Locale.getDefault().language,
         this?.region ?: Locale.getDefault().country
     )
+
+    override suspend fun getRecord(uid: String) = remoteSource.getRecord(uid).toDomain()
 }

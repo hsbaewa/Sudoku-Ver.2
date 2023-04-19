@@ -16,6 +16,8 @@ class ChallengeRankingRemoteSourceImpl(challengeId: String) : RankingRemoteSourc
         .await()
         .documents.mapNotNull {
             it.toObject(ClearTimeRecordModel::class.java)
+        }.onEachIndexed { index, model ->
+            model.rank = index.toLong() + 1
         }
 
     private val rankingCollection = FirebaseFirestore.getInstance()
@@ -30,18 +32,15 @@ class ChallengeRankingRemoteSourceImpl(challengeId: String) : RankingRemoteSourc
         rankingCollection.document(record.uid).set(record, SetOptions.merge()).await().run { true }
 
     override suspend fun getRecord(uid: String) =
-        with(rankingCollection.document().get().await()) {
-            toObject(ClearTimeRecordModel::class.java)
-                ?: throw NullPointerException("cannot parse to ClearTimeRecordModel")
-        }
-
-    override suspend fun getRank(uid: String) = with(getRecord(uid)) {
-        rankingCollection
-            .orderBy("clearTime")
-            .whereLessThanOrEqualTo("clearTime", clearTime)
-            .count()
-            .get(AggregateSource.SERVER)
-            .await()
-            .count
-    }
+        rankingCollection.document(uid).get().await().toObject(ClearTimeRecordModel::class.java)
+            ?.apply {
+                rank = rankingCollection
+                    .orderBy("clearTime")
+                    .whereLessThan("clearTime", clearTime)
+                    .count()
+                    .get(AggregateSource.SERVER)
+                    .await()
+                    .count + 1
+            }
+            ?: throw NullPointerException("cannot parse to ClearTimeRecordModel")
 }

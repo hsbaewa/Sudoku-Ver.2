@@ -11,13 +11,7 @@ data class ClearTimeRecordModel(
     override val locale: LocaleModel?,
     val clearTime: Long
 ) : ProfileModel {
-    constructor() : this("", "", null, null, null, 0L)
-    constructor(profile: ProfileModel, clearTime: Long) : this(
-        profile.uid,
-        profile.name,
-        profile.message,
-        profile.iconUrl,
-        profile.locale,
-        clearTime
-    )
+    constructor() : this("", "", null, null, null, -1L)
+
+    var rank = -1L
 }
