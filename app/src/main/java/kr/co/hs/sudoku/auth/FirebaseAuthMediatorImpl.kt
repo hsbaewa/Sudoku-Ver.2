@@ -98,7 +98,7 @@ class FirebaseAuthMediatorImpl(
     private suspend fun FirebaseUser.updateFirebaseUser(profileEntity: ProfileEntity) =
         updateProfile(userProfileChangeRequest {
             this.displayName = profileEntity.displayName
-            this.photoUri = profileEntity.iconUrl.toUri()
+            this.photoUri = profileEntity.iconUrl?.toUri()
         }).await()
 
     /**

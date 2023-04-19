@@ -7,7 +7,7 @@ import kr.co.hs.sudoku.datasource.user.impl.ProfileRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
 import kr.co.hs.sudoku.model.user.LocaleModel
 import kr.co.hs.sudoku.model.user.ProfileEntity
-import kr.co.hs.sudoku.model.user.ProfileModel
+import kr.co.hs.sudoku.model.user.ProfileModelImpl
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 
 class ProfileRepositoryImpl(
@@ -35,7 +35,7 @@ class ProfileRepositoryImpl(
         dataSource.setProfile(data)
     }
 
-    private fun ProfileEntity.toData() = ProfileModel(
+    private fun ProfileEntity.toData() = ProfileModelImpl(
         uid = uid,
         name = displayName,
         message = message,

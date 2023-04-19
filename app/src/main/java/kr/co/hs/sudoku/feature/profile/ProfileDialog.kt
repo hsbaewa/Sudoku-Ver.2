@@ -7,6 +7,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -76,7 +77,7 @@ class ProfileDialog(
                     btnStatusMessage?.visibility = View.GONE
                     editStatusMessage.setVisibilityWithLayout(View.VISIBLE)
                     editStatusMessage.setText(message)
-                    editStatusMessage.setSelection(message.length)
+                    editStatusMessage.setSelection(message?.length ?: 0)
                 } else {
                     tvStatusMessage?.visibility = View.VISIBLE
                     btnStatusMessage?.visibility = if (editable) View.VISIBLE else View.GONE
@@ -96,11 +97,13 @@ class ProfileDialog(
         }
     }
 
-    private fun ImageView.setupUIPhoto(url: String) {
+    private fun ImageView.setupUIPhoto(url: String?) {
         visibility = View.VISIBLE
         load(url) {
             crossfade(true)
             transformations(CircleCropTransformation())
+            val errorIcon = ContextCompat.getDrawable(context, R.drawable.games_controller)
+            error(errorIcon)
         }
     }
 
@@ -120,7 +123,7 @@ class ProfileDialog(
     }
 
 
-    private fun TextView.setupUIStatusMessage(statusMessage: String) {
+    private fun TextView.setupUIStatusMessage(statusMessage: String?) {
         visibility = View.VISIBLE
         text = statusMessage
     }

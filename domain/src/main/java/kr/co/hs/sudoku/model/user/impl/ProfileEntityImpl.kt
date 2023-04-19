@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.model.user.impl
 
+import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 
 data class ProfileEntityImpl(
@@ -7,7 +8,7 @@ data class ProfileEntityImpl(
     override var displayName: String,
     override var message: String?,
     override var iconUrl: String?,
-    override var locale: LocaleEntityImpl?
+    override var locale: LocaleEntity?
 ) : ProfileEntity {
     constructor(uid: String, displayName: String) : this(uid, displayName, null, null, null)
 }
