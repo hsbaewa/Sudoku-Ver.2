@@ -2,13 +2,14 @@ package kr.co.hs.sudoku.model.rank
 
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
+import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 
 data class RankerEntity(
     override val uid: String,
     override var displayName: String,
     override var message: String?,
     override var iconUrl: String?,
-    override val locale: LocaleEntity?,
+    override var locale: LocaleEntity?,
     val clearTime: Long
 ) : ProfileEntity, Comparable<RankerEntity> {
     constructor(
@@ -34,4 +35,6 @@ data class RankerEntity(
     )
 
     override fun compareTo(other: RankerEntity) = clearTime.compareTo(other.clearTime)
+
+    fun toProfile(): ProfileEntity = ProfileEntityImpl(uid, displayName, message, iconUrl, locale)
 }
