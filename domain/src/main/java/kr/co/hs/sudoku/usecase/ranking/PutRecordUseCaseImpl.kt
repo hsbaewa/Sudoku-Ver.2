@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.usecase
+package kr.co.hs.sudoku.usecase.ranking
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
