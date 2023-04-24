@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.model.stage.impl
 
 import kr.co.hs.sudoku.model.stage.*
+import kr.co.hs.sudoku.model.stage.history.HistoryWriter
 import kotlin.math.pow
 
 class MutableStageImpl(
@@ -169,7 +170,17 @@ class MutableStageImpl(
      * ValueChangeListener
      */
     override fun onChanged(cell: IntCoordinateCellEntity) {
+        if (this::historyWriter.isInitialized) {
+            val value = if (cell.isEmpty()) null else cell.getValue()
+            historyWriter.push(cell.row, cell.column, value, isCompleted())
+        }
         val list = this.listenerSet.toList()
         list.forEach { it.onChanged(cell) }
     }
+
+    override fun startCaptureHistory(writer: HistoryWriter) {
+        this.historyWriter = writer
+    }
+
+    lateinit var historyWriter: HistoryWriter
 }

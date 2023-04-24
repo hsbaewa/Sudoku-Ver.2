@@ -13,6 +13,7 @@ import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.viewmodel.RankingViewModel
 import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
+import kr.co.hs.sudoku.viewmodel.RecordViewModel
 
 abstract class Activity : AppCompatActivity() {
     enum class Difficulty { BEGINNER, INTERMEDIATE, ADVANCED }
@@ -40,10 +41,6 @@ abstract class Activity : AppCompatActivity() {
         }
     )
 
-    protected fun timerLogViewModels(): TimerLogViewModel {
-        val viewModel: TimerLogViewModel by viewModels()
-        return viewModel
-    }
 
     protected fun challengeRankingViewModels(): RankingViewModel {
         val factory = RankingViewModel.Factory(
@@ -51,6 +48,11 @@ abstract class Activity : AppCompatActivity() {
             FirebaseAuth.getInstance().currentUser?.uid ?: ""
         )
         val viewModel: RankingViewModel by viewModels { factory }
+        return viewModel
+    }
+
+    protected fun recordViewModels(): RecordViewModel {
+        val viewModel: RecordViewModel by viewModels()
         return viewModel
     }
 

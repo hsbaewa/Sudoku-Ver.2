@@ -2,9 +2,11 @@ package kr.co.hs.sudoku.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
@@ -12,14 +14,24 @@ import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
 
 open class SudokuStatusViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListener {
-    fun initMatrix(matrix: IntMatrix) {
+    private fun initMatrix(matrix: IntMatrix) {
         viewModelScope.launch {
-            val sudoku = BuildSudokuUseCaseImpl(matrix).invoke().first()
-                .also { it.addValueChangedListener(this@SudokuStatusViewModel) }
-                .also { viewModelScope.launch { statusFlow.emit(Status.OnReady(it)) } }
-            this@SudokuStatusViewModel.sudoku = sudoku
+            val useCase = BuildSudokuUseCaseImpl(matrix)
+            useCase().first().bind()
         }
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    protected fun Stage.bind() {
+        addValueChangedListener(this@SudokuStatusViewModel)
+        this@SudokuStatusViewModel.sudoku = this
+        startingMatrix = CustomMatrix(this.toValueTable())
+        statusFlow.resetReplayCache()
+        viewModelScope.launch { statusFlow.emit(Status.OnReady(this@bind)) }
+    }
+
+    lateinit var startingMatrix: IntMatrix
+    fun backToStartingMatrix() = initMatrix(startingMatrix)
 
     /**
      * @author hsbaewa@gmail.com
@@ -31,11 +43,6 @@ open class SudokuStatusViewModel : ViewModel(), IntCoordinateCellEntity.ValueCha
     protected lateinit var sudoku: Stage
 
     override fun onChanged(cell: IntCoordinateCellEntity) {
-        viewModelScope.launch {
-            val value = if (cell.isEmpty()) null else cell.getValue()
-            statusFlow.emit(Status.ChangedCell(cell.row, cell.column, value))
-        }
-
         val errorCell = sudoku.getDuplicatedCells().toList().toHashSet()
         if (errorCell != lastErrorCell) {
             lastErrorCell.subtract(errorCell)
@@ -49,9 +56,13 @@ open class SudokuStatusViewModel : ViewModel(), IntCoordinateCellEntity.ValueCha
             lastErrorCell = errorCell
         }
 
-        sudoku.isCompleted()
-            .takeIf { it }
-            ?.run { viewModelScope.launch { statusFlow.emit(Status.Completed) } }
+        viewModelScope.launch {
+            val value = if (cell.isEmpty()) null else cell.getValue()
+            statusFlow.emit(Status.ChangedCell(cell.row, cell.column, value))
+            isCompleted().takeIf { it }?.run {
+                statusFlow.emit(Status.Completed)
+            }
+        }
     }
 
 
@@ -97,4 +108,8 @@ open class SudokuStatusViewModel : ViewModel(), IntCoordinateCellEntity.ValueCha
         ?.let {
             viewModelScope.launch { statusFlow.emit(Status.OnStart(stage = sudoku)) }
         }
+
+    fun isCompleted() = sudoku.isCompleted()
+
+    fun getStage() = sudoku
 }

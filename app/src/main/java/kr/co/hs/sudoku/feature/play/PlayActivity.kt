@@ -14,11 +14,12 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ActivityPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.hasFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
+import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
 
@@ -34,21 +35,25 @@ class PlayActivity : Activity() {
 
     private val sudokuStageViewModel: SudokuStageViewModel
             by lazy { sudokuStageViewModels(getDifficulty()) }
-    private val timerLogViewModel: TimerLogViewModel
-            by lazy { timerLogViewModels() }
+    private val recordViewModel: RecordViewModel by lazy { recordViewModels() }
 
+    lateinit var binding: ActivityPlayBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding =
-            DataBindingUtil.setContentView<ActivityPlayBinding>(this, R.layout.activity_play)
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_play)
 
         sudokuStageViewModel.matrixList.observe(this) {
             dismissProgressIndicator()
             replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
+            sudokuStageViewModel.loadStage(getLevel())
         }
 
-        timerLogViewModel.time.observe(this) {
-            binding.tvTimer.text = it
+        recordViewModel.timer.observe(this) {
+            setTime(it)
+            if (hasFragment(PlayFragment::class.java) && sudokuStageViewModel.isCompleted()) {
+                showCompleteRecordDialog(it)
+            }
         }
 
         lifecycleScope.launch {
@@ -59,10 +64,8 @@ class PlayActivity : Activity() {
 
             sudokuStageViewModel.statusFlow.collect {
                 when (it) {
-                    is SudokuStatusViewModel.Status.ChangedCell -> {
-                        showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
-                    }
-                    SudokuStatusViewModel.Status.Completed -> onCompleteSudoku()
+                    is SudokuStatusViewModel.Status.ChangedCell -> showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
+                    is SudokuStatusViewModel.Status.Completed -> recordViewModel.stopTimer()
                     is SudokuStatusViewModel.Status.OnStart -> onStartSudoku(it.stage)
                     else -> {}
                 }
@@ -72,16 +75,20 @@ class PlayActivity : Activity() {
         binding.btnRetry.setupUIRetry()
     }
 
-    private fun onStartSudoku(stage: Stage) {
-        // 타이머 시작
-        timerLogViewModel.startWithRecord(stage)
+    private fun setTime(formattedTime: String) {
+        binding.tvTimer.text = formattedTime
     }
 
-    private fun onCompleteSudoku() {
-        timerLogViewModel.takeIf { it.isRunning() }?.run { stop() }
-        val dlgBinding = LayoutCompleteBinding.inflate(LayoutInflater.from(this))
-        dlgBinding.tvRecord.text = timerLogViewModel.time.value
-        MaterialAlertDialogBuilder(this)
+    private fun onStartSudoku(stage: Stage) {
+        recordViewModel.startTimer()
+        recordViewModel.initCaptureTarget(stage)
+    }
+
+    private fun showCompleteRecordDialog(clearRecord: String) {
+        val dlgBinding =
+            LayoutCompleteBinding.inflate(LayoutInflater.from(this@PlayActivity))
+        dlgBinding.tvRecord.text = clearRecord
+        MaterialAlertDialogBuilder(this@PlayActivity)
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }
             .setNeutralButton(R.string.show_replay) { _, _ -> replay() }
@@ -92,14 +99,16 @@ class PlayActivity : Activity() {
 
     private fun replay() {
         replaceFragment(R.id.rootLayout, ReplayFragment.new())
-        timerLogViewModel.start()
+        sudokuStageViewModel.backToStartingMatrix()
+        recordViewModel.startTimer()
     }
 
     private fun retry() {
         showProgressIndicator()
         replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
-        timerLogViewModel.stop()
         sudokuStageViewModel.loadStage(getLevel())
+        recordViewModel.stopTimer()
+        recordViewModel.clearTime()
     }
 
     private fun ImageButton.setupUIRetry() {

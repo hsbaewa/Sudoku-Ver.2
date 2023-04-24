@@ -60,9 +60,6 @@ class SudokuStageViewModel(private val repository: MatrixRepository<IntMatrix>) 
             matrixList.value?.get(level).takeIf { it != null }
                 ?.let { AutoGenerateSudokuUseCase(it.boxSize, it.boxCount, it) }
                 ?.let { it().first() }
-        }
-            ?.also { sudoku = it }
-            ?.also { it.addValueChangedListener(this@SudokuStageViewModel) }
-            ?.also { viewModelScope.launch { statusFlow.emit(Status.OnReady(it)) } }
+        }?.bind()
     }
 }

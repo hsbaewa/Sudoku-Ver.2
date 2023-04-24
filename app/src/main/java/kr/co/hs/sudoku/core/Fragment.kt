@@ -9,7 +9,7 @@ import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import kr.co.hs.sudoku.viewmodel.RankingViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
-import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
+import kr.co.hs.sudoku.viewmodel.RecordViewModel
 
 abstract class Fragment : androidx.fragment.app.Fragment() {
     //--------------------------------------------------------------------------------------------\\
@@ -33,13 +33,8 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
         return viewModel
     }
 
-    protected fun sudokuStatusViewModels(): SudokuStatusViewModel {
-        val viewModel: SudokuStatusViewModel by activityViewModels()
-        return viewModel
-    }
-
-    protected fun timerLogViewModels(): TimerLogViewModel {
-        val viewModel: TimerLogViewModel by activityViewModels()
+    protected fun recordViewModels(): RecordViewModel {
+        val viewModel: RecordViewModel by activityViewModels()
         return viewModel
     }
 

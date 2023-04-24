@@ -184,5 +184,6 @@ object ActivityExtension {
             commit()
         }
 
-
+    fun <T : Fragment> AppCompatActivity.hasFragment(c: Class<T>) =
+        with(supportFragmentManager) { findFragmentByTag(c.simpleName) != null }
 }

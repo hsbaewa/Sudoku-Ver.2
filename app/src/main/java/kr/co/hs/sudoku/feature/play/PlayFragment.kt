@@ -46,7 +46,6 @@ class PlayFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             withStarted {
                 showProgressIndicator()
-                sudokuStageViewModel.loadStage(getLevel())
             }
             sudokuStageViewModel.statusFlow.collect {
                 when (it) {

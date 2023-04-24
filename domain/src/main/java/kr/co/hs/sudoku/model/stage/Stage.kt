@@ -1,5 +1,7 @@
 package kr.co.hs.sudoku.model.stage
 
+import kr.co.hs.sudoku.model.stage.history.HistoryWriter
+
 interface Stage : CellTable<Int>, SudokuStrategyRule {
     fun getBoxBoundedIn(cell: IntCoordinateCellEntity): SudokuBox
     fun getBox(row: Int, column: Int): SudokuBox
@@ -25,4 +27,6 @@ interface Stage : CellTable<Int>, SudokuStrategyRule {
     fun removeValueChangedListener(valueChangedListener: IntCoordinateCellEntity.ValueChangedListener)
 
     fun getAvailable(row: Int, column: Int): List<Int>
+
+    fun startCaptureHistory(writer: HistoryWriter)
 }
