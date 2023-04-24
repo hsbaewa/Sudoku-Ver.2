@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
-import kr.co.hs.sudoku.di.Repositories
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
@@ -27,7 +25,7 @@ abstract class Activity : AppCompatActivity() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    protected fun sudokuStageViewModels(): GamePlayViewModel {
+    protected fun gamePlayViewModels(): GamePlayViewModel {
         val viewModel: GamePlayViewModel by viewModels()
         return viewModel
     }
@@ -37,13 +35,8 @@ abstract class Activity : AppCompatActivity() {
         return viewModel
     }
 
-
-    protected fun challengeRankingViewModels(): RankingViewModel {
-        val factory = RankingViewModel.Factory(
-            Repositories.getChallengeRankingRepository(),
-            FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        )
-        val viewModel: RankingViewModel by viewModels { factory }
+    protected fun challengeRankingViewModels(): ChallengeViewModel {
+        val viewModel: ChallengeViewModel by viewModels()
         return viewModel
     }
 
@@ -60,6 +53,7 @@ abstract class Activity : AppCompatActivity() {
         private const val EXTRA_MATRIX = "kr.co.hs.sudoku.EXTRA_MATRIX"
         private const val EXTRA_DIFFICULTY = "kr.co.hs.sudoku.EXTRA_DIFFICULTY"
         private const val EXTRA_CHALLENGE_ID = "kr.co.hs.sudoku.EXTRA_CHALLENGE_ID"
+        private const val EXTRA_USER_ID = "kr.co.hs.sudoku.EXTRA_USER_ID"
     }
 
     /**
@@ -78,6 +72,8 @@ abstract class Activity : AppCompatActivity() {
 
     fun Intent.putChallengeId(challengeId: String) = putExtra(EXTRA_CHALLENGE_ID, challengeId)
 
+    fun getExtraForChallengeId() = intent.getStringExtra(EXTRA_CHALLENGE_ID)
+
     fun Intent.putSudokuMatrix(matrix: IntMatrix?) = matrix
         .takeIf { it != null }
         ?.run { putExtra(EXTRA_MATRIX, MatrixParcelModel(this)) }
@@ -87,4 +83,7 @@ abstract class Activity : AppCompatActivity() {
     } else {
         intent.getParcelableExtra(EXTRA_MATRIX)
     }?.matrix?.run { CustomMatrix(this) }
+
+    fun Intent.putUserId(uid: String) = putExtra(EXTRA_USER_ID, uid)
+    fun getUserId() = intent.getStringExtra(EXTRA_USER_ID)
 }

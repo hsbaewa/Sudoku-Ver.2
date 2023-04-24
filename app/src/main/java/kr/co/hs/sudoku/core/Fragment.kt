@@ -2,13 +2,10 @@ package kr.co.hs.sudoku.core
 
 import android.os.Bundle
 import androidx.fragment.app.activityViewModels
-import com.google.firebase.auth.FirebaseAuth
-import kr.co.hs.sudoku.di.Repositories
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
-import kr.co.hs.sudoku.viewmodel.RankingViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
+import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
+import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
 
@@ -44,12 +41,8 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
         return viewModel
     }
 
-    protected fun challengeRankingViewModels(): RankingViewModel {
-        val factory = RankingViewModel.Factory(
-            Repositories.getChallengeRankingRepository(),
-            FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        )
-        val viewModel: RankingViewModel by activityViewModels { factory }
+    protected fun challengeLeaderboardViewModels(): ChallengeViewModel {
+        val viewModel: ChallengeViewModel by activityViewModels()
         return viewModel
     }
 

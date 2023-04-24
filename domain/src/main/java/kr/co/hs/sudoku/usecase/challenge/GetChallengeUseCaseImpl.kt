@@ -7,4 +7,5 @@ class GetChallengeUseCaseImpl(
     private val repository: ChallengeReaderRepository
 ) : GetChallengeUseCase {
     override fun invoke() = flow { emit(repository.getLatestChallenge()) }
+    override fun invoke(id: String) = flow { emit(repository.getChallenge(id)) }
 }

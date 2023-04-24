@@ -5,4 +5,5 @@ import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
 interface GetChallengeUseCase {
     operator fun invoke(): Flow<ChallengeEntity>
+    operator fun invoke(id: String): Flow<ChallengeEntity>
 }

@@ -11,7 +11,7 @@ object RecordMapper {
         message = message,
         iconUrl = iconUrl,
         locale = locale.toDomain(),
-        rank = rank,
+        rank = rank ?: -1L,
         clearTime = clearTime
     )
 }

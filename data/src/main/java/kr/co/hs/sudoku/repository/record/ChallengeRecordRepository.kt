@@ -1,20 +1,23 @@
-package kr.co.hs.sudoku.repository
+package kr.co.hs.sudoku.repository.record
 
-import kr.co.hs.sudoku.datasource.rank.impl.ChallengeRankingRemoteSourceImpl
+import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.RecordMapper.toDomain
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.LocaleModel
-import kr.co.hs.sudoku.repository.rank.RankingRepository
 import java.util.Locale
 
-class ChallengeRankingRepository(challengeId: String) : RankingRepository {
+class ChallengeRecordRepository(val challengeId: String) : RecordRepository {
 
-    private val remoteSource = ChallengeRankingRemoteSourceImpl(challengeId)
+    private val remoteSource = ChallengeRecordRemoteSourceImpl()
 
-    override suspend fun getRanking() = remoteSource.getRecords().map { it.toDomain() }
-    override suspend fun putRecord(entity: RankerEntity) = remoteSource.addRecord(entity.toData())
+    override suspend fun getRecords(limit: Int) =
+        remoteSource.getRecords(challengeId, limit).map { it.toDomain() }
+
+    override suspend fun putRecord(entity: RankerEntity) =
+        remoteSource.addRecord(challengeId, entity.toData())
+
     private fun RankerEntity.toData() = ClearTimeRecordModel(
         uid = uid,
         name = displayName,
@@ -29,5 +32,6 @@ class ChallengeRankingRepository(challengeId: String) : RankingRepository {
         this?.region ?: Locale.getDefault().country
     )
 
-    override suspend fun getRecord(uid: String) = remoteSource.getRecord(uid).toDomain()
+    override suspend fun getRecord(uid: String) =
+        remoteSource.getRecord(challengeId, uid).toDomain()
 }

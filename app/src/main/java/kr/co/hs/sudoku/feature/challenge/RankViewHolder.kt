@@ -14,7 +14,10 @@ open class RankViewHolder(val binding: LayoutItemRankBinding) : ViewHolder(bindi
         binding.layoutUser.tvDisplayName.text = rankerEntity.getFormattedName()
 
         rankerEntity.iconUrl?.run {
+            binding.layoutUser.ivPhoto.visibility = View.VISIBLE
             binding.layoutUser.ivPhoto.load(this)
+        } ?: kotlin.run {
+            binding.layoutUser.ivPhoto.visibility = View.GONE
         }
 
         binding.layoutUser.tvStatusMessage.run {
@@ -26,7 +29,12 @@ open class RankViewHolder(val binding: LayoutItemRankBinding) : ViewHolder(bindi
                 ?: kotlin.run { visibility = View.GONE }
         }
 
-        binding.tvClearTime.text = rankerEntity.getFormattedClearTime()
+        rankerEntity.clearTime.takeIf { it >= 0 }
+            ?.run {
+                binding.tvClearTime.visibility = View.VISIBLE
+                binding.tvClearTime.text = rankerEntity.getFormattedClearTime()
+            }
+            ?: kotlin.run { binding.tvClearTime.visibility = View.GONE }
     }
 
     private fun RankerEntity.getFormattedRank() = when (rank) {
@@ -42,10 +50,8 @@ open class RankViewHolder(val binding: LayoutItemRankBinding) : ViewHolder(bindi
     private fun RankerEntity.getFormattedMessage() = message
 
     private fun RankerEntity.getFormattedClearTime() =
-        itemView.context.getString(
-            R.string.record_format,
-            clearTime.toTimerFormat()
-        )
+        clearTime.takeIf { it >= 0 }
+            ?.run { itemView.context.getString(R.string.record_format, toTimerFormat()) }
 
     fun onRecycled() {
         binding.layoutUser.ivPhoto.dispose()

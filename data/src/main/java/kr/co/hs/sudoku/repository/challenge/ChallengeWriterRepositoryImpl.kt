@@ -1,17 +1,14 @@
-package kr.co.hs.sudoku.repository
+package kr.co.hs.sudoku.repository.challenge
 
-import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSourceImpl
-import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
+import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 
-class ChallengeRepositoryImpl : ChallengeRepository {
-
+class ChallengeWriterRepositoryImpl(
+    private val remoteSource: ChallengeRemoteSource
+) : ChallengeWriterRepository {
     override suspend fun createChallenge(entity: ChallengeEntity) =
         remoteSource.createChallenge(entity.toData())
-
-    private val remoteSource = ChallengeRemoteSourceImpl()
 
     private fun ChallengeEntity.toData() = ChallengeModel(
         boxSize = matrix.boxSize,
@@ -27,11 +24,4 @@ class ChallengeRepositoryImpl : ChallengeRepository {
             ?.run { remoteSource.removeChallenge(this) }
             ?: false
 
-    override suspend fun getChallenge(challengeId: String) =
-        remoteSource.getChallenge(challengeId).toDomain()
-
-    override suspend fun getLatestChallenge() =
-        remoteSource.getLatestChallenge().toDomain()
-
-    override suspend fun getChallengeIds() = remoteSource.getChallengeIds()
 }

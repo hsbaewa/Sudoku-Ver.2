@@ -1,8 +1,11 @@
 package kr.co.hs.sudoku.model.record
 
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 import kr.co.hs.sudoku.model.user.LocaleModel
 import kr.co.hs.sudoku.model.user.ProfileModel
 
+@IgnoreExtraProperties
 data class ClearTimeRecordModel(
     override val uid: String,
     override val name: String,
@@ -13,5 +16,6 @@ data class ClearTimeRecordModel(
 ) : ProfileModel {
     constructor() : this("", "", null, null, null, -1L)
 
-    var rank = -1L
+    @get:Exclude
+    var rank: Long? = null
 }

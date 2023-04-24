@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.withStarted
 import com.google.android.gms.games.PlayGames
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -47,10 +46,6 @@ class MainActivity : Activity() {
 
         // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
         lifecycleScope.launch(coroutineExceptionHandler) {
-
-            withStarted {
-                challengeRankingViewModels().requestRanking()
-            }
 
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 showProgressIndicator()

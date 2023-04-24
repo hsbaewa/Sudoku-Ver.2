@@ -26,8 +26,7 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
         sudoku.bind()
     }
 
-
-    private fun setSudokuMatrix(matrix: IntMatrix) {
+    fun setSudokuMatrix(matrix: IntMatrix) {
         viewModelScope.launch {
             val useCase = BuildSudokuUseCaseImpl(matrix)
             useCase().first().bind()

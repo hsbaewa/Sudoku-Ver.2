@@ -15,12 +15,32 @@
             android:fontFamily="@font/goreyong_ddalgi"
             android:text="@string/challenge_title"
             android:textSize="25sp"
-            app:layout_constraintBottom_toTopOf="@id/cardLeaderBoard"
+            app:layout_constraintBottom_toTopOf="@id/sudokuBoard"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="wrap"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_default="wrap" />
+
+        <kr.co.hs.sudoku.views.SudokuBoardView
+            android:id="@+id/sudokuBoard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="15dp"
+            android:visibility="gone"
+            app:accentColor="@color/white"
+            app:borderColor="@color/gray_600"
+            app:disabledColor="@color/gray_400"
+            app:layout_constrainedHeight="true"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toTopOf="@id/cardLeaderBoard"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvChallengeTitle"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.6" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardLeaderBoard"
@@ -37,7 +57,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="spread"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvChallengeTitle"
+            app:layout_constraintTop_toBottomOf="@id/sudokuBoard"
             app:layout_constraintWidth_default="spread"
             app:strokeColor="@color/gray_500"
             app:strokeWidth="3dp">
@@ -94,6 +114,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
             android:text="@string/start"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="percent"

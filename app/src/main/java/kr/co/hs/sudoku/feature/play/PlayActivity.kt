@@ -31,28 +31,14 @@ class PlayActivity : Activity() {
     }
 
     private val gamePlayViewModel: GamePlayViewModel
-            by lazy { sudokuStageViewModels() }
+            by lazy { gamePlayViewModels() }
     private val recordViewModel: RecordViewModel
             by lazy { recordViewModels() }
 
     lateinit var binding: ActivityPlayBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_play)
-
-        sudokuStageViewModel.matrixList.observe(this) {
-            dismissProgressIndicator()
-            replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
-            sudokuStageViewModel.loadStage(getLevel())
-        }
-
-        recordViewModel.timer.observe(this) {
-            setTime(it)
-            if (hasFragment(PlayFragment::class.java) && sudokuStageViewModel.isCompleted()) {
-                showCompleteRecordDialog(it)
-            }
-        }
 
         lifecycleScope.launch {
             withStarted {
@@ -66,6 +52,13 @@ class PlayActivity : Activity() {
                     is GamePlayViewModel.Status.OnStart -> onStartSudoku(it.stage)
                     else -> {}
                 }
+            }
+        }
+
+        recordViewModel.timer.observe(this) {
+            setTime(it)
+            if (hasFragment(PlayFragment::class.java) && gamePlayViewModel.isCompleted()) {
+                showCompleteRecordDialog(it)
             }
         }
 
@@ -110,9 +103,7 @@ class PlayActivity : Activity() {
     }
 
     private fun retry() {
-        showProgressIndicator()
-        replaceFragment(R.id.rootLayout, PlayFragment.new(getLevel()))
-        sudokuStageViewModel.loadStage(getLevel())
+        initMatrix()
         recordViewModel.stopTimer()
         recordViewModel.clearTime()
     }

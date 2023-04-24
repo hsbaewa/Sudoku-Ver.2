@@ -69,7 +69,7 @@ class RecordViewModel : ViewModel() {
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- Cell History ---------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
-    private fun lastHistoryTime() = historyWriter.toHistoryList()
+    fun lastHistoryTime() = historyWriter.toHistoryList()
         .takeIf { it.isNotEmpty() }
         ?.run { last().time }
         ?: -1

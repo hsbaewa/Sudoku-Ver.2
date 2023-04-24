@@ -7,14 +7,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.PlayGamesAuthProvider
 import com.google.firebase.auth.ktx.userProfileChangeRequest
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.tasks.await
-import kr.co.hs.sudoku.di.UseCase
-import kr.co.hs.sudoku.di.UseCase.setProfile
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
+import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
+import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
+import kr.co.hs.sudoku.usecase.user.SetProfileUseCase
 import java.util.*
 
 class FirebaseAuthMediatorImpl(
@@ -86,14 +86,18 @@ class FirebaseAuthMediatorImpl(
     private suspend fun signInWithCredential(credential: AuthCredential) =
         firebaseAuth.signInWithCredential(credential).await()
 
-    override suspend fun getProfile(uid: String) = UseCase.getProfile(uid).last()
+    override suspend fun getProfile(uid: String) =
+        GetProfileUseCase(ProfileRepositoryImpl()).invoke(uid).last()
 
     override suspend fun updateProfile(profileEntity: ProfileEntity) = firebaseAuth.currentUser
         ?.run {
             updateFirebaseUser(profileEntity)
-            setProfile(profileEntity).collect()
+            setProfile(profileEntity)
             profileEntity
         }
+
+    private suspend fun setProfile(profileEntity: ProfileEntity) =
+        SetProfileUseCase(ProfileRepositoryImpl()).invoke(profileEntity).last()
 
     private suspend fun FirebaseUser.updateFirebaseUser(profileEntity: ProfileEntity) =
         updateProfile(userProfileChangeRequest {

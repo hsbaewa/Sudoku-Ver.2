@@ -1,9 +1,10 @@
-package kr.co.hs.sudoku.datasource.challenge
+package kr.co.hs.sudoku.datasource.challenge.impl
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
+import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
 import kotlin.reflect.full.memberProperties
 
