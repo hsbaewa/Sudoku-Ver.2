@@ -10,6 +10,7 @@ import kr.co.hs.sudoku.viewmodel.RankingViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
 import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
+import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
 
 abstract class Fragment : androidx.fragment.app.Fragment() {
     //--------------------------------------------------------------------------------------------\\
@@ -22,8 +23,13 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    protected fun sudokuStageViewModels(): SudokuStageViewModel {
-        val viewModel: SudokuStageViewModel by activityViewModels()
+    protected fun sudokuStageViewModels(): GamePlayViewModel {
+        val viewModel: GamePlayViewModel by activityViewModels()
+        return viewModel
+    }
+
+    protected fun singlePlayDifficultyViewModels(): SinglePlayDifficultyViewModel {
+        val viewModel: SinglePlayDifficultyViewModel by activityViewModels()
         return viewModel
     }
 

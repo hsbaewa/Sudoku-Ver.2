@@ -1,20 +1,33 @@
 package kr.co.hs.sudoku.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
 
-open class SudokuStatusViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListener {
-    private fun initMatrix(matrix: IntMatrix) {
+class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListener {
+
+    fun buildSudokuMatrix(matrix: IntMatrix) = viewModelScope.launch {
+        val sudoku = withContext(Dispatchers.IO) {
+            val useCase = AutoGenerateSudokuUseCase(matrix.boxSize, matrix.boxCount, matrix)
+            useCase().last()
+        }
+        sudoku.bind()
+    }
+
+
+    private fun setSudokuMatrix(matrix: IntMatrix) {
         viewModelScope.launch {
             val useCase = BuildSudokuUseCaseImpl(matrix)
             useCase().first().bind()
@@ -22,16 +35,16 @@ open class SudokuStatusViewModel : ViewModel(), IntCoordinateCellEntity.ValueCha
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    protected fun Stage.bind() {
-        addValueChangedListener(this@SudokuStatusViewModel)
-        this@SudokuStatusViewModel.sudoku = this
+    private fun Stage.bind() {
+        addValueChangedListener(this@GamePlayViewModel)
+        this@GamePlayViewModel.sudoku = this
         startingMatrix = CustomMatrix(this.toValueTable())
         statusFlow.resetReplayCache()
         viewModelScope.launch { statusFlow.emit(Status.OnReady(this@bind)) }
     }
 
     lateinit var startingMatrix: IntMatrix
-    fun backToStartingMatrix() = initMatrix(startingMatrix)
+    fun backToStartingMatrix() = setSudokuMatrix(startingMatrix)
 
     /**
      * @author hsbaewa@gmail.com
@@ -101,7 +114,7 @@ open class SudokuStatusViewModel : ViewModel(), IntCoordinateCellEntity.ValueCha
 
     override fun onCleared() {
         super.onCleared()
-        takeIf { this::sudoku.isInitialized }?.run { sudoku.removeValueChangedListener(this@SudokuStatusViewModel) }
+        takeIf { this::sudoku.isInitialized }?.run { sudoku.removeValueChangedListener(this@GamePlayViewModel) }
     }
 
     fun start() = takeIf { this::sudoku.isInitialized }

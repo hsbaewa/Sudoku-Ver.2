@@ -14,8 +14,7 @@ import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.model.stage.history.HistoryItem
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
+import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.views.SudokuBoardView
 
 class ReplayFragment : Fragment() {
@@ -39,14 +38,14 @@ class ReplayFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             withStarted {
-                binding.sudokuBoard.setupUIForStart(sudokuStageViewModel.getStage())
+                binding.sudokuBoard.setupUIForStart(gamePlayViewModel.getStage())
                 recordViewModel.startLog()
             }
-            sudokuStageViewModel.statusFlow.collect {
+            gamePlayViewModel.statusFlow.collect {
                 when (it) {
-                    is SudokuStatusViewModel.Status.ChangedCell -> it.onChangedCell()
-                    is SudokuStatusViewModel.Status.ToCorrect -> it.onToCorrect()
-                    is SudokuStatusViewModel.Status.ToError -> it.onToError()
+                    is GamePlayViewModel.Status.ChangedCell -> it.onChangedCell()
+                    is GamePlayViewModel.Status.ToCorrect -> it.onToCorrect()
+                    is GamePlayViewModel.Status.ToError -> it.onToError()
                     else -> {}
                 }
             }
@@ -62,7 +61,7 @@ class ReplayFragment : Fragment() {
         }
     }
 
-    private val sudokuStageViewModel: SudokuStageViewModel by lazy { sudokuStageViewModels() }
+    private val gamePlayViewModel: GamePlayViewModel by lazy { sudokuStageViewModels() }
 
 
     private fun SudokuBoardView.setupUIForStart(stage: Stage) {
@@ -89,7 +88,7 @@ class ReplayFragment : Fragment() {
         }
     }
 
-    private fun SudokuStatusViewModel.Status.ChangedCell.onChangedCell() =
+    private fun GamePlayViewModel.Status.ChangedCell.onChangedCell() =
         binding.sudokuBoard.setCellValue(row, column, value ?: 0)
 
 
@@ -98,7 +97,7 @@ class ReplayFragment : Fragment() {
      * @since 2023/04/10
      * @comment 에러 셀 해제
      **/
-    private fun SudokuStatusViewModel.Status.ToCorrect.onToCorrect() =
+    private fun GamePlayViewModel.Status.ToCorrect.onToCorrect() =
         set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
             .forEach { binding.sudokuBoard.setError(it.first, it.second, false) }
 
@@ -108,13 +107,13 @@ class ReplayFragment : Fragment() {
      * @since 2023/04/10
      * @comment 에러 셀로 변환
      **/
-    private fun SudokuStatusViewModel.Status.ToError.onToError() =
+    private fun GamePlayViewModel.Status.ToError.onToError() =
         set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
             .forEach { binding.sudokuBoard.setError(it.first, it.second, true) }
 
     private val recordViewModel: RecordViewModel by lazy { recordViewModels() }
 
     private fun setCellValue(row: Int, column: Int, value: Int) {
-        sudokuStageViewModel[row, column] = value
+        gamePlayViewModel[row, column] = value
     }
 }

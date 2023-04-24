@@ -13,29 +13,27 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ActivityPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.hasFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
+import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
+import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 
 class PlayActivity : Activity() {
     companion object {
-        fun Activity.startPlayActivity(difficulty: Difficulty, level: Int) =
+        fun Activity.startPlayActivity(matrix: IntMatrix?) =
             startActivity(
                 Intent(this, PlayActivity::class.java)
-                    .putDifficulty(difficulty)
-                    .putLevel(level)
+                    .putSudokuMatrix(matrix)
             )
     }
 
-    private val sudokuStageViewModel: SudokuStageViewModel
-            by lazy { sudokuStageViewModels(getDifficulty()) }
-    private val recordViewModel: RecordViewModel by lazy { recordViewModels() }
+    private val gamePlayViewModel: GamePlayViewModel
+            by lazy { sudokuStageViewModels() }
+    private val recordViewModel: RecordViewModel
+            by lazy { recordViewModels() }
 
     lateinit var binding: ActivityPlayBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,21 +56,29 @@ class PlayActivity : Activity() {
 
         lifecycleScope.launch {
             withStarted {
-                showProgressIndicator()
-                sudokuStageViewModel.requestMatrix()
+                initMatrix()
             }
 
-            sudokuStageViewModel.statusFlow.collect {
+            gamePlayViewModel.statusFlow.collect {
                 when (it) {
-                    is SudokuStatusViewModel.Status.ChangedCell -> showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
-                    is SudokuStatusViewModel.Status.Completed -> recordViewModel.stopTimer()
-                    is SudokuStatusViewModel.Status.OnStart -> onStartSudoku(it.stage)
+                    is GamePlayViewModel.Status.ChangedCell -> showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
+                    is GamePlayViewModel.Status.Completed -> recordViewModel.stopTimer()
+                    is GamePlayViewModel.Status.OnStart -> onStartSudoku(it.stage)
                     else -> {}
                 }
             }
         }
 
         binding.btnRetry.setupUIRetry()
+    }
+
+    private fun initMatrix() {
+        getSudokuMatrix()
+            .takeIf { it != null }
+            ?.run {
+                replaceFragment(R.id.rootLayout, PlayFragment.new())
+                gamePlayViewModel.buildSudokuMatrix(this)
+            }
     }
 
     private fun setTime(formattedTime: String) {
@@ -99,7 +105,7 @@ class PlayActivity : Activity() {
 
     private fun replay() {
         replaceFragment(R.id.rootLayout, ReplayFragment.new())
-        sudokuStageViewModel.backToStartingMatrix()
+        gamePlayViewModel.backToStartingMatrix()
         recordViewModel.startTimer()
     }
 
