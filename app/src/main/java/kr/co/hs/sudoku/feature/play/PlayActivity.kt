@@ -18,6 +18,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.repository.timer.TimerImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 
@@ -79,6 +80,7 @@ class PlayActivity : Activity() {
     }
 
     private fun onStartSudoku(stage: Stage) {
+        recordViewModel.setTimer(TimerImpl())
         recordViewModel.startTimer()
         recordViewModel.initCaptureTarget(stage)
     }

@@ -15,7 +15,6 @@ import kr.co.hs.sudoku.model.stage.history.HistoryItem
 import kr.co.hs.sudoku.model.stage.history.HistoryWriter
 import kr.co.hs.sudoku.model.stage.history.impl.HistoryWriterImpl
 import kr.co.hs.sudoku.repository.timer.Timer
-import kr.co.hs.sudoku.repository.timer.TimerImpl
 import kr.co.hs.sudoku.usecase.timelog.HistoryUseCase
 import kr.co.hs.sudoku.usecase.timelog.HistoryUseCaseImpl
 import kr.co.hs.sudoku.usecase.timelog.TimerUseCase
@@ -26,7 +25,12 @@ class RecordViewModel : ViewModel() {
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- 타이머 기능 ------------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
-    private val timerCore: Timer = TimerImpl()
+    fun setTimer(timer: Timer) {
+        this.timerCore = timer
+        this.historyWriter = HistoryWriterImpl(timer)
+    }
+
+    private lateinit var timerCore: Timer
 
     fun startTimer() = viewModelScope.launch {
         with(timerCore) {
@@ -74,12 +78,12 @@ class RecordViewModel : ViewModel() {
         ?.run { last().time }
         ?: -1
 
+    private lateinit var historyWriter: HistoryWriter
+
     fun initCaptureTarget(stage: Stage) {
         historyWriter.clearAllHistory()
         stage.startCaptureHistory(historyWriter)
     }
-
-    private val historyWriter: HistoryWriter = HistoryWriterImpl(timerCore)
 
     fun startLog() = viewModelScope.launch {
         val historyUseCase: HistoryUseCase = HistoryUseCaseImpl(timerCore)

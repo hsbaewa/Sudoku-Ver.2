@@ -9,7 +9,7 @@ data class RankerEntity(
     override var message: String?,
     override var iconUrl: String?,
     override var locale: LocaleEntity?,
-    val rank: Long,
+    var rank: Long,
     val clearTime: Long
 ) : ProfileEntity, Comparable<RankerEntity> {
     constructor(profile: ProfileEntity, clearTime: Long) : this(

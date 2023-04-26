@@ -12,4 +12,8 @@ data class ChallengeEntityImpl(
     constructor(
         matrix: IntMatrix
     ) : this(null, matrix, null)
+
+    override var isPlaying = false
+    override var startPlayAt: Date? = null
+    override var isComplete = false
 }

@@ -7,4 +7,7 @@ interface ChallengeEntity {
     val challengeId: String?
     val matrix: IntMatrix
     val createdAt: Date?
+    var isPlaying: Boolean
+    var startPlayAt: Date?
+    var isComplete: Boolean
 }

@@ -7,7 +7,7 @@ import kr.co.hs.sudoku.databinding.LayoutItemRankBinding
 import kr.co.hs.sudoku.model.rank.RankerEntity
 
 class RankingAdapter(
-    private val onItemClick: (position: Int) -> Unit
+    private val onItemClick: (position: Int, item: RankerEntity) -> Unit
 ) : ListAdapter<RankerEntity, RankViewHolder>(RankerEntityDiffCallback()) {
 
     companion object {
@@ -20,32 +20,30 @@ class RankingAdapter(
         val binding = LayoutItemRankBinding.inflate(inflater, parent, false)
         return when (viewType) {
             VT_MINE -> RankForMineViewHolder(binding).apply {
-                itemView.setOnClickListener { onItemClick(bindingAdapterPosition) }
+                itemView.setOnClickListener { itemClick(bindingAdapterPosition) }
             }
 
             else -> RankViewHolder(binding).apply {
-                itemView.setOnClickListener { onItemClick(bindingAdapterPosition) }
+                itemView.setOnClickListener { itemClick(bindingAdapterPosition) }
             }
         }
-
     }
 
-    override fun onBindViewHolder(holder: RankViewHolder, position: Int) {
+    private val itemClick = { position: Int -> onItemClick(position, getItem(position)) }
+
+    override fun onBindViewHolder(holder: RankViewHolder, position: Int) =
         holder.onBind(getItem(position))
-    }
 
     override fun onViewRecycled(holder: RankViewHolder) {
         super.onViewRecycled(holder)
         holder.onRecycled()
     }
 
-    override fun getItemViewType(position: Int): Int {
-        return if (getItem(position).uid == uid) {
-            VT_MINE
-        } else {
-            VT_OTHER
+    override fun getItemViewType(position: Int) =
+        when (getItem(position).uid) {
+            uid -> VT_MINE
+            else -> VT_OTHER
         }
-    }
 
     var uid: String? = null
 }

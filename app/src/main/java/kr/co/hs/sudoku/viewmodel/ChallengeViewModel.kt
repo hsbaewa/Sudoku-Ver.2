@@ -104,7 +104,11 @@ class ChallengeViewModel : ViewModel() {
 
     private suspend fun doRequestRecord(repository: RecordRepository, uid: String) =
         withContext(Dispatchers.IO) {
-            GetRecordUseCaseImpl(repository)(uid).catch { }.lastOrNull()
+            val useCase = GetRecordUseCaseImpl(repository)
+            useCase(uid)
+                .catch { }
+                .lastOrNull()
+                ?.takeIf { it.clearTime >= 0 }
         }
 
     private fun getDefaultTop10() = List(10) {
