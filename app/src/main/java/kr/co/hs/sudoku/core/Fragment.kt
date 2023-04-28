@@ -56,6 +56,7 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
 
     companion object {
         private const val EXTRA_LEVEL = "kr.co.hs.sudoku.platform.Fragment.EXTRA_LEVEL"
+        private const val EXTRA_USER_ID = "kr.co.hs.sudoku.platform.Fragment.EXTRA_USER_ID"
     }
 
     protected val activity: Activity
@@ -65,4 +66,7 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
     protected fun getLevel() = arguments?.getInt(EXTRA_LEVEL, 0) ?: 0
 
     protected fun getColorCompat(colorResId: Int) = requireContext().getColorCompat(colorResId)
+
+    fun Bundle.putUserId(uid: String) = putString(EXTRA_USER_ID, uid)
+    fun getUserId() = arguments?.getString(EXTRA_USER_ID)
 }

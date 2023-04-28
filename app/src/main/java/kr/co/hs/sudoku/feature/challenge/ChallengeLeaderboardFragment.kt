@@ -10,9 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutChallengeLeaderboardBinding
@@ -30,7 +28,12 @@ import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 class ChallengeLeaderboardFragment : Fragment() {
 
     companion object {
-        fun new() = ChallengeLeaderboardFragment()
+        fun new(uid: String?) = ChallengeLeaderboardFragment()
+            .apply {
+                uid?.let {
+                    arguments = Bundle().apply { putUserId(it) }
+                }
+            }
     }
 
     override fun onCreateView(
@@ -47,7 +50,7 @@ class ChallengeLeaderboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (myUid == null)
+        if (getUserId() == null)
             showSnackBar(getString(R.string.error_require_authenticate))
 
         challengeViewModel.let {
@@ -69,8 +72,6 @@ class ChallengeLeaderboardFragment : Fragment() {
         }
     }
 
-    private val myUid = FirebaseAuth.getInstance().currentUser?.uid
-
     private val challengeViewModel: ChallengeViewModel by lazy { challengeLeaderboardViewModels() }
 
     //--------------------------------------------------------------------------------------------\\
@@ -80,7 +81,7 @@ class ChallengeLeaderboardFragment : Fragment() {
         challengeSudokuBoard.setRowCount(it.matrix.rowCount, it.matrix)
 
         val challengeId = it.challengeId
-        val uid = myUid
+        val uid = getUserId()
 
         if (challengeId != null && uid != null) {
             startButton.visibility = View.VISIBLE
@@ -189,11 +190,8 @@ class ChallengeLeaderboardFragment : Fragment() {
      * @since 2023/04/25
      * @comment ViewModel에 Challenge 정보 요청
      **/
-    private fun requestChallenge() {
-        val app = context?.applicationContext as? App ?: return
+    private fun requestChallenge() =
         challengeViewModel.requestLatestChallenge(app.getChallengeRepository())
-    }
-
 
     private val refreshLayout by lazy {
         binding.swipeRefreshLayout.apply {

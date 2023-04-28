@@ -7,13 +7,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayChallengeBinding
@@ -78,7 +76,6 @@ class ChallengePlayActivity : Activity() {
 
     private fun requestChallengeInfo() {
         getExtraForChallengeId()?.run {
-            val app = applicationContext as App
             challengeViewModel.requestChallenge(app.getChallengeRepository(), this)
         } ?: kotlin.run {
             // TODO ?? challenge id 없으면 어떻게?...
@@ -133,7 +130,7 @@ class ChallengePlayActivity : Activity() {
                     is GamePlayViewModel.Status.Completed -> {
                         recordViewModel.stopTimer()
                         val clearTime = gamePlayViewModel.getCompleteTime()
-                        val uid = myUid
+                        val uid = getUserId()
                         val challengeId = challengeViewModel.challenge.value?.challengeId
                         if (clearTime >= 0 && uid != null && challengeId != null) {
                             onCompleteSudoku(uid, challengeId, clearTime)
@@ -159,8 +156,6 @@ class ChallengePlayActivity : Activity() {
     private val timerTickEvent = Observer<String> {
         binding.tvTimer.text = it
     }
-
-    private val myUid = FirebaseAuth.getInstance().currentUser?.uid
 
     private fun onCompleteSudoku(
         uid: String,
@@ -191,7 +186,6 @@ class ChallengePlayActivity : Activity() {
     private suspend fun ChallengeEntity.checkPlaying() {
         challengeId?.run {
             if (!isPlaying) {
-                val app = applicationContext as App
                 app.getChallengeRepository().setPlaying(this)
             }
         }
@@ -208,7 +202,6 @@ class ChallengePlayActivity : Activity() {
     private suspend fun setClearRecordToServer(uid: String, challengeId: String, clearTime: Long) {
         val profile = getProfile(uid)
         val record = RankerEntity(profile, clearTime)
-        val app = applicationContext as App
         val useCase = PutRecordUseCaseImpl(app.getChallengeRecordRepository(challengeId))
         useCase(record).last()
     }

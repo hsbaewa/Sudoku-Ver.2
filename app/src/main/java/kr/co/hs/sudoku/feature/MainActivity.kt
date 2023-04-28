@@ -1,12 +1,14 @@
 package kr.co.hs.sudoku.feature
 
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.games.PlayGames
+import com.google.android.material.navigation.NavigationBarView
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +26,7 @@ import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
 
-class MainActivity : Activity() {
+class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     private val binding: ActivityMainBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_main) }
@@ -35,18 +37,12 @@ class MainActivity : Activity() {
 
         // 하단에 있는 BottomNavigationView 와 상단에 내용이 표시될 Layout과 상호 작용
         replaceTabFragment(DifficultyFragment.new())
-        binding.navigationBar.setOnItemSelectedListener {
-            when (it.itemId) {
-                R.id.selectStage -> replaceTabFragment(DifficultyFragment.new())
-                R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.new())
-                R.id.settings -> replaceTabFragment(SettingsFragment.new())
-            }
-            return@setOnItemSelectedListener true
-        }
+
+        // BottomNavigationView 아이템 선택 리스너 등록
+        bottomNavigationBar.setOnItemSelectedListener(this)
 
         // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
         lifecycleScope.launch(coroutineExceptionHandler) {
-
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 showProgressIndicator()
                 withContext(Dispatchers.IO) { doCheckAuthenticate() }
@@ -64,6 +60,18 @@ class MainActivity : Activity() {
     private fun replaceTabFragment(fragment: Fragment) =
         replaceFragment(R.id.tabContentLayout, fragment)
 
+    private val bottomNavigationBar = binding.navigationBar
+
+    override fun onNavigationItemSelected(item: MenuItem) = with(item) {
+        when (itemId) {
+            R.id.selectStage -> replaceTabFragment(DifficultyFragment.new())
+            R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.new(currentUserId))
+            R.id.settings -> replaceTabFragment(SettingsFragment.new())
+        }
+        true
+    }
+
+    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, t ->
         dismissProgressIndicator()

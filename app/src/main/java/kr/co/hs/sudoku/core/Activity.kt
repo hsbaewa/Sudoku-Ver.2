@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
@@ -48,6 +49,8 @@ abstract class Activity : AppCompatActivity() {
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- conv -------------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
+
+    protected val app: App by lazy { applicationContext as App }
 
     companion object {
         private const val EXTRA_MATRIX = "kr.co.hs.sudoku.EXTRA_MATRIX"

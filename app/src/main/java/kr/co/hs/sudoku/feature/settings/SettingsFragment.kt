@@ -44,10 +44,10 @@ class SettingsFragment : PreferenceFragment() {
             // 화면 진입 시 마다 currentUser 체크 하여 표시
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 showProgressIndicator()
-                withContext(Dispatchers.IO) {
-                    getFirebaseUser().takeIf { it != null }
-                        ?.run { getProfile() }
-                }?.run { onChangedProfile(this) }
+                val profileEntity = withContext(Dispatchers.IO) {
+                    currentUser.takeIf { it != null }?.run { getProfile() }
+                }
+                profileEntity?.run { onChangedProfile(this) }
                 dismissProgressIndicator()
             }
         }
@@ -84,7 +84,7 @@ class SettingsFragment : PreferenceFragment() {
      * @comment 현재 로그인 된 firebase user
      * @return FirebaseUser
      **/
-    private fun getFirebaseUser() = FirebaseAuth.getInstance().currentUser
+    private val currentUser = FirebaseAuth.getInstance().currentUser
 
     /**
      * @author hsbaewa@gmail.com
@@ -153,7 +153,7 @@ class SettingsFragment : PreferenceFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
 
             val profile = withContext(Dispatchers.IO) {
-                getFirebaseUser()?.getProfile()
+                currentUser?.getProfile()
             }
             profile?.let {
                 val onSubmit = { resultProfile: ProfileEntity ->
