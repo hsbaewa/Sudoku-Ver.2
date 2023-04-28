@@ -60,7 +60,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private fun replaceTabFragment(fragment: Fragment) =
         replaceFragment(R.id.tabContentLayout, fragment)
 
-    private val bottomNavigationBar = binding.navigationBar
+    private val bottomNavigationBar by lazy { binding.navigationBar }
 
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {

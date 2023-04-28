@@ -60,7 +60,7 @@
             android:id="@+id/tvCountDown"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:textSize="50sp"
+            android:textSize="100dp"
             app:fontFamily="@font/goreyong_ddalgi"
             app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
             app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
