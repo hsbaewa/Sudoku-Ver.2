@@ -73,7 +73,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
         assertEquals(16, sudoku.getEmptyCellCount())
         assertEquals(0, sudoku.getDuplicatedCellCount())
 
-        var box = sudoku.getBox(0, 0)
+        val box = sudoku.getBox(0, 0)
         assertEquals(setOf(1, 2, 3, 4), box.getAvailableValueInBox().toSet())
 
         sudoku[0, 0] = 1
@@ -231,7 +231,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(1, 1, 1, 1),
                 listOf(1, 1, 1, 1),
                 listOf(1, 1, 1, 1),
-                listOf(1, 1, 1, 0)
+                listOf(1, 1, 1, 1)
             )
         )
         val stage = runBlocking { buildUseCase().first() }
