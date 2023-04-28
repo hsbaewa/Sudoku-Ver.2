@@ -183,7 +183,4 @@ object ActivityExtension {
             replace(containerViewId, fragment, fragment::class.java.simpleName)
             commit()
         }
-
-    fun <T : Fragment> AppCompatActivity.hasFragment(c: Class<T>) =
-        with(supportFragmentManager) { findFragmentByTag(c.simpleName) != null }
 }
