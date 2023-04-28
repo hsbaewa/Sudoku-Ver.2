@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.*
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.R
@@ -17,7 +16,6 @@ import kr.co.hs.sudoku.databinding.LayoutLevelInfoBinding
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
 import kr.co.hs.sudoku.feature.play.PlayActivity.Companion.startPlayActivity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.views.SudokuBoardView
 
 class LevelFragment : Fragment() {
@@ -42,13 +40,12 @@ class LevelFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         DataBindingUtil.getBinding<LayoutLevelInfoBinding>(view)?.run {
             tvTitle.setupUI(getLevel())
-            btnStart.setupUIStart(getLevel())
+            btnStart.setupUIStart()
 
             viewLifecycleOwner.lifecycleScope.launch {
                 withStarted {
                     launch {
-                        delay(100)
-                        sudokuBoard.setupUI(getMatrix())
+                        sudokuBoard.setupUI(getSudokuMatrix())
                     }
                 }
             }
@@ -72,19 +69,11 @@ class LevelFragment : Fragment() {
      * @since 2023/04/04
      * @comment 시작 버튼 설정
      **/
-    private fun Button.setupUIStart(level: Int) {
+    private fun Button.setupUIStart() {
         setAutoSizeText()
         setOnClickListener {
-            activity.startPlayActivity(
-                this@LevelFragment.getMatrix().toDifficulty(), level
-            )
+            activity.startPlayActivity(getSudokuMatrix())
         }
-    }
-
-    private fun IntMatrix?.toDifficulty() = when (this) {
-        is IntMatrix.Advanced -> Activity.Difficulty.ADVANCED
-        is IntMatrix.Intermediate -> Activity.Difficulty.INTERMEDIATE
-        else -> Activity.Difficulty.BEGINNER
     }
 
     /**
@@ -104,7 +93,7 @@ class LevelFragment : Fragment() {
      * @comment 선택된 스테이지 리턴
      * @return 선택된 스테이지 리턴
      **/
-    private fun getMatrix() = with(sudokuStageViewModels()) {
+    private fun getSudokuMatrix() = with(singlePlayDifficultyViewModels()) {
         matrixList.value?.get(getLevel())
     }
 

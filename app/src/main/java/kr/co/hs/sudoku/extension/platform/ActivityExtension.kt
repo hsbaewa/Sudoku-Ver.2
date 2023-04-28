@@ -183,6 +183,4 @@ object ActivityExtension {
             replace(containerViewId, fragment, fragment::class.java.simpleName)
             commit()
         }
-
-
 }

@@ -2,16 +2,14 @@ package kr.co.hs.sudoku.core
 
 import android.os.Bundle
 import androidx.fragment.app.activityViewModels
-import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
-import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
-import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
+import kr.co.hs.sudoku.App
+import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
-import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
-import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
+import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
+import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
+import kr.co.hs.sudoku.viewmodel.RecordViewModel
+import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
 
 abstract class Fragment : androidx.fragment.app.Fragment() {
     //--------------------------------------------------------------------------------------------\\
@@ -24,22 +22,13 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
      * @comment ViewModel Getter
      * @return StageListViewModel
      **/
-    private fun sudokuStageViewModels(repository: MatrixRepository<IntMatrix>): SudokuStageViewModel {
-        val viewModel: SudokuStageViewModel
-                by activityViewModels { SudokuStageViewModel.Factory(repository) }
+    protected fun sudokuStageViewModels(): GamePlayViewModel {
+        val viewModel: GamePlayViewModel by activityViewModels()
         return viewModel
     }
 
-    protected fun sudokuStageViewModels(difficulty: Activity.Difficulty) = sudokuStageViewModels(
-        when (difficulty) {
-            Activity.Difficulty.BEGINNER -> BeginnerMatrixRepository()
-            Activity.Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
-            Activity.Difficulty.ADVANCED -> AdvancedMatrixRepository()
-        }
-    )
-
-    protected fun sudokuStageViewModels(): SudokuStageViewModel {
-        val viewModel: SudokuStageViewModel by activityViewModels()
+    protected fun singlePlayDifficultyViewModels(): SinglePlayDifficultyViewModel {
+        val viewModel: SinglePlayDifficultyViewModel by activityViewModels()
         return viewModel
     }
 
@@ -49,19 +38,21 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
         return viewModel
     }
 
-    protected fun sudokuStatusViewModels(): SudokuStatusViewModel {
-        val viewModel: SudokuStatusViewModel by activityViewModels()
+    protected fun recordViewModels(): RecordViewModel {
+        val viewModel: RecordViewModel by activityViewModels()
         return viewModel
     }
 
-    protected fun timerLogViewModels(): TimerLogViewModel {
-        val viewModel: TimerLogViewModel by activityViewModels()
+    protected fun challengeLeaderboardViewModels(): ChallengeViewModel {
+        val viewModel: ChallengeViewModel by activityViewModels()
         return viewModel
     }
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- conv -------------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
+
+    protected val app: App by lazy { requireContext().applicationContext as App }
 
     companion object {
         private const val EXTRA_LEVEL = "kr.co.hs.sudoku.platform.Fragment.EXTRA_LEVEL"
@@ -72,4 +63,6 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
 
     fun Bundle.putLevel(level: Int) = putInt(EXTRA_LEVEL, level)
     protected fun getLevel() = arguments?.getInt(EXTRA_LEVEL, 0) ?: 0
+
+    protected fun getColorCompat(colorResId: Int) = requireContext().getColorCompat(colorResId)
 }

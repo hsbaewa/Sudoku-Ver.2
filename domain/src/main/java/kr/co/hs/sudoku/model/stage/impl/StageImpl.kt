@@ -1,6 +1,8 @@
 package kr.co.hs.sudoku.model.stage.impl
 
 import kr.co.hs.sudoku.model.stage.*
+import kr.co.hs.sudoku.model.stage.history.HistoryQueue
+import kr.co.hs.sudoku.repository.timer.Timer
 import kotlin.math.pow
 
 open class StageImpl(
@@ -145,12 +147,37 @@ open class StageImpl(
     override fun isCompleted() =
         getDuplicatedCells().isEmpty() && getEmptyCells().isEmpty()
 
+    override fun setTimer(timer: Timer) {
+        this.timer = timer
+    }
+
+    private lateinit var timer: Timer
 
     /**
      * ValueChangeListener
      */
     override fun onChanged(cell: IntCoordinateCellEntity) {
+        if (this::timer.isInitialized) {
+            val time = timer.getPassedTime()
+            val isComplete = isCompleted()
+            if (isComplete)
+                completeTime = time
+
+            if (this::historyQueue.isInitialized) {
+                historyQueue.push(cell, time, isComplete)
+            }
+        }
         val list = listenerSet.toList()
         list.forEach { it.onChanged(cell) }
     }
+
+    override fun getCompletedTime() = completeTime
+    private var completeTime = -1L
+
+    override fun startCaptureHistory(timer: Timer, writer: HistoryQueue) {
+        this.timer = timer
+        this.historyQueue = writer
+    }
+
+    lateinit var historyQueue: HistoryQueue
 }

@@ -3,6 +3,7 @@ package kr.co.hs.sudoku
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
 import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.MutableStage
@@ -72,7 +73,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
         assertEquals(16, sudoku.getEmptyCellCount())
         assertEquals(0, sudoku.getDuplicatedCellCount())
 
-        var box = sudoku.getBox(0, 0)
+        val box = sudoku.getBox(0, 0)
         assertEquals(setOf(1, 2, 3, 4), box.getAvailableValueInBox().toSet())
 
         sudoku[0, 0] = 1
@@ -207,19 +208,30 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 
     @Test
     fun testAutoFill() {
-        val matrix = IntermediateMatrix()
+//        val matrix = IntermediateMatrix()
+//        val buildUseCase = AutoGenerateSudokuUseCase(
+//            matrix = matrix,
+//            filterMask = listOf(
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
+//                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1)
+//            )
+//        )
+
+        val matrix = BeginnerMatrix()
         val buildUseCase = AutoGenerateSudokuUseCase(
             matrix = matrix,
             filterMask = listOf(
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1),
-                listOf(1, 1, 1, 1, 1, 1, 1, 1, 1)
+                listOf(1, 1, 1, 1),
+                listOf(1, 1, 1, 1),
+                listOf(1, 1, 1, 1),
+                listOf(1, 1, 1, 1)
             )
         )
         val stage = runBlocking { buildUseCase().first() }

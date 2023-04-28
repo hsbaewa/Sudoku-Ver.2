@@ -10,12 +10,11 @@ import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutPlayAutoBinding
-import kr.co.hs.sudoku.model.gamelog.CellLogEntity
-import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.viewmodel.TimerLogViewModel
-import kr.co.hs.sudoku.viewmodel.SudokuStatusViewModel
+import kr.co.hs.sudoku.model.stage.history.HistoryItem
+import kr.co.hs.sudoku.viewmodel.RecordViewModel
+import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.views.SudokuBoardView
 
 class ReplayFragment : Fragment() {
@@ -29,45 +28,41 @@ class ReplayFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        binding = LayoutPlayAutoBinding.inflate(inflater, container, false)
-        binding.lifecycleOwner = this
-        return binding.root
-    }
+    ) = LayoutPlayAutoBinding.inflate(inflater, container, false).also {
+        binding = it
+        it.lifecycleOwner = this
+    }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycleOwner.lifecycleScope.launch {
             withStarted {
-                timerLogViewModel.stageTemplate?.run {
-                    val matrix = CustomMatrix(this)
-                    sudokuStatusViewModel.initMatrix(matrix)
-                    sudokuStatusViewModel.start()
-                }
+                binding.sudokuBoard.setupUIForStart(gamePlayViewModel.getStage())
+                recordViewModel.startLog()
             }
-            sudokuStatusViewModel.statusFlow.collect {
+            gamePlayViewModel.statusFlow.collect {
                 when (it) {
-                    is SudokuStatusViewModel.Status.OnStart -> it.onStart()
-                    is SudokuStatusViewModel.Status.ChangedCell -> it.onChangedCell()
-                    is SudokuStatusViewModel.Status.ToCorrect -> it.onToCorrect()
-                    is SudokuStatusViewModel.Status.ToError -> it.onToError()
+                    is GamePlayViewModel.Status.ChangedCell -> it.onChangedCell()
+                    is GamePlayViewModel.Status.ToCorrect -> it.onToCorrect()
+                    is GamePlayViewModel.Status.ToError -> it.onToError()
                     else -> {}
                 }
             }
         }
-    }
 
-    private val timerLogViewModel: TimerLogViewModel by lazy { timerLogViewModels() }
-    private val sudokuStatusViewModel: SudokuStatusViewModel by lazy { sudokuStatusViewModels() }
-
-
-    private fun SudokuStatusViewModel.Status.OnStart.onStart() {
-        binding.sudokuBoard.setupUIForStart(stage)
-        timerLogViewModel.playReplay { log ->
-            sudokuStatusViewModel[log.row, log.column] = log.value
+        viewLifecycleOwner.lifecycleScope.launch {
+            recordViewModel.cellEventHistoryFlow.collect {
+                when (it) {
+                    is HistoryItem.Removed -> setCellValue(it.row, it.column, 0)
+                    is HistoryItem.Set -> setCellValue(it.row, it.column, it.value)
+                }
+            }
         }
     }
+
+    private val gamePlayViewModel: GamePlayViewModel by lazy { sudokuStageViewModels() }
+
 
     private fun SudokuBoardView.setupUIForStart(stage: Stage) {
         setRowCount(stage.rowCount, stage.toValueTable())
@@ -93,20 +88,7 @@ class ReplayFragment : Fragment() {
         }
     }
 
-    private inline fun TimerLogViewModel.playReplay(
-        crossinline onChangedHistory: (CellLogEntity.Changed) -> Unit
-    ) = lifecycleScope.launch {
-        valueLogStream.getLogStream().collect {
-            when (it) {
-                is CellLogEntity.Changed -> onChangedHistory(it)
-            }
-            if (!remainStream()) {
-                stop(it.time)
-            }
-        }
-    }
-
-    private fun SudokuStatusViewModel.Status.ChangedCell.onChangedCell() =
+    private fun GamePlayViewModel.Status.ChangedCell.onChangedCell() =
         binding.sudokuBoard.setCellValue(row, column, value ?: 0)
 
 
@@ -115,7 +97,7 @@ class ReplayFragment : Fragment() {
      * @since 2023/04/10
      * @comment 에러 셀 해제
      **/
-    private fun SudokuStatusViewModel.Status.ToCorrect.onToCorrect() =
+    private fun GamePlayViewModel.Status.ToCorrect.onToCorrect() =
         set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
             .forEach { binding.sudokuBoard.setError(it.first, it.second, false) }
 
@@ -125,7 +107,13 @@ class ReplayFragment : Fragment() {
      * @since 2023/04/10
      * @comment 에러 셀로 변환
      **/
-    private fun SudokuStatusViewModel.Status.ToError.onToError() =
+    private fun GamePlayViewModel.Status.ToError.onToError() =
         set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
             .forEach { binding.sudokuBoard.setError(it.first, it.second, true) }
+
+    private val recordViewModel: RecordViewModel by lazy { recordViewModels() }
+
+    private fun setCellValue(row: Int, column: Int, value: Int) {
+        gamePlayViewModel[row, column] = value
+    }
 }

@@ -7,6 +7,7 @@
     <string name="stage_advanced">Advanced</string>
 
     <string name="navigation_tab_select_stage">Stage</string>
+    <string name="navigation_tab_challenge">Challenge</string>
     <string name="navigation_tab_settings">Settings</string>
 
     <string name="preferences_category_auth">Auth</string>
@@ -38,6 +39,19 @@
 
     <string name="profile_display_name">Display Name</string>
     <string name="profile_status_message">Status Message</string>
+
+    <string name="challenge_title">today\'s Challenge</string>
+    <string name="challenge_title_leaderboard">Leaderboard</string>
+
+    <string name="rank_format_first" translatable="false">1st</string>
+    <string name="rank_format_second" translatable="false">2nd</string>
+    <string name="rank_format_third" translatable="false">3rd</string>
+    <string name="rank_format" translatable="false">%1$dth</string>
+    <string name="record_format">record : %1$s</string>
+    <string name="rank_mine_format_name">[me]%1$s</string>
+
+    <string name="error_require_authenticate">This feature requires login.</string>
+    <string name="error_challenge_already_record">You have already completed this challenge.</string>
 
     <string name="app_name">HS-Sudoku2</string>
 </resources>

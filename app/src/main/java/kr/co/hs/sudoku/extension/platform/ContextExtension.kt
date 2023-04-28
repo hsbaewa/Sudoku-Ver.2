@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.extension.platform
 
 import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.datastore.preferences.preferencesDataStore
 
 object ContextExtension {
@@ -9,4 +10,6 @@ object ContextExtension {
     //--------------------------------------------------------------------------------------------\\
     private const val USER_PREFERENCES_NAME = "sudoku.preferences"
     val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NAME)
+
+    fun Context.getColorCompat(color: Int) = ContextCompat.getColor(this, color)
 }

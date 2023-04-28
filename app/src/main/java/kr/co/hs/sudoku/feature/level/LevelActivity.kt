@@ -23,7 +23,10 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.viewmodel.SudokuStageViewModel
+import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
+import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
+import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
+import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
 
 class LevelActivity : Activity() {
     companion object {
@@ -36,8 +39,8 @@ class LevelActivity : Activity() {
 
     private val binding: ViewpagerSelectLevelBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.viewpager_select_level) }
-    private val viewModel: SudokuStageViewModel
-            by lazy { sudokuStageViewModels(getDifficulty()) }
+    private val viewModel: SinglePlayDifficultyViewModel
+            by lazy { singlePlayDifficultyViewModels() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +66,13 @@ class LevelActivity : Activity() {
             withStarted {
                 showProgressIndicator()
                 // 스테이지 리스트 요청
-                viewModel.requestMatrix()
+                viewModel.requestMatrix(
+                    when (getDifficulty()) {
+                        Difficulty.BEGINNER -> BeginnerMatrixRepository()
+                        Difficulty.INTERMEDIATE -> IntermediateMatrixRepository()
+                        Difficulty.ADVANCED -> AdvancedMatrixRepository()
+                    }
+                )
             }
         }
     }
@@ -101,6 +110,7 @@ class LevelActivity : Activity() {
                 finish()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
