@@ -39,7 +39,7 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
         this@GamePlayViewModel.sudoku = this
         startingMatrix = CustomMatrix(this.toValueTable())
         statusFlow.resetReplayCache()
-        viewModelScope.launch { statusFlow.emit(Status.OnReady(this@bind)) }
+        viewModelScope.launch { statusFlow.emit(Status.OnReady(startingMatrix)) }
     }
 
     lateinit var startingMatrix: IntMatrix
@@ -72,7 +72,7 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
             val value = if (cell.isEmpty()) null else cell.getValue()
             statusFlow.emit(Status.ChangedCell(cell.row, cell.column, value))
             isCompleted().takeIf { it }?.run {
-                statusFlow.emit(Status.Completed)
+                statusFlow.emit(Status.Completed(sudoku))
             }
         }
     }
@@ -87,11 +87,11 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
      * @comment 스도쿠 게임 상태의 대한 정보인 seald interface
      **/
     sealed interface Status {
-        data class OnReady(val stage: Stage) : Status
+        data class OnReady(val matrix: IntMatrix) : Status
         data class OnStart(val stage: Stage) : Status
         data class ToCorrect(val set: Set<CellEntity<Int>>) : Status
         data class ToError(val set: Set<CellEntity<Int>>) : Status
-        object Completed : Status
+        data class Completed(val stage: Stage) : Status
         data class ChangedCell(val row: Int, val column: Int, val value: Int?) : Status
     }
 
@@ -124,4 +124,15 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
     fun isCompleted() = sudoku.isCompleted()
 
     fun getStage() = sudoku
+
+    fun getCompleteTime() = sudoku.getCompletedTime()
+
+    fun batch(state: List<List<Int>>) {
+        state.forEachIndexed { row, ints ->
+            ints.forEachIndexed { column, value ->
+                if (!sudoku.getCell(row, column).isImmutable())
+                    sudoku[row, column] = value
+            }
+        }
+    }
 }

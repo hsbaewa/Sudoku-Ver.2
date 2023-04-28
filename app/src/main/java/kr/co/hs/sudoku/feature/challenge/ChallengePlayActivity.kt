@@ -18,8 +18,8 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayChallengeBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
+import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.hasFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
@@ -27,6 +27,8 @@ import kr.co.hs.sudoku.feature.play.PlayFragment
 import kr.co.hs.sudoku.feature.play.ReplayFragment
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
+import kr.co.hs.sudoku.model.stage.history.impl.CachedHistoryQueue
+import kr.co.hs.sudoku.model.stage.history.HistoryQueue
 import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
 import kr.co.hs.sudoku.repository.timer.RealServerTimer
 import kr.co.hs.sudoku.usecase.record.PutRecordUseCaseImpl
@@ -34,6 +36,8 @@ import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
+import java.io.File
+import java.io.FileOutputStream
 
 class ChallengePlayActivity : Activity() {
     companion object {
@@ -53,9 +57,10 @@ class ChallengePlayActivity : Activity() {
         lifecycleScope.launch {
             // 실제 서버 시간 알아오기
             withContext(Dispatchers.IO) { realServerTimer.initTime() }
+
+            // Challenge 정보 가져오기
+            requestChallengeInfo()
         }
-        // Challenge 정보 가져오기
-        requestChallengeInfo()
         // Challenge 정보 응답 모니터
         challengeViewModel.challenge.observe(this, responseChallengeInfo)
         // 에러 이벤트 핸들 설정
@@ -91,43 +96,68 @@ class ChallengePlayActivity : Activity() {
         // 게임 Fragment 설정
         replaceFragment(R.id.rootLayout, PlayFragment.new())
 
-        // 게임 상태 이벤트 수신 설정
-        collectGamePlayStatus(challenge)
-    }
+        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            dismissProgressIndicator()
+            showSnackBar(throwable.message.toString())
+        }) {
+            showProgressIndicator()
 
-    private fun collectGamePlayStatus(challenge: ChallengeEntity) = lifecycleScope.launch {
-        gamePlayViewModel.statusFlow.collect { status ->
-            when (status) {
-                is GamePlayViewModel.Status.Completed ->
-                    recordViewModel.stopTimer()
+            challenge.challengeId?.run {
+                val cachedFile = getCachedFile(this)
+                val queue = CachedHistoryQueue(FileOutputStream(cachedFile, true))
 
-                is GamePlayViewModel.Status.OnStart -> {
-                    recordViewModel.setTimer(realServerTimer)
-                    recordViewModel.startTimer()
-                    recordViewModel.initCaptureTarget(status.stage)
-
-                    lifecycleScope.launch(Dispatchers.IO) { challenge.checkPlaying() }
+                if (cachedFile.length() > 0) {
+                    val currentStatus = withContext(Dispatchers.IO) {
+                        queue.load(cachedFile.inputStream())
+                    }
+                    gamePlayViewModel.batch(currentStatus)
+                } else {
+                    withContext(Dispatchers.IO) { queue.createHeader(gamePlayViewModel.getStage()) }
                 }
 
-                else -> {}
+                // 게임 상태 이벤트 수신 설정
+                collectGamePlayStatus(challenge, queue)
+            }
+
+            dismissProgressIndicator()
+        }
+
+    }
+
+    private fun getCachedFile(challengeId: String) = File(cacheDir, "challenge_$challengeId.cache")
+
+    private fun collectGamePlayStatus(challenge: ChallengeEntity, historyQueue: HistoryQueue) =
+        lifecycleScope.launch {
+            gamePlayViewModel.statusFlow.collect { status ->
+                when (status) {
+                    is GamePlayViewModel.Status.Completed -> {
+                        recordViewModel.stopTimer()
+                        val clearTime = gamePlayViewModel.getCompleteTime()
+                        val uid = myUid
+                        val challengeId = challengeViewModel.challenge.value?.challengeId
+                        if (clearTime >= 0 && uid != null && challengeId != null) {
+                            onCompleteSudoku(uid, challengeId, clearTime)
+                        }
+                    }
+
+                    is GamePlayViewModel.Status.OnStart -> {
+                        recordViewModel.bind(status.stage)
+                        recordViewModel.setTimer(realServerTimer)
+                        recordViewModel.setHistoryWriter(historyQueue)
+                        recordViewModel.startTimer()
+
+                        lifecycleScope.launch(Dispatchers.IO) { challenge.checkPlaying() }
+                    }
+
+                    else -> {}
+                }
             }
         }
-    }
 
     private val recordViewModel: RecordViewModel by lazy { recordViewModels() }
 
     private val timerTickEvent = Observer<String> {
         binding.tvTimer.text = it
-        val uid = myUid
-        val challengeId = challengeViewModel.challenge.value?.challengeId
-        val clearTime = recordViewModel.lastHistoryTime()
-        if (hasFragment(PlayFragment::class.java)
-            && gamePlayViewModel.isCompleted()
-            && uid != null
-            && challengeId != null
-        ) {
-            onCompleteSudoku(uid, challengeId, clearTime, it)
-        }
     }
 
     private val myUid = FirebaseAuth.getInstance().currentUser?.uid
@@ -135,8 +165,7 @@ class ChallengePlayActivity : Activity() {
     private fun onCompleteSudoku(
         uid: String,
         challengeId: String,
-        clearTime: Long,
-        strClearTime: String
+        clearTime: Long
     ) =
         lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             dismissProgressIndicator()
@@ -145,9 +174,10 @@ class ChallengePlayActivity : Activity() {
             showProgressIndicator()
             withContext(Dispatchers.IO) {
                 setClearRecordToServer(uid, challengeId, clearTime)
+                getCachedFile(challengeId).delete()
             }
             dismissProgressIndicator()
-            showCompleteRecordDialog(strClearTime)
+            showCompleteRecordDialog(clearTime.toTimerFormat())
         }
 
     private val gamePlayViewModel: GamePlayViewModel by lazy { gamePlayViewModels() }

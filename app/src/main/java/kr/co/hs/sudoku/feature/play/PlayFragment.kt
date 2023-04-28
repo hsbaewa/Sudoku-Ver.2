@@ -14,6 +14,7 @@ import kr.co.hs.sudoku.databinding.LayoutPlayGameBinding
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
@@ -67,8 +68,8 @@ class PlayFragment : Fragment() {
      **/
     private fun GamePlayViewModel.Status.OnReady.setupUIForReady() {
         binding.sudokuBoard.run {
-            readySudoku(stage)
-            clearAllCellValue(stage)
+            readySudoku(this@setupUIForReady.matrix)
+            clearAllCellValue(this@setupUIForReady.matrix)
             gameSettingsViewModel.gameSettings.observe(viewLifecycleOwner) {
                 enabledHapticFeedback = it.enabledHapticFeedback
             }
@@ -85,21 +86,21 @@ class PlayFragment : Fragment() {
      * @author hsbaewa@gmail.com
      * @since 2023/04/10
      * @comment 게임 준비
-     * @param stage
+     * @param matrix
      **/
-    private fun SudokuBoardView.readySudoku(stage: Stage) {
+    private fun SudokuBoardView.readySudoku(matrix: IntMatrix) {
         dismissProgressIndicator()
-        setupUI(stage)
+        setupUI(matrix)
     }
 
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/06
      * @comment 스도쿠 뷰 setup
-     * @param stage 스도쿠 뷰의 데이터 모델
+     * @param matrix 스도쿠 뷰의 데이터 모델
      **/
-    private fun SudokuBoardView.setupUI(stage: Stage) {
-        setRowCount(stage.rowCount, stage.toValueTable())
+    private fun SudokuBoardView.setupUI(matrix: IntMatrix) {
+        setRowCount(matrix.rowCount, matrix)
         isVisible = true
         cellTouchDownListener = onCellTouchDown()
         cellValueChangedListener = onCellValueChangedListener()
@@ -130,11 +131,11 @@ class PlayFragment : Fragment() {
      * @author hsbaewa@gmail.com
      * @since 2023/04/10
      * @comment 셀 내부의 값들을 초기화 함
-     * @param stage
+     * @param matrix
      **/
-    private fun SudokuBoardView.clearAllCellValue(stage: Stage) {
-        (0 until stage.rowCount).forEach { row ->
-            (0 until stage.columnCount).forEach { column ->
+    private fun SudokuBoardView.clearAllCellValue(matrix: IntMatrix) {
+        (0 until matrix.rowCount).forEach { row ->
+            (0 until matrix.columnCount).forEach { column ->
                 setCellValue(row, column, 0)
             }
         }

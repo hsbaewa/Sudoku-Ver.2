@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.model.stage
 
-import kr.co.hs.sudoku.model.stage.history.HistoryWriter
+import kr.co.hs.sudoku.model.stage.history.HistoryQueue
+import kr.co.hs.sudoku.repository.timer.Timer
 
 interface Stage : CellTable<Int>, SudokuStrategyRule {
     fun getBoxBoundedIn(cell: IntCoordinateCellEntity): SudokuBox
@@ -28,5 +29,9 @@ interface Stage : CellTable<Int>, SudokuStrategyRule {
 
     fun getAvailable(row: Int, column: Int): List<Int>
 
-    fun startCaptureHistory(writer: HistoryWriter)
+    fun setTimer(timer: Timer)
+
+    fun getCompletedTime(): Long
+
+    fun startCaptureHistory(timer: Timer, writer: HistoryQueue)
 }

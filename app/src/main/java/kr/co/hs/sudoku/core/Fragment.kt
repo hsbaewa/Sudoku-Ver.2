@@ -2,6 +2,8 @@ package kr.co.hs.sudoku.core
 
 import android.os.Bundle
 import androidx.fragment.app.activityViewModels
+import kr.co.hs.sudoku.App
+import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
@@ -50,6 +52,8 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
     //----------------------------------------- conv -------------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
 
+    protected val app: App by lazy { requireContext().applicationContext as App }
+
     companion object {
         private const val EXTRA_LEVEL = "kr.co.hs.sudoku.platform.Fragment.EXTRA_LEVEL"
     }
@@ -59,4 +63,6 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
 
     fun Bundle.putLevel(level: Int) = putInt(EXTRA_LEVEL, level)
     protected fun getLevel() = arguments?.getInt(EXTRA_LEVEL, 0) ?: 0
+
+    protected fun getColorCompat(colorResId: Int) = requireContext().getColorCompat(colorResId)
 }

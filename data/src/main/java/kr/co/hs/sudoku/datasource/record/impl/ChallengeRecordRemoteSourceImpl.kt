@@ -15,6 +15,7 @@ class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
         getRankingCollection(challengeId)
             .orderBy("clearTime")
             .limit(limit.toLong())
+            .whereGreaterThan("clearTime", 0)
             .get()
             .await()
             .documents.mapNotNull {

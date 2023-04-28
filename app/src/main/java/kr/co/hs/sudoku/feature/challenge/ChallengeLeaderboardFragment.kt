@@ -61,6 +61,12 @@ class ChallengeLeaderboardFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) { requestChallenge() }
         }
+
+        refreshLayout.setOnRefreshListener {
+            app.clearChallengeRecordRepository()
+            app.clearChallengeRepository()
+            requestChallenge()
+        }
     }
 
     private val myUid = FirebaseAuth.getInstance().currentUser?.uid
@@ -115,7 +121,6 @@ class ChallengeLeaderboardFragment : Fragment() {
      * @param uid
      **/
     private fun requestLeaderboard(challengeId: String, uid: String) {
-        val app = context?.applicationContext as? App ?: return
         challengeViewModel.requestLeaderboard(
             app.getChallengeRecordRepository(challengeId), uid
         )
@@ -174,6 +179,7 @@ class ChallengeLeaderboardFragment : Fragment() {
             showProgressIndicator()
         } else {
             dismissProgressIndicator()
+            refreshLayout.isRefreshing = false
         }
     }
 
@@ -186,5 +192,12 @@ class ChallengeLeaderboardFragment : Fragment() {
     private fun requestChallenge() {
         val app = context?.applicationContext as? App ?: return
         challengeViewModel.requestLatestChallenge(app.getChallengeRepository())
+    }
+
+
+    private val refreshLayout by lazy {
+        binding.swipeRefreshLayout.apply {
+            setColorSchemeColors(getColorCompat(R.color.gray_500))
+        }
     }
 }

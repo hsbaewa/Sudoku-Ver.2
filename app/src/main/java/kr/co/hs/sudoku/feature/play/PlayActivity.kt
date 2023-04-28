@@ -13,11 +13,12 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.ActivityPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.hasFragment
+import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.model.stage.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.repository.timer.TimerImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
@@ -49,7 +50,13 @@ class PlayActivity : Activity() {
             gamePlayViewModel.statusFlow.collect {
                 when (it) {
                     is GamePlayViewModel.Status.ChangedCell -> showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
-                    is GamePlayViewModel.Status.Completed -> recordViewModel.stopTimer()
+                    is GamePlayViewModel.Status.Completed -> {
+                        recordViewModel.stopTimer()
+                        if (it.stage.getCompletedTime() >= 0) {
+                            showCompleteRecordDialog(it.stage.getCompletedTime())
+                        }
+                    }
+
                     is GamePlayViewModel.Status.OnStart -> onStartSudoku(it.stage)
                     else -> {}
                 }
@@ -57,10 +64,7 @@ class PlayActivity : Activity() {
         }
 
         recordViewModel.timer.observe(this) {
-            setTime(it)
-            if (hasFragment(PlayFragment::class.java) && gamePlayViewModel.isCompleted()) {
-                showCompleteRecordDialog(it)
-            }
+            binding.tvTimer.text = it
         }
 
         binding.btnRetry.setupUIRetry()
@@ -75,20 +79,17 @@ class PlayActivity : Activity() {
             }
     }
 
-    private fun setTime(formattedTime: String) {
-        binding.tvTimer.text = formattedTime
-    }
-
     private fun onStartSudoku(stage: Stage) {
+        recordViewModel.bind(stage)
         recordViewModel.setTimer(TimerImpl())
+        recordViewModel.setHistoryWriter(HistoryQueueImpl())
         recordViewModel.startTimer()
-        recordViewModel.initCaptureTarget(stage)
     }
 
-    private fun showCompleteRecordDialog(clearRecord: String) {
+    private fun showCompleteRecordDialog(clearRecord: Long) {
         val dlgBinding =
             LayoutCompleteBinding.inflate(LayoutInflater.from(this@PlayActivity))
-        dlgBinding.tvRecord.text = clearRecord
+        dlgBinding.tvRecord.text = clearRecord.toTimerFormat()
         MaterialAlertDialogBuilder(this@PlayActivity)
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }

@@ -25,10 +25,14 @@ class App : Application() {
                 challengeRecordRepositoryRef = SoftReference(this)
             }
 
+    fun clearChallengeRecordRepository() = challengeRecordRepositoryRef?.clear()
+
     private var challengeRepositoryRef: SoftReference<ChallengeRepository>? = null
     fun getChallengeRepository(): ChallengeRepository =
         challengeRepositoryRef?.get()
             ?: ChallengeRepositoryImpl().apply {
                 challengeRepositoryRef = SoftReference(this)
             }
+
+    fun clearChallengeRepository() = challengeRepositoryRef?.clear()
 }

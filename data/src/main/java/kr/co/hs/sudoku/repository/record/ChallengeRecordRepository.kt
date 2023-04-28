@@ -56,8 +56,8 @@ class ChallengeRecordRepository(val challengeId: String) : RecordRepository {
     override suspend fun getRecord(uid: String) =
         cachedMap.takeIf { it.containsKey(uid) }
             ?.run { this[uid] }
-            ?: remoteSource.getRecord(challengeId, uid).toDomain().also {
-                cachedMap[it.uid] = it
+            ?: remoteSource.getRecord(challengeId, uid).toDomain().apply {
+                takeIf { clearTime > 0 }?.let { cachedMap[it.uid] = it }
             }
 
 }

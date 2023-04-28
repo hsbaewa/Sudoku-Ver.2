@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -12,22 +13,24 @@ import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.model.stage.history.HistoryItem
-import kr.co.hs.sudoku.model.stage.history.HistoryWriter
-import kr.co.hs.sudoku.model.stage.history.impl.HistoryWriterImpl
+import kr.co.hs.sudoku.model.stage.history.HistoryQueue
 import kr.co.hs.sudoku.repository.timer.Timer
-import kr.co.hs.sudoku.usecase.timelog.HistoryUseCase
-import kr.co.hs.sudoku.usecase.timelog.HistoryUseCaseImpl
 import kr.co.hs.sudoku.usecase.timelog.TimerUseCase
 import kr.co.hs.sudoku.usecase.timelog.TimerUseCaseImpl
 
 class RecordViewModel : ViewModel() {
+    fun bind(stage: Stage) {
+        this.stage = stage
+    }
+
+    private lateinit var stage: Stage
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- 타이머 기능 ------------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
     fun setTimer(timer: Timer) {
         this.timerCore = timer
-        this.historyWriter = HistoryWriterImpl(timer)
+        stage.setTimer(timer)
     }
 
     private lateinit var timerCore: Timer
@@ -51,7 +54,7 @@ class RecordViewModel : ViewModel() {
     private fun Timer.onFinish() {
         finish()
         // 종료시 history상의 타이머와 일치 시키기 위해 아래 작업 수행
-        _timer.value = lastHistoryTime().toTimerFormat()
+        _timer.value = stage.getCompletedTime().toTimerFormat()
     }
 
     private val _timer = MutableLiveData<String>()
@@ -73,26 +76,23 @@ class RecordViewModel : ViewModel() {
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- Cell History ---------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
-    fun lastHistoryTime() = historyWriter.toHistoryList()
-        .takeIf { it.isNotEmpty() }
-        ?.run { last().time }
-        ?: -1
+    lateinit var historyQueue: HistoryQueue
 
-    private lateinit var historyWriter: HistoryWriter
 
-    fun initCaptureTarget(stage: Stage) {
-        historyWriter.clearAllHistory()
-        stage.startCaptureHistory(historyWriter)
+    fun setHistoryWriter(writer: HistoryQueue) {
+        this.historyQueue = writer
+        stage.startCaptureHistory(timerCore, historyQueue)
     }
 
     fun startLog() = viewModelScope.launch {
-        val historyUseCase: HistoryUseCase = HistoryUseCaseImpl(timerCore)
-        val history = historyWriter.toHistoryList()
-        historyUseCase(history).collect {
-            cellEventHistoryFlow.emit(it)
-            if (it is HistoryItem.Set && it.isCompleted) {
-                stopTimer()
-                _timer.value = it.time.toTimerFormat()
+        while (!historyQueue.isEmpty()) {
+            delay(timerCore.getTickInterval())
+            historyQueue.pop(timerCore.getPassedTime())?.forEach {
+                cellEventHistoryFlow.emit(it)
+                if (it is HistoryItem.Set && it.isCompleted) {
+                    stopTimer()
+                    _timer.value = it.time.toTimerFormat()
+                }
             }
         }
     }.apply { historyJob = this }
