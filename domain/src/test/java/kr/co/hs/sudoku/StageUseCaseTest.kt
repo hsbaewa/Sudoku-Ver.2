@@ -38,14 +38,14 @@ class StageUseCaseTest {
         val stage = getSudokuUseCase(0).first().invoke().first()
 
         println(stage)
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
 
         val playUseCase = PlaySudokuUseCaseImpl(stage, 300)
         playUseCase().collect {
             println(it)
             println(stage)
         }
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
@@ -73,12 +73,12 @@ class StageUseCaseTest {
         val stage = getSudokuUseCase(0).first()().first()
 
         println(stage)
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
 
         val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
         playUseCase().collect()
         println(stage)
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
@@ -106,14 +106,14 @@ class StageUseCaseTest {
         val stage = getSudokuUseCase(0).first()().first()
 
         println(stage)
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
 
         val playUseCase = PlaySudokuUseCaseImpl(stage, 300)
         playUseCase().collect {
             println(it)
             println(stage)
         }
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
@@ -149,12 +149,12 @@ class StageUseCaseTest {
 
 
         println(stage)
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
 
         val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
         playUseCase().collect()
         println(stage)
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
 }

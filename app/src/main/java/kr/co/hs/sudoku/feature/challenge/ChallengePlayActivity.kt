@@ -21,8 +21,8 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.feature.play.PlayFragment
-import kr.co.hs.sudoku.feature.play.ReplayFragment
+import kr.co.hs.sudoku.feature.play.SudokuPlayFragment
+import kr.co.hs.sudoku.feature.play.SudokuHistoryFragment
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.stage.history.impl.CachedHistoryQueue
@@ -91,7 +91,7 @@ class ChallengePlayActivity : Activity() {
         realServerTimer.continueIfLastPlaying(challenge)
 
         // 게임 Fragment 설정
-        replaceFragment(R.id.rootLayout, PlayFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuPlayFragment.new())
 
         lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             dismissProgressIndicator()
@@ -127,29 +127,44 @@ class ChallengePlayActivity : Activity() {
         lifecycleScope.launch {
             gamePlayViewModel.statusFlow.collect { status ->
                 when (status) {
-                    is GamePlayViewModel.Status.Completed -> {
-                        recordViewModel.stopTimer()
-                        val clearTime = gamePlayViewModel.getCompleteTime()
-                        val uid = getUserId()
-                        val challengeId = challengeViewModel.challenge.value?.challengeId
-                        if (clearTime >= 0 && uid != null && challengeId != null) {
-                            onCompleteSudoku(uid, challengeId, clearTime)
-                        }
-                    }
-
                     is GamePlayViewModel.Status.OnStart -> {
-                        recordViewModel.bind(status.stage)
-                        recordViewModel.setTimer(realServerTimer)
-                        recordViewModel.setHistoryWriter(historyQueue)
-                        recordViewModel.startTimer()
-
                         lifecycleScope.launch(Dispatchers.IO) { challenge.checkPlaying() }
+                        status.onStartSudoku(historyQueue)
                     }
 
+                    is GamePlayViewModel.Status.Completed -> status.onCompetedSudoku()
                     else -> {}
                 }
             }
         }
+
+    private fun GamePlayViewModel.Status.OnStart.onStartSudoku(historyQueue: HistoryQueue) {
+        if (recordViewModel.isRunningCapturedHistoryEvent())
+            return
+
+        recordViewModel.bind(stage)
+        recordViewModel.setTimer(realServerTimer)
+        recordViewModel.setHistoryWriter(historyQueue)
+        recordViewModel.play()
+    }
+
+    private fun GamePlayViewModel.Status.Completed.onCompetedSudoku() {
+        with(recordViewModel) {
+            if (isRunningCapturedHistoryEvent()) {
+                stopCapturedHistory()
+            } else {
+                stop()
+                val clearTime = stage.getClearTime()
+                if (clearTime >= 0) {
+                    val uid = getUserId()
+                    val challengeId = challengeViewModel.challenge.value?.challengeId
+                    if (uid != null && challengeId != null) {
+                        onCompleteSudoku(uid, challengeId, clearTime)
+                    }
+                }
+            }
+        }
+    }
 
     private val recordViewModel: RecordViewModel by lazy { recordViewModels() }
 
@@ -213,6 +228,7 @@ class ChallengePlayActivity : Activity() {
         val dlgBinding =
             LayoutCompleteBinding.inflate(LayoutInflater.from(this@ChallengePlayActivity))
         dlgBinding.tvRecord.text = clearRecord
+        dlgBinding.lottieAnim.playAnimation()
         MaterialAlertDialogBuilder(this@ChallengePlayActivity)
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }
@@ -222,9 +238,9 @@ class ChallengePlayActivity : Activity() {
     }
 
     private fun replay() {
-        replaceFragment(R.id.rootLayout, ReplayFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuHistoryFragment.new())
         gamePlayViewModel.backToStartingMatrix()
         realServerTimer.pass(0)
-        recordViewModel.startTimer()
+        recordViewModel.playCapturedHistory()
     }
 }

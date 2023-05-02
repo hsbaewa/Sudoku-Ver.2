@@ -23,7 +23,7 @@ class ProfilePhotoImageView : AppCompatImageView {
 
     private var disposable: Disposable? = null
 
-    fun load(data: Any, placeHolder: Drawable? = null, errorIcon: Drawable? = null) {
+    fun load(data: Any?, placeHolder: Drawable? = null, errorIcon: Drawable? = null) {
         val loading = placeHolder ?: CircularProgressDrawable(context).apply {
             strokeWidth = 4f
             centerRadius = 10f

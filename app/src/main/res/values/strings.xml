@@ -23,6 +23,7 @@
     <string name="ready_complete">Ready Complete!</string>
 
     <string name="complete_message">Congratulation!\nClear this level!!</string>
+    <string name="lost_message">sorry.. you lost.</string>
     <string name="record">Your Record</string>
 
     <string name="confirm">Confirm</string>
@@ -52,6 +53,13 @@
 
     <string name="error_require_authenticate">This feature requires login.</string>
     <string name="error_challenge_already_record">You have already completed this challenge.</string>
+
+    <string name="caption_with_cpu">with CPU</string>
+    <string name="caption_with_user">with User</string>
+    <string name="caption_single_play">single play</string>
+
+    <string name="caption_cpu">CPU</string>
+    <string name="me">Me</string>
 
     <string name="app_name">HS-Sudoku2</string>
 </resources>

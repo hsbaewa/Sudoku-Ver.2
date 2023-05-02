@@ -67,7 +67,7 @@ class AutoGenerateSudokuUseCase(
     }
 
     private fun Stage.generate(row: Int, column: Int) {
-        if (isCompleted()) {
+        if (isSudokuClear()) {
             return
         }
 
@@ -89,7 +89,7 @@ class AutoGenerateSudokuUseCase(
             return
         }
         available.forEach {
-            if (isCompleted()) {
+            if (isSudokuClear()) {
                 return
             }
 

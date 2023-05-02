@@ -4,60 +4,87 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.Fragment
-import kr.co.hs.sudoku.databinding.LayoutPlayGameBinding
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
+import kr.co.hs.sudoku.databinding.LayoutPlayAutoBinding
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
-import kr.co.hs.sudoku.views.CountDownView
 import kr.co.hs.sudoku.views.SudokuBoardView
 
-class PlayFragment : Fragment() {
+class SudokuAutoPlayFragment : Fragment() {
+
     companion object {
-        fun new() = PlayFragment()
+        fun new(matrix: IntMatrix) = SudokuAutoPlayFragment().apply {
+            arguments = Bundle().apply {
+                putSudokuMatrixToExtra(matrix)
+            }
+        }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ) = with(LayoutPlayGameBinding.inflate(inflater, container, false)) {
+    ) = with(LayoutPlayAutoBinding.inflate(inflater, container, false)) {
         binding = this
-        lifecycleOwner = this@PlayFragment
+        lifecycleOwner = this@SudokuAutoPlayFragment
         root
     }
 
-    private lateinit var binding: LayoutPlayGameBinding
+    private lateinit var binding: LayoutPlayAutoBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
-            withStarted {
-                showProgressIndicator()
-            }
             gamePlayViewModel.statusFlow.collect {
                 when (it) {
-                    is GamePlayViewModel.Status.OnReady -> it.setupUIForReady()
-                    is GamePlayViewModel.Status.OnStart -> it.setupUIForStart()
-                    is GamePlayViewModel.Status.ToCorrect -> it.onToCorrect()
-                    is GamePlayViewModel.Status.ToError -> it.onToError()
+                    is GamePlayViewModel.Status.OnStart -> onOtherSudokuStart()
+                    is GamePlayViewModel.Status.Completed -> onOtherSudokuCompleted()
                     else -> {}
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            withStarted {
+                getSudokuMatrixFromExtra()?.run { localGamePlayViewModel.setSudokuMatrix(this) }
+            }
+
+            localGamePlayViewModel.statusFlow.collect {
+                when (it) {
+                    is GamePlayViewModel.Status.OnReady -> it.setupUIForReady()
+                    is GamePlayViewModel.Status.OnStart -> it.setupUIForStart()
+                    is GamePlayViewModel.Status.ToCorrect -> it.onToCorrect()
+                    is GamePlayViewModel.Status.ChangedCell -> it.onChangedCell()
+                    is GamePlayViewModel.Status.ToError -> it.onToError()
+                    is GamePlayViewModel.Status.Completed -> gamePlayViewModel.emitCompleted()
+                }
+            }
+        }
+
+
     }
 
     private val gamePlayViewModel: GamePlayViewModel by lazy { sudokuStageViewModels() }
+
+    private fun onOtherSudokuStart() {
+        localGamePlayViewModel.start()
+        localGamePlayViewModel.playAuto()
+    }
+
+    private val localGamePlayViewModel: GamePlayViewModel by viewModels()
+
+    private fun onOtherSudokuCompleted() {
+        localGamePlayViewModel.cancelPlayAuto()
+    }
+
 
     /**
      * @author hsbaewa@gmail.com
@@ -70,15 +97,6 @@ class PlayFragment : Fragment() {
         binding.sudokuBoard.run {
             readySudoku(this@setupUIForReady.matrix)
             clearAllCellValue(this@setupUIForReady.matrix)
-            gameSettingsViewModel.gameSettings.observe(viewLifecycleOwner) {
-                enabledHapticFeedback = it.enabledHapticFeedback
-            }
-        }
-        binding.viewSilhouette.isVisible = true
-        binding.tvCountDown.isVisible = true
-        binding.btnReadyComplete.run {
-            isVisible = true
-            setupUIReady(binding.tvCountDown)
         }
     }
 
@@ -102,30 +120,10 @@ class PlayFragment : Fragment() {
     private fun SudokuBoardView.setupUI(matrix: IntMatrix) {
         setRowCount(matrix.rowCount, matrix)
         isVisible = true
-        cellTouchDownListener = onCellTouchDown()
-        cellValueChangedListener = onCellValueChangedListener()
+        cellTouchDownListener = { _, _ -> false }
+        cellValueChangedListener = { _, _, _ -> false }
     }
 
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/06
-     * @comment SudokuBoardTouch 시점
-     * @param
-     * @return
-     **/
-    private fun onCellTouchDown() =
-        { row: Int, column: Int -> gamePlayViewModel.isMutableCell(row, column) }
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/06
-     * @comment SudokuBoardView 의 셀 값이 변경 된 경우 콜백
-     **/
-    private fun onCellValueChangedListener() =
-        { row: Int, column: Int, value: Int? ->
-            gamePlayViewModel[row, column] = value ?: 0; true
-        }
 
     /**
      * @author hsbaewa@gmail.com
@@ -141,27 +139,8 @@ class PlayFragment : Fragment() {
         }
     }
 
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/10
-     * @comment 준비 버튼 ui 설정
-     * @param with 카운트 다운 표시를 위한 view
-     **/
-    private fun Button.setupUIReady(with: CountDownView) {
-        setOnClickListener {
-            isVisible = false
-            with.start(3) { gamePlayViewModel.start() }
-        }
-    }
-
-    private val gameSettingsViewModel
-            by lazy { gameSettingsViewModels(GameSettingsRepositoryImpl(dataStore)) }
-
     private fun GamePlayViewModel.Status.OnStart.setupUIForStart() {
         binding.sudokuBoard.fillCellValue(stage)
-        binding.viewSilhouette.isVisible = false
-        binding.btnReadyComplete.isVisible = false
-        binding.tvCountDown.isVisible = false
     }
 
     /**
@@ -188,6 +167,9 @@ class PlayFragment : Fragment() {
     private fun GamePlayViewModel.Status.ToCorrect.onToCorrect() =
         set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
             .forEach { binding.sudokuBoard.setError(it.first, it.second, false) }
+
+    private fun GamePlayViewModel.Status.ChangedCell.onChangedCell() =
+        binding.sudokuBoard.setCellValue(row, column, value ?: 0)
 
     /**
      * @author hsbaewa@gmail.com

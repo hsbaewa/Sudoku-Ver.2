@@ -35,7 +35,7 @@ class RecordViewModel : ViewModel() {
 
     private lateinit var timerCore: Timer
 
-    fun startTimer() = viewModelScope.launch {
+    private fun runTimer() = viewModelScope.launch {
         with(timerCore) {
             val timerUseCase: TimerUseCase = TimerUseCaseImpl(this)
             timerUseCase()
@@ -54,7 +54,10 @@ class RecordViewModel : ViewModel() {
     private fun Timer.onFinish() {
         finish()
         // 종료시 history상의 타이머와 일치 시키기 위해 아래 작업 수행
-        _timer.value = stage.getCompletedTime().toTimerFormat()
+        stage.takeIf { it.isSudokuClear() }
+            ?.run {
+                _timer.value = getClearTime().toTimerFormat()
+            }
     }
 
     private val _timer = MutableLiveData<String>()
@@ -64,34 +67,38 @@ class RecordViewModel : ViewModel() {
         _timer.value = time.toTimerFormat()
     }
 
-    fun stopTimer() {
+    private fun cancelTimer() {
         timerJob?.cancel()
+        timerJob = null
     }
-
-    fun clearTime() {
-        _timer.value = 0L.toTimerFormat()
-    }
-
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- Cell History ---------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
-    lateinit var historyQueue: HistoryQueue
+    private var historyQueue: HistoryQueue? = null
 
 
     fun setHistoryWriter(writer: HistoryQueue) {
         this.historyQueue = writer
-        stage.startCaptureHistory(timerCore, historyQueue)
     }
 
-    fun startLog() = viewModelScope.launch {
-        while (!historyQueue.isEmpty()) {
-            delay(timerCore.getTickInterval())
-            historyQueue.pop(timerCore.getPassedTime())?.forEach {
-                cellEventHistoryFlow.emit(it)
-                if (it is HistoryItem.Set && it.isCompleted) {
-                    stopTimer()
-                    _timer.value = it.time.toTimerFormat()
+    private fun enableCaptureHistory() {
+        historyQueue?.run { stage.startCaptureHistory(this) }
+    }
+
+    private fun disableCaptureHistory() {
+        stage.stopCaptureHistory()
+    }
+
+    private fun runHistoryEvent() = viewModelScope.launch {
+        historyQueue?.let { queue ->
+            while (!queue.isEmpty()) {
+                delay(timerCore.getTickInterval())
+                queue.pop(timerCore.getPassedTime())?.forEach {
+                    cellEventHistoryFlow.emit(it)
+                    if (it is HistoryItem.Set && it.isCompleted) {
+                        _timer.value = it.time.toTimerFormat()
+                    }
                 }
             }
         }
@@ -100,4 +107,38 @@ class RecordViewModel : ViewModel() {
     val cellEventHistoryFlow = MutableSharedFlow<HistoryItem>()
 
     private var historyJob: Job? = null
+
+    private fun stopLog() {
+        historyJob?.cancel()
+        historyJob = null
+    }
+
+    //--------------------------------------------------------------------------------------------\\
+    //----------------------------------------- 통합 --------------------------------------------\\
+    //--------------------------------------------------------------------------------------------\\
+
+    fun isRunningCapturedHistoryEvent() = historyJob?.isActive ?: false
+    fun play() {
+        enableCaptureHistory()
+        runTimer()
+    }
+
+    fun stop() {
+        cancelTimer()
+        disableCaptureHistory()
+
+//        initTime()
+    }
+
+    fun playCapturedHistory() {
+        runHistoryEvent()
+        runTimer()
+    }
+
+    fun stopCapturedHistory() {
+        cancelTimer()
+        stopLog()
+
+//        initTime()
+    }
 }

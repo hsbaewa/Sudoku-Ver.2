@@ -12,4 +12,5 @@ object ContextExtension {
     val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NAME)
 
     fun Context.getColorCompat(color: Int) = ContextCompat.getColor(this, color)
+    fun Context.getDrawableCompat(resId: Int) = ContextCompat.getDrawable(this, resId)
 }

@@ -3,6 +3,7 @@ package kr.co.hs.sudoku.viewmodel
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.last
@@ -15,6 +16,7 @@ import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 
 class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListener {
 
@@ -52,7 +54,7 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
      **/
     val statusFlow = MutableSharedFlow<Status>(replay = 10)
 
-    protected lateinit var sudoku: Stage
+    private lateinit var sudoku: Stage
 
     override fun onChanged(cell: IntCoordinateCellEntity) {
         val errorCell = sudoku.getDuplicatedCells().toList().toHashSet()
@@ -71,14 +73,15 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
         viewModelScope.launch {
             val value = if (cell.isEmpty()) null else cell.getValue()
             statusFlow.emit(Status.ChangedCell(cell.row, cell.column, value))
-            isCompleted().takeIf { it }?.run {
-                statusFlow.emit(Status.Completed(sudoku))
-            }
+            isSudokuClear().takeIf { it }
+                ?.run { emitCompleted() }
         }
     }
 
 
     private var lastErrorCell = HashSet<CellEntity<Int>>()
+
+    suspend fun emitCompleted() = statusFlow.emit(Status.Completed(sudoku))
 
 
     /**
@@ -121,11 +124,9 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
             viewModelScope.launch { statusFlow.emit(Status.OnStart(stage = sudoku)) }
         }
 
-    fun isCompleted() = sudoku.isCompleted()
+    fun isSudokuClear() = sudoku.isSudokuClear()
 
     fun getStage() = sudoku
-
-    fun getCompleteTime() = sudoku.getCompletedTime()
 
     fun batch(state: List<List<Int>>) {
         state.forEachIndexed { row, ints ->
@@ -134,5 +135,33 @@ class GamePlayViewModel : ViewModel(), IntCoordinateCellEntity.ValueChangedListe
                     sudoku[row, column] = value
             }
         }
+    }
+
+
+    var autoSudoku: Stage? = null
+    private var playAutoJob: Job? = null
+    fun playAuto() {
+        playAutoJob = viewModelScope.launch {
+            val mat = CustomMatrix(sudoku.toValueTable())
+            val st = BuildSudokuUseCaseImpl(mat).invoke().last()
+            autoSudoku = st
+            val playUseCase = PlaySudokuUseCaseImpl(stage = st, 2000)
+            playUseCase().collect {
+                if (!sudoku.getCell(it.row, it.column).isImmutable())
+                    sudoku[it.row, it.column] = try {
+                        it.getValue()
+                    } catch (e: NotImplementedError) {
+                        0
+                    }
+
+            }
+
+        }
+
+    }
+
+    fun cancelPlayAuto() {
+        playAutoJob?.cancel()
+        playAutoJob = null
     }
 }

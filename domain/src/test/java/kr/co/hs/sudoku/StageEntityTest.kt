@@ -92,7 +92,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
         assertEquals(setOf(4), box.getAvailableValueInBox().toSet())
         sudoku[1, 1] = 4
         assertEquals(0, box.getAvailableValueInBox().size)
-        assertEquals(true, sudoku.getBox(0, 0).isCompleted())
+        assertEquals(true, sudoku.getBox(0, 0).isSudokuClear())
 
         sudoku[0, 2] = 5
         assertEquals(true, sudoku.getCell(0, 2).isEmpty())
@@ -101,7 +101,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
         sudoku[0, 3] = 2
         sudoku[1, 2] = 3
         sudoku[1, 3] = 4
-        assertEquals(true, sudoku.getBox(0, 1).isCompleted())
+        assertEquals(true, sudoku.getBox(0, 1).isSudokuClear())
 
         assertEquals(8, sudoku.getDuplicatedCellCount())
 
@@ -123,13 +123,14 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 
         println(sudoku)
 
-        assertEquals(true, sudoku.isCompleted())
+        assertEquals(true, sudoku.isSudokuClear())
     }
 
     override fun onChanged(cell: IntCoordinateCellEntity) {
         this.cell = cell
     }
 
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE", "UNUSED_VALUE")
     @Test
     fun testAvailable() {
         val sudoku = MutableStageImpl(2, 2)
@@ -165,7 +166,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
         sudoku[3, 2] = 2
         available = sudoku.getAvailable(3, 3)
         sudoku[3, 3] = 1
-        assertEquals(true, sudoku.isCompleted())
+        assertEquals(true, sudoku.isSudokuClear())
     }
 
     @Test
@@ -175,7 +176,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
             stage.set(0, 0, 1)
         }
 
-        val cell = stage.getCell(0, 2)
+        @Suppress("UNUSED_VARIABLE") val cell = stage.getCell(0, 2)
         stage[0, 5] = 1
     }
 
@@ -235,7 +236,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
             )
         )
         val stage = runBlocking { buildUseCase().first() }
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
@@ -255,7 +256,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
         )
         val buildUseCase = AutoGenerateSudokuUseCase(matrix)
         val stage = runBlocking { buildUseCase().first() }
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
 
     }
@@ -264,13 +265,13 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
     fun testCPU() = runBlocking {
         val buildUseCase = AutoGenerateSudokuUseCase(IntermediateMatrix())
         val stage = runBlocking { buildUseCase().first() }
-        val playUseCase = PlaySudokuUseCaseImpl(stage, 500)
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 2000)
         playUseCase().collect {
             println(it)
             println(stage)
         }
 
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
@@ -348,6 +349,6 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 
         println(stage)
 
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 }

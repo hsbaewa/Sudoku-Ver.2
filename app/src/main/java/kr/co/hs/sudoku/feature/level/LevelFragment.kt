@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
@@ -14,7 +15,8 @@ import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutLevelInfoBinding
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
-import kr.co.hs.sudoku.feature.play.PlayActivity.Companion.startPlayActivity
+import kr.co.hs.sudoku.feature.play.WithCPUPlayActivity.Companion.startBattlePlayActivity
+import kr.co.hs.sudoku.feature.play.SinglePlayActivity.Companion.startPlayActivity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.views.SudokuBoardView
 
@@ -40,7 +42,7 @@ class LevelFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         DataBindingUtil.getBinding<LayoutLevelInfoBinding>(view)?.run {
             tvTitle.setupUI(getLevel())
-            btnStart.setupUIStart()
+            btnStart.setupUIStart(radioGroupSelectMode)
 
             viewLifecycleOwner.lifecycleScope.launch {
                 withStarted {
@@ -63,16 +65,21 @@ class LevelFragment : Fragment() {
         setAutoSizeText()
     }
 
-
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/04
      * @comment 시작 버튼 설정
      **/
-    private fun Button.setupUIStart() {
+    private fun Button.setupUIStart(radioGroup: RadioGroup) {
         setAutoSizeText()
         setOnClickListener {
-            activity.startPlayActivity(getSudokuMatrix())
+            when (radioGroup.checkedRadioButtonId) {
+                R.id.radioBtnSinglePlay ->
+                    activity.startPlayActivity(getSudokuMatrix())
+
+                R.id.radioBtnWithCPU ->
+                    activity.startBattlePlayActivity(getSudokuMatrix())
+            }
         }
     }
 

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/targetBoardLayout"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:layout_constraintBottom_toTopOf="@id/targetUserLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="wrap" />
+
+        <TextView
+            android:id="@+id/targetUserNationFlag"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="10dp"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/vGuideForTargetUser"
+            app:layout_constraintEnd_toStartOf="@id/targetUserLayout"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/targetBoardLayout"
+            app:layout_constraintWidth_default="wrap" />
+
+        <include
+            android:id="@+id/targetUserLayout"
+            layout="@layout/layout_item_user"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/vGuideForTargetUser"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toEndOf="@id/targetUserNationFlag"
+            app:layout_constraintTop_toBottomOf="@id/targetBoardLayout"
+            app:layout_constraintWidth_default="wrap" />
+
+        <View
+            android:id="@+id/vGuideForTargetUser"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            app:layout_constraintBottom_toTopOf="@id/tvTimer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/targetUserLayout"
+            app:layout_constraintWidth_default="spread" />
+
+        <TextView
+            android:id="@+id/tvTimer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:gravity="bottom|center_horizontal"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@id/vGuideForCurrentUser"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vGuideForTargetUser"
+            app:layout_constraintWidth_default="wrap" />
+
+        <View
+            android:id="@+id/vGuideForCurrentUser"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            app:layout_constraintBottom_toTopOf="@id/currentUserLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTimer"
+            app:layout_constraintWidth_default="spread" />
+
+        <TextView
+            android:id="@+id/currentUserNationFlag"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="10dp"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/userBoardLayout"
+            app:layout_constraintEnd_toStartOf="@id/currentUserLayout"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vGuideForCurrentUser"
+            app:layout_constraintWidth_default="wrap" />
+
+        <include
+            android:id="@+id/currentUserLayout"
+            layout="@layout/layout_item_user"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/userBoardLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toEndOf="@id/currentUserNationFlag"
+            app:layout_constraintTop_toBottomOf="@id/vGuideForCurrentUser"
+            app:layout_constraintWidth_default="wrap" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/userBoardLayout"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/currentUserLayout"
+            app:layout_constraintWidth_default="spread" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -183,4 +183,13 @@ object ActivityExtension {
             replace(containerViewId, fragment, fragment::class.java.simpleName)
             commit()
         }
+
+    fun <T : Fragment> AppCompatActivity.removeFragment(c: Class<T>) =
+        with(supportFragmentManager) {
+            findFragmentByTag(c::class.java.simpleName)?.let { fragment ->
+                val transaction = beginTransaction()
+                transaction.remove(fragment)
+                transaction.commit()
+            }
+        }
 }
