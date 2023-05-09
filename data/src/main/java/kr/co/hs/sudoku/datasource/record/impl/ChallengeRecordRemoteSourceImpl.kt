@@ -5,14 +5,14 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
+import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.record.ReserveRecordModel
-import kotlin.reflect.full.memberProperties
 
 class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
 
-    override suspend fun getRecords(challengeId: String, limit: Int) =
-        getRankingCollection(challengeId)
+    override suspend fun getRecords(id: String, limit: Int) =
+        getRankingCollection(id)
             .orderBy("clearTime")
             .limit(limit.toLong())
             .whereGreaterThan("clearTime", 0)
@@ -32,38 +32,32 @@ class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
         .collection("record")
 
 
-    override suspend fun setRecord(challengeId: String, record: ClearTimeRecordModel): Boolean =
-        getRankingCollection(challengeId)
+    override suspend fun setRecord(id: String, record: ClearTimeRecordModel): Boolean =
+        getRankingCollection(id)
             .document(record.uid).set(record)
             .await()
             .run { true }
 
-    override suspend fun setRecord(challengeId: String, record: ReserveRecordModel): Boolean {
-        return getRankingCollection(challengeId)
+    override suspend fun setRecord(id: String, record: ReserveRecordModel): Boolean {
+        return getRankingCollection(id)
             .document(record.uid)
             .set(
                 record
-                    .asMap()
-                    .toMutableMap()
+                    .asMutableMap()
                     .apply { this["startAt"] = FieldValue.serverTimestamp() }
             )
             .await()
             .run { true }
     }
 
-    private inline fun <reified T : Any> T.asMap(): Map<String, Any?> {
-        val props = T::class.memberProperties.associateBy { it.name }
-        return props.keys.associateWith { props[it]?.get(this) }
-    }
-
-    override suspend fun getRecord(challengeId: String, uid: String): ClearTimeRecordModel =
-        getRankingCollection(challengeId)
+    override suspend fun getRecord(id: String, uid: String): ClearTimeRecordModel =
+        getRankingCollection(id)
             .document(uid)
             .get()
             .await()
             .toObject(ClearTimeRecordModel::class.java)
             ?.apply {
-                rank = getRankingCollection(challengeId)
+                rank = getRankingCollection(id)
                     .orderBy("clearTime")
                     .whereLessThan("clearTime", clearTime)
                     .count()
@@ -73,8 +67,8 @@ class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
             }
             ?: throw NullPointerException("cannot parse to ClearTimeRecordModel")
 
-    override suspend fun getReservedMyRecord(challengeId: String, uid: String): ReserveRecordModel {
-        return getRankingCollection(challengeId)
+    override suspend fun getReservedMyRecord(id: String, uid: String): ReserveRecordModel {
+        return getRankingCollection(id)
             .document(uid)
             .get()
             .await()

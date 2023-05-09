@@ -22,7 +22,7 @@ class ChallengeRepositoryImpl(
     override suspend fun setPlaying(challengeId: String): Boolean {
         FirebaseAuth.getInstance().currentUser?.run {
             val reserveModel = ReserveRecordModel(uid, "", null, null, null)
-            recordRemoteSource.setRecord(challengeId = challengeId, reserveModel)
+            recordRemoteSource.setRecord(id = challengeId, reserveModel)
                 .takeIf { it }
                 ?.run { cachedMap.remove(challengeId) }
         }
