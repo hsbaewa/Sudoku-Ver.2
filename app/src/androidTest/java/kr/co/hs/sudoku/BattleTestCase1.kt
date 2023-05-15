@@ -38,21 +38,21 @@ class BattleTestCase1 {
             "ownerUser",
             "this is owner",
             "http://owner.com",
-            LocaleEntityImpl("ko", "kr")
+            LocaleEntityImpl("ko", "KR")
         )
         guestUser1 = ProfileEntityImpl(
             "guest1",
             "guestUser1",
             "this is first guest",
             "http://",
-            LocaleEntityImpl("ko", "kr")
+            LocaleEntityImpl("ko", "KR")
         )
         guestUser2 = ProfileEntityImpl(
             "guest2",
             "guestUser2",
             "this is second guest",
             "http://",
-            LocaleEntityImpl("ko", "kr")
+            LocaleEntityImpl("ko", "KR")
         )
         matrix = CustomMatrix(
             listOf(
@@ -62,7 +62,7 @@ class BattleTestCase1 {
                 listOf(3, 2, 4, 0)
             )
         )
-        battleEntity = battleRepository2.createBattle(ownerUser, matrix)
+        battleEntity = battleRepository2.createBattle(ownerUser, matrix, 3)
     }
 
     @Test
@@ -92,10 +92,10 @@ class BattleTestCase1 {
 
     @Test
     fun search_joined_battle() = runTest {
-        val ownerJoinedBattle = battleRepository2.getJoinedBattle(ownerUser)
+        val ownerJoinedBattle = battleRepository2.getJoinedBattle(ownerUser.uid)
         assertEquals(ownerJoinedBattle?.id, battleEntity.id)
 
-        val joinedBattle = battleRepository2.getJoinedBattle(guestUser1)
+        val joinedBattle = battleRepository2.getJoinedBattle(guestUser1.uid)
         assertNotEquals(joinedBattle?.id, battleEntity.id)
     }
 
@@ -106,7 +106,7 @@ class BattleTestCase1 {
 
         assertFalse(battleRepository2.isAllReady(battleEntity))
 
-        battleRepository2.readyToBattle(guestUser1)
+        battleRepository2.readyToBattle(guestUser1.uid)
 
         assertFalse(battleRepository2.isAllReady(battleEntity))
 
@@ -139,13 +139,13 @@ class BattleTestCase1 {
             runTest { battleRepository2.startBattle(battleEntity, ownerUser.uid) }
         }
 
-        battleRepository2.readyToBattle(guestUser1)
+        battleRepository2.readyToBattle(guestUser1.uid)
 
         assertThrows(Exception::class.java) {
             runTest { battleRepository2.startBattle(battleEntity, ownerUser.uid) }
         }
 
-        battleRepository2.readyToBattle(guestUser2)
+        battleRepository2.readyToBattle(guestUser2.uid)
 
         battleRepository2.startBattle(battleEntity, ownerUser.uid)
 
@@ -160,10 +160,10 @@ class BattleTestCase1 {
     @Test
     fun start_battle_and_clear_sequence() = runTest {
         battleRepository2.joinBattle(battleEntity, guestUser1)
-        battleRepository2.readyToBattle(guestUser1)
+        battleRepository2.readyToBattle(guestUser1.uid)
 
         battleRepository2.joinBattle(battleEntity, guestUser2)
-        battleRepository2.readyToBattle(guestUser2)
+        battleRepository2.readyToBattle(guestUser2.uid)
 
         battleRepository2.startBattle(battleEntity, ownerUser.uid)
 

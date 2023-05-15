@@ -17,10 +17,11 @@ class ParticipantMonitorUseCase(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    operator fun invoke(battle: BattleEntity, uid: String) =
-        sharedFlow
-            .onStart { repository.bindParticipant(battle.id, uid, this@ParticipantMonitorUseCase) }
-            .onCompletion { repository.unbindParticipant(battle.id, uid) }
+    operator fun invoke(battle: BattleEntity, uid: String) = invoke(battle.id, uid)
+
+    operator fun invoke(battleId: String, uid: String) = sharedFlow
+        .onStart { repository.bindParticipant(battleId, uid, this@ParticipantMonitorUseCase) }
+        .onCompletion { repository.unbindParticipant(battleId, uid) }
 
     override fun onChanged(participant: BattleParticipantEntity) {
         sharedFlow.tryEmit(participant)

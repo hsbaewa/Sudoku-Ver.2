@@ -184,12 +184,18 @@ object ActivityExtension {
             commit()
         }
 
-    fun <T : Fragment> AppCompatActivity.removeFragment(c: Class<T>) =
+    inline fun <reified T : Fragment> AppCompatActivity.removeFragment(c: Class<T>) =
         with(supportFragmentManager) {
-            findFragmentByTag(c::class.java.simpleName)?.let { fragment ->
+            findFragmentByTag(c.simpleName)?.let { fragment ->
                 val transaction = beginTransaction()
                 transaction.remove(fragment)
                 transaction.commit()
             }
+        }
+
+    inline fun <reified T : Fragment> AppCompatActivity.hasFragment(c: Class<T>) =
+        with(supportFragmentManager) {
+            val name = c.simpleName
+            findFragmentByTag(name) != null
         }
 }

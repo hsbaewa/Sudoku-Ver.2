@@ -16,9 +16,11 @@ class BattleMonitorUseCase(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    operator fun invoke(battle: BattleEntity) = sharedFlow
-        .onStart { repository.bindBattle(battle.id, this@BattleMonitorUseCase) }
-        .onCompletion { repository.unbindBattle(battle.id) }
+    operator fun invoke(battle: BattleEntity) = invoke(battle.id)
+
+    operator fun invoke(battleId: String) = sharedFlow
+        .onStart { repository.bindBattle(battleId, this@BattleMonitorUseCase) }
+        .onCompletion { repository.unbindBattle(battleId) }
 
     override fun onChanged(battle: BattleEntity) {
         sharedFlow.tryEmit(battle)

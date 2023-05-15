@@ -67,7 +67,7 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
         getBattleCollectionRef()
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .limit(limit)
-            .whereEqualTo("startedAt", null)
+            .whereEqualTo("pendingAt", null)
             .let {
                 firstCreateTime
                     .takeIf { first -> first >= 0 }

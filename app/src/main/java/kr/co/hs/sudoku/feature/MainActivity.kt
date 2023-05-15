@@ -24,6 +24,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.feature.level.DifficultyFragment
 import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
+import kr.co.hs.sudoku.feature.battle.BattleLobbyFragment
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
 
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
@@ -65,6 +66,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
             R.id.selectStage -> replaceTabFragment(DifficultyFragment.new())
+            R.id.battle -> replaceTabFragment(BattleLobbyFragment.new(currentUserId))
             R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.new(currentUserId))
             R.id.settings -> replaceTabFragment(SettingsFragment.new())
         }

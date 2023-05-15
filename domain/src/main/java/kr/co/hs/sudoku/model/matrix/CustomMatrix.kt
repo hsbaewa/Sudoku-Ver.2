@@ -16,7 +16,7 @@ data class CustomMatrix(
         boxSize = sqrt(matrix.size.toDouble()).toInt(),
         boxCount = sqrt(matrix.size.toDouble()).toInt(),
         rowCount = matrix.size,
-        columnCount = matrix[0].size,
+        columnCount = if (matrix.isNotEmpty()) matrix[0].size else 0,
         matrix = matrix
     )
 

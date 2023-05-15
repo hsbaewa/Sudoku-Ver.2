@@ -14,16 +14,26 @@ class BattleModel() {
     var hostUid = ""
     var startingMatrix: List<Int>? = null
     var createdAt: Timestamp? = null
+    var pendingAt: Timestamp? = null
     var startedAt: Timestamp? = null
     var winnerUid: String? = null
+    var participantMaxSize = 2
+    var participantSize = 1
 
-    constructor(profile: ProfileModelImpl, startingMatrix: List<List<Int>>) : this() {
-        hostUid = profile.uid
+    constructor(
+        profile: ProfileModelImpl,
+        startingMatrix: List<List<Int>>,
+        participantMaxSize: Int
+    ) : this() {
+        this.hostUid = profile.uid
         this.startingMatrix = startingMatrix.flatten()
+        this.participantMaxSize = participantMaxSize
+        this.participantSize = 1
     }
 
     fun toFirebaseData() = asMutableMap().also {
         it["createdAt"] = FieldValue.serverTimestamp()
         it["startedAt"] = null
+        it["pendingAt"] = null
     }
 }

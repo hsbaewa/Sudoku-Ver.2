@@ -9,6 +9,7 @@
     <string name="navigation_tab_select_stage">Stage</string>
     <string name="navigation_tab_challenge">Challenge</string>
     <string name="navigation_tab_settings">Settings</string>
+    <string name="navigation_tab_battle">Battle</string>
 
     <string name="preferences_category_auth">Auth</string>
     <string name="preferences_category_account">Account</string>
@@ -60,6 +61,22 @@
 
     <string name="caption_cpu">CPU</string>
     <string name="me">Me</string>
+
+    <string name="versus">VS</string>
+
+    <string name="format_statistics">%2$d wins of %1$d matches</string>
+    <string name="caption_empty_battle_list">empty battle</string>
+    <string name="caption_create_battle">create</string>
+    <string name="join">Join</string>
+
+    <string name="caption_start_battle_for_host">Start Game</string>
+    <string name="caption_pending_battle_for_participant">Ready</string>
+    <string name="caption_ready_battle_for_participant">Cancel Ready</string>
+    <string name="status_ready_battle_for_participant">is Ready</string>
+    <string name="status_pending_battle_for_participant">Pending</string>
+    <string name="status_host_battle_for_participant">Host</string>
+
+    <string name="title_select_stage_for_battle">select stage</string>
 
     <string name="app_name">HS-Sudoku2</string>
 </resources>

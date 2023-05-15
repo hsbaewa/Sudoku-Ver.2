@@ -72,6 +72,7 @@ class LevelFragment : Fragment() {
      **/
     private fun Button.setupUIStart(radioGroup: RadioGroup) {
         setAutoSizeText()
+        radioGroup.visibility = View.VISIBLE
         setOnClickListener {
             when (radioGroup.checkedRadioButtonId) {
                 R.id.radioBtnSinglePlay ->

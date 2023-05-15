@@ -10,6 +10,7 @@ import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kotlin.math.sqrt
 
+@Suppress("unused")
 object BattleMapper {
     fun BattleModel.toDomain(): BattleEntity? {
 
@@ -26,17 +27,36 @@ object BattleMapper {
 
         val winner = winnerUid
         val startedAt = this.startedAt
+        val pendingAt = this.pendingAt
 
         return when {
             winner != null -> BattleEntity.ClearedBattleEntity(
-                id, hostUid, startingMatrix, createdAt, winner
+                id, hostUid, startingMatrix, createdAt, winner, participantMaxSize, participantSize
+            )
+
+            pendingAt != null && startedAt == null -> BattleEntity.PendingBattleEntity(
+                id,
+                hostUid,
+                startingMatrix,
+                createdAt,
+                pendingAt.toDate(),
+                participantMaxSize,
+                participantSize
             )
 
             startedAt != null -> BattleEntity.RunningBattleEntity(
-                id, hostUid, startingMatrix, createdAt, startedAt.toDate()
+                id,
+                hostUid,
+                startingMatrix,
+                createdAt,
+                startedAt.toDate(),
+                participantMaxSize,
+                participantSize
             )
 
-            else -> BattleEntity.WaitingBattleEntity(id, hostUid, startingMatrix, createdAt)
+            else -> BattleEntity.WaitingBattleEntity(
+                id, hostUid, startingMatrix, createdAt, participantMaxSize, participantSize
+            )
         }
     }
 

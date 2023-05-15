@@ -38,6 +38,10 @@
 
         <activity android:name=".feature.play.WithCPUPlayActivity" />
 
+        <activity android:name=".feature.battle.BattleCreateActivity" />
+
+        <activity android:name=".feature.battle.BattlePlayActivity" />
+
     </application>
 
 </manifest>

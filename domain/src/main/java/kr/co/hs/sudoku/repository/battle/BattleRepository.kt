@@ -10,6 +10,12 @@ import java.util.Date
 interface BattleRepository {
     suspend fun createBattle(profile: ProfileEntity, matrix: IntMatrix): BattleEntity
 
+    suspend fun createBattle(
+        profile: ProfileEntity,
+        matrix: IntMatrix,
+        participantSize: Int
+    ): BattleEntity
+
     class BattleCreateFailedException(p0: String? = null) : Exception(p0)
 
     suspend fun getBattle(battleId: String): BattleEntity?
@@ -19,16 +25,18 @@ interface BattleRepository {
     suspend fun getParticipantList(battleId: String): List<BattleParticipantEntity>
     suspend fun getParticipant(uid: String): BattleParticipantEntity?
 
-    suspend fun joinBattle(battleEntity: BattleEntity, profile: ProfileEntity)
-    suspend fun getJoinedBattle(profile: ProfileEntity): BattleEntity?
+    suspend fun joinBattle(battleEntity: BattleEntity, profile: ProfileEntity): BattleEntity?
+    suspend fun joinBattle(battleId: String, profile: ProfileEntity): BattleEntity?
+    suspend fun getJoinedBattle(uid: String): BattleEntity?
 
     class UnknownBattleException(p0: String? = null) : Exception(p0)
 
-    suspend fun readyToBattle(profile: ProfileEntity)
-    suspend fun unreadyToBattle(profile: ProfileEntity)
+    suspend fun readyToBattle(uid: String)
+    suspend fun unreadyToBattle(uid: String)
     suspend fun isAllReady(battleEntity: BattleEntity): Boolean
 
     suspend fun exitBattle(battleEntity: BattleEntity, profile: ProfileEntity)
+    suspend fun exitBattle(battleEntity: BattleEntity, uid: String)
 
     suspend fun startBattle(battleEntity: BattleEntity, uid: String)
     suspend fun startBattle(battleEntity: BattleEntity)
@@ -56,4 +64,6 @@ interface BattleRepository {
     }
 
     suspend fun updateParticipantMatrix(uid: String, matrix: List<List<Int>>)
+
+    suspend fun pendingBattle(battleEntity: BattleEntity, uid: String)
 }

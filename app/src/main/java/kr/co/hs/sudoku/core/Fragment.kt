@@ -58,14 +58,19 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
 
     protected val app: App by lazy { requireContext().applicationContext as App }
 
+    protected val activity: Activity
+        get() = super.getActivity() as Activity
+
+    //--------------------------------------------------------------------------------------------\\
+    //----------------------------------------- Extra data ----------------------------------------\\
+    //--------------------------------------------------------------------------------------------\\
+
     companion object {
         private const val EXTRA_LEVEL = "kr.co.hs.sudoku.platform.Fragment.EXTRA_LEVEL"
         private const val EXTRA_USER_ID = "kr.co.hs.sudoku.platform.Fragment.EXTRA_USER_ID"
         private const val EXTRA_MATRIX = "kr.co.hs.sudoku.platform.Fragment.EXTRA_MATRIX"
     }
 
-    protected val activity: Activity
-        get() = super.getActivity() as Activity
 
     fun Bundle.putLevel(level: Int) = putInt(EXTRA_LEVEL, level)
     protected fun getLevel() = arguments?.getInt(EXTRA_LEVEL, 0) ?: 0

@@ -20,13 +20,21 @@ class BattleRepositoryImpl(
     private val remoteSource2: BattleRemoteSourceImpl = BattleRemoteSourceImpl()
 ) : BattleRepository {
 
-    override suspend fun createBattle(profile: ProfileEntity, matrix: IntMatrix): BattleEntity {
+    override suspend fun createBattle(profile: ProfileEntity, matrix: IntMatrix) =
+        createBattle(profile, matrix, 2)
+
+    override suspend fun createBattle(
+        profile: ProfileEntity,
+        matrix: IntMatrix,
+        participantSize: Int
+    ): BattleEntity {
         val profileModel = profile.toData()
+        var participant = BattleParticipantModel()
         val battleId = FirebaseFirestore.getInstance().runTransaction {
-            val battleModel = BattleModel(profileModel, matrix)
+            val battleModel = BattleModel(profileModel, matrix, participantSize)
             val battleId = remoteSource2.createBattle(it, battleModel)
 
-            val participant = BattleParticipantModel(profileModel).also { p ->
+            participant = BattleParticipantModel(profileModel).also { p ->
                 p.battleId = battleId
                 p.matrix = battleModel.startingMatrix
                 p.isReady = true
@@ -39,10 +47,14 @@ class BattleRepositoryImpl(
         return battleId
             ?.run { remoteSource2.getBattle(this) }
             ?.toDomain()
+            ?.apply { this.addParticipant(participant.toDomain()) }
             ?: throw BattleRepository.BattleCreateFailedException("Domain 모델로의 변경 실패")
     }
 
-    override suspend fun getBattle(battleId: String) = remoteSource2.getBattle(battleId)?.toDomain()
+    override suspend fun getBattle(battleId: String) =
+        remoteSource2.getBattle(battleId)
+            ?.toDomain()
+            ?.apply { getParticipantList(battleId).forEach { addParticipant(it) } }
 
     override suspend fun getBattleList(limit: Long) =
         remoteSource2
@@ -69,28 +81,65 @@ class BattleRepositoryImpl(
             .getParticipant(uid)
             ?.toDomain()
 
-    override suspend fun joinBattle(battleEntity: BattleEntity, profile: ProfileEntity) {
+    override suspend fun joinBattle(
+        battleEntity: BattleEntity,
+        profile: ProfileEntity
+    ): BattleEntity? {
         if (battleEntity.host == profile.uid)
-            return
+            return battleEntity
 
-        FirebaseFirestore.getInstance().runTransaction {
-            val battleModel = remoteSource2.getBattle(it, battleEntity.id)
+        return joinBattle(battleEntity.id, profile)
+    }
+
+    override suspend fun joinBattle(battleId: String, profile: ProfileEntity): BattleEntity? {
+        val participants = getParticipantList(battleId)
+
+        var requestUser = BattleParticipantModel()
+        val resultModel = FirebaseFirestore.getInstance().runTransaction {
+            val battleModel = remoteSource2.getBattle(it, battleId)
                 ?: throw BattleRepository.UnknownBattleException()
 
-            val participantModel = BattleParticipantModel(profile.toData()).apply {
+            requestUser = BattleParticipantModel(profile.toData()).apply {
                 this.battleId = battleModel.id
                 this.matrix = battleModel.startingMatrix
             }
 
-            remoteSource2.setParticipant(it, participantModel)
+            if (battleModel.hostUid == profile.uid)
+                return@runTransaction battleModel
+
+            // 이미 참가중
+            val isAlreadyJoined = participants.find { it.uid == profile.uid } != null
+            if (isAlreadyJoined)
+                return@runTransaction battleModel
+
+            if (participants.size >= battleModel.participantMaxSize)
+                throw Exception("battle is full")
+
+            remoteSource2.setParticipant(it, requestUser)
+            remoteSource2.updateBattle(
+                it,
+                battleId,
+                mapOf("participantSize" to FieldValue.increment(1))
+            )
+
+            battleModel.apply {
+                participantSize += 1
+            }
         }.await()
+
+        return resultModel
+            .toDomain()
+            ?.apply {
+                participants.forEach { addParticipant(it) }
+                addParticipant(requestUser.toDomain())
+            }
     }
 
-    override suspend fun getJoinedBattle(profile: ProfileEntity) =
+    override suspend fun getJoinedBattle(uid: String) =
         runCatching {
             FirebaseFirestore.getInstance().runTransaction {
                 remoteSource2
-                    .getParticipant(it, profile.uid)
+                    .getParticipant(it, uid)
                     ?.battleId
                     ?.run { remoteSource2.getBattle(it, this) }
             }.await()
@@ -98,15 +147,15 @@ class BattleRepositoryImpl(
             .getOrNull()
             ?.toDomain()
 
-    override suspend fun readyToBattle(profile: ProfileEntity) {
+    override suspend fun readyToBattle(uid: String) {
         FirebaseFirestore.getInstance().runTransaction {
-            remoteSource2.setParticipant(it, profile.uid, mapOf("isReady" to true))
+            remoteSource2.setParticipant(it, uid, mapOf("isReady" to true))
         }.await()
     }
 
-    override suspend fun unreadyToBattle(profile: ProfileEntity) {
+    override suspend fun unreadyToBattle(uid: String) {
         FirebaseFirestore.getInstance().runTransaction {
-            remoteSource2.setParticipant(it, profile.uid, mapOf("isReady" to false))
+            remoteSource2.setParticipant(it, uid, mapOf("isReady" to false))
         }.await()
     }
 
@@ -116,14 +165,19 @@ class BattleRepositoryImpl(
             .none { !it.isReady }
 
     override suspend fun exitBattle(battleEntity: BattleEntity, profile: ProfileEntity) {
+        exitBattle(battleEntity, profile.uid)
+    }
+
+    override suspend fun exitBattle(battleEntity: BattleEntity, uid: String) {
         FirebaseFirestore.getInstance().runTransaction {
             val battleModel = remoteSource2.getBattle(it, battleEntity.id)
                 ?: throw BattleRepository.UnknownBattleException()
-            val participantModel = remoteSource2.getParticipant(it, profile.uid)
+            val participantModel = remoteSource2.getParticipant(it, uid)
                 ?: return@runTransaction
 
-            if (battleModel.id == participantModel.battleId)
+            if (battleModel.id == participantModel.battleId) {
                 remoteSource2.deleteParticipant(it, participantModel)
+            }
         }.await()
 
         val participantList = remoteSource2.getParticipantList(battleEntity.id)
@@ -137,7 +191,10 @@ class BattleRepositoryImpl(
                 remoteSource2.updateBattle(
                     it,
                     battleEntity.id,
-                    mapOf("hostUid" to participant.uid)
+                    mapOf(
+                        "hostUid" to participant.uid,
+                        "participantSize" to participantList.size
+                    )
                 )
                 remoteSource2.setParticipant(
                     it,
@@ -279,6 +336,27 @@ class BattleRepositoryImpl(
                 it,
                 uid,
                 mapOf("matrix" to matrix.flatten())
+            )
+        }.await()
+    }
+
+    override suspend fun pendingBattle(battleEntity: BattleEntity, uid: String) {
+        val participants = remoteSource2.getParticipantList(battleEntity.id)
+        participants.filter { it.uid != uid }.takeIf { it.isEmpty() }
+            ?.run { throw Exception("is empty guest users") }
+
+        participants.filter { !it.isReady }.takeIf { it.isNotEmpty() }
+            ?.run { throw Exception("not to all ready") }
+
+        FirebaseFirestore.getInstance().runTransaction {
+            val battleModel = remoteSource2.getBattle(it, battleEntity.id)
+            if (uid != battleModel?.hostUid)
+                throw Exception("start pending only host(${battleEntity.host}) but you are $uid")
+
+            remoteSource2.updateBattle(
+                it,
+                battleEntity.id,
+                mapOf("pendingAt" to FieldValue.serverTimestamp())
             )
         }.await()
     }

@@ -34,10 +34,10 @@ class BattleTestCase2 {
         )
         matrix = CustomMatrix(
             listOf(
-                listOf(1, 4, 3, 2),
-                listOf(2, 3, 1, 4),
-                listOf(4, 1, 2, 3),
-                listOf(3, 2, 4, 0)
+                listOf(1, 0, 1, 0),
+                listOf(0, 1, 0, 1),
+                listOf(1, 0, 1, 0),
+                listOf(0, 1, 0, 1)
             )
         )
         val set = HashSet<BattleEntity>()

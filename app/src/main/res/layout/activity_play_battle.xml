@@ -9,14 +9,16 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/targetBoardLayout"
             android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_height="0dp"
+            app:layout_constrainedHeight="true"
+            app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toTopOf="@id/targetUserLayout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHeight_default="spread"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
-            app:layout_constraintWidth_default="wrap" />
+            app:layout_constraintWidth_default="spread" />
 
         <TextView
             android:id="@+id/targetUserNationFlag"
@@ -65,12 +67,24 @@
             android:fontFamily="@font/goreyong_ddalgi"
             android:gravity="bottom|center_horizontal"
             android:textSize="20sp"
-            app:layout_constraintBottom_toTopOf="@id/vGuideForCurrentUser"
+            app:layout_constraintBottom_toTopOf="@id/btnEject"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="wrap"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/vGuideForTargetUser"
             app:layout_constraintWidth_default="wrap" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/btnEject"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_renew"
+            app:layout_constraintBottom_toTopOf="@id/vGuideForCurrentUser"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHeight_percent="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTimer" />
 
         <View
             android:id="@+id/vGuideForCurrentUser"
@@ -80,7 +94,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="wrap"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTimer"
+            app:layout_constraintTop_toBottomOf="@id/btnEject"
             app:layout_constraintWidth_default="spread" />
 
         <TextView
@@ -116,7 +130,8 @@
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.6"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/currentUserLayout"
             app:layout_constraintWidth_default="spread" />

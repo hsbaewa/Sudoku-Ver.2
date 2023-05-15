@@ -27,10 +27,8 @@ import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.stage.history.impl.CachedHistoryQueue
 import kr.co.hs.sudoku.model.stage.history.HistoryQueue
-import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
 import kr.co.hs.sudoku.repository.timer.RealServerTimer
 import kr.co.hs.sudoku.usecase.record.PutRecordUseCaseImpl
-import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
@@ -220,9 +218,6 @@ class ChallengePlayActivity : Activity() {
         val useCase = PutRecordUseCaseImpl(app.getChallengeRecordRepository(challengeId))
         useCase(record).last()
     }
-
-    private suspend fun getProfile(uid: String) =
-        GetProfileUseCase(ProfileRepositoryImpl()).invoke(uid).last()
 
     private fun showCompleteRecordDialog(clearRecord: String) {
         val dlgBinding =
