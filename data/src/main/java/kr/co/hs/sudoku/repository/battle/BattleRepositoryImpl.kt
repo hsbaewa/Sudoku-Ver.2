@@ -11,6 +11,7 @@ import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.mapper.ProfileMapper.toData
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleModel
+import kr.co.hs.sudoku.model.battle.BattleParticipantEntity
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.user.ProfileEntity
@@ -273,6 +274,7 @@ class BattleRepositoryImpl(
             }
 
             remoteSource2.updateBattle(it, battleEntity.id, updateBattleModel)
+            remoteSource2.deleteParticipant(it, profile.uid)
             remoteSource2.setBattleRecord(
                 it,
                 battleEntity.id,
@@ -323,10 +325,13 @@ class BattleRepositoryImpl(
         unbindParticipant(battleId, uid)
         bindParticipantsMap[uid] =
             remoteSource2.getParticipantCollectionRef().document(uid)
-                .addSnapshotListener { value, _ ->
-                    value?.toObject(BattleParticipantModel::class.java)
-                        ?.toDomain()
-                        ?.run { changedListener.onChanged(this) }
+                .addSnapshotListener { value, a ->
+                    value?.run {
+                        toObject(BattleParticipantModel::class.java)
+                            ?.toDomain()
+                            ?.run { changedListener.onChanged(this) }
+                            ?: kotlin.run { changedListener.onChanged(BattleParticipantEntity(id)) }
+                    }
                 }
     }
 

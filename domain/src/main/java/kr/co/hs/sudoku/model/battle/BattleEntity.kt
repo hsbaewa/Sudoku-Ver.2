@@ -70,6 +70,7 @@ sealed interface BattleEntity {
         override val host: String,
         override val startingMatrix: List<List<Int>>,
         override val createdAt: Date,
+        val startedAt: Date,
         var winner: String,
         private val participantMaxSize: Int,
         override val participantSize: Int

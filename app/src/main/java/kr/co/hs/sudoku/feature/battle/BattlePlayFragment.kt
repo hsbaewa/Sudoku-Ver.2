@@ -13,6 +13,7 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutPlayBattleForUserBinding
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
+import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import kr.co.hs.sudoku.views.CountDownView
@@ -50,6 +51,9 @@ class BattlePlayFragment : Fragment() {
                     is BattlePlayViewModel.Event.OnReady -> it.setupUIForReady()
                     is BattlePlayViewModel.Event.OnPrepared -> it.setupUIForPrepared()
                     is BattlePlayViewModel.Event.OnStarted -> it.setupUIForStart()
+                    is BattlePlayViewModel.Event.OnChangedCellToCorrect -> it.setupUIForCellCorrect()
+                    is BattlePlayViewModel.Event.OnChangedCellToError -> it.setupUIForCellError()
+                    is BattlePlayViewModel.Event.OnChangedCell -> it.setupUIForChangedCell()
                     else -> {}
                 }
             }
@@ -99,6 +103,20 @@ class BattlePlayFragment : Fragment() {
         binding.sudokuBoard.setupUIStarted(stage)
         binding.viewSilhouette.setupUIStartedSilhouette()
         binding.btnReadyOrStart.setupUIStarted()
+    }
+
+    private fun BattlePlayViewModel.Event.OnChangedCellToCorrect.setupUIForCellCorrect() {
+        set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
+            .forEach { binding.sudokuBoard.setError(it.first, it.second, false) }
+    }
+
+    private fun BattlePlayViewModel.Event.OnChangedCellToError.setupUIForCellError() {
+        set.mapNotNull { (it as? IntCoordinateCellEntity)?.run { Pair(row, column) } }
+            .forEach { binding.sudokuBoard.setError(it.first, it.second, true) }
+    }
+
+    private fun BattlePlayViewModel.Event.OnChangedCell.setupUIForChangedCell() {
+        binding.sudokuBoard.setCellValue(row, column, value ?: 0)
     }
 
 

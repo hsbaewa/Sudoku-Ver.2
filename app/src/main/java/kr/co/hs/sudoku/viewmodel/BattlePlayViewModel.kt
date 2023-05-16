@@ -15,9 +15,11 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
+import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.CellValueEntity
+import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepository
@@ -25,7 +27,7 @@ import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
 
 class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedListener,
-    BattleRepository.BattleChangedListener {
+    BattleRepository.BattleChangedListener, IntCoordinateCellEntity.ValueChangedListener {
     companion object {
         private const val TAG = "BattlePlayViewModel"
         fun log(msg: String) = Log.d(TAG, msg)
@@ -92,6 +94,30 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
             override val participant: BattleParticipantEntity,
             val stage: Stage
         ) : Event
+
+        data class OnChangedCell(
+            override val battle: BattleEntity,
+            override val participant: BattleParticipantEntity,
+            val row: Int, val column: Int, val value: Int?
+        ) : Event
+
+        data class OnChangedCellToCorrect(
+            override val battle: BattleEntity,
+            override val participant: BattleParticipantEntity,
+            val set: Set<CellEntity<Int>>
+        ) : Event
+
+        data class OnChangedCellToError(
+            override val battle: BattleEntity,
+            override val participant: BattleParticipantEntity,
+            val set: Set<CellEntity<Int>>
+        ) : Event
+
+        data class OnCleared(
+            override val battle: BattleEntity,
+            override val participant: BattleParticipantEntity,
+            val stage: Stage
+        ) : Event
     }
 
     fun init(repository: BattleRepository, uid: String) {
@@ -125,18 +151,18 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
 
         when (battle) {
             is BattleEntity.PendingBattleEntity -> {
-                participantList.value?.forEach { participant ->
-                    emitEvent(participant, Event.OnPrepared(battle, participant))
-                }
+                participantList.value?.forEach { it.onPrepared(battle) }
             }
 
             is BattleEntity.RunningBattleEntity -> {
                 if (battle.startedAt != lastStarted) {
-                    participantList.value?.forEach { participant ->
-                        getStage(participant.uid)?.let { stage ->
-                            emitEvent(participant, Event.OnStarted(battle, participant, stage))
-                        }
-                    }
+                    participantList.value?.forEach { it.onStarted(battle) }
+                }
+            }
+
+            is BattleEntity.ClearedBattleEntity -> {
+                if (battle.startedAt != lastStarted) {
+                    participantList.value?.forEach { it.onStarted(battle) }
                 }
             }
 
@@ -148,15 +174,9 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
     val battle: LiveData<BattleEntity> by this::_battle
     private val observerForBattle = Observer<BattleEntity> { battle ->
         if (participantSize.value != battle.participantSize) {
-            log("참여자 정보 변경 ${participantSize.value} -> ${battle.participantSize}")
+            log("참여자 숫자 변경 ${participantSize.value} -> ${battle.participantSize}")
             _participantSize.value = battle.participantSize
         }
-
-//        if (battle is BattleEntity.RunningBattleEntity) {
-//            participantStageMap.forEach {
-//                view
-//            }
-//        }
     }
 
     private val _participantSize = MutableLiveData<Int>()
@@ -177,39 +197,52 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
 
         // 없어진 참여자 (알고있던 참여자 - 실제 remote에서 가져온 참여자)
         // 에 대해 모니터 중지 및 participantSudoku에서 제거
-        participantUidList.subtract(remoteParticipantUidList).forEach { uid ->
-            participantList.find { it.uid == uid }?.run {
-                log("$displayName 가 참여 인원에서 사라짐")
-                repository.unbindParticipant(battleId, uid)
-                participantStageMap.remove(uid)
-//                emitParticipantEvent(this, ParticipantEvent.OnExit(this))
-            }
-        }
+        val exitUserList = participantUidList.subtract(remoteParticipantUidList)
+            .mapNotNull { uid -> participantList.find { (it.uid == uid) } }
+        onExitParticipantList(exitUserList)
 
         // 신규로 추가된 참여자 (실제 remote에서 가져온 참여자 - 알고있던 참여자)
-        remoteParticipantUidList.subtract(participantUidList).forEach { uid ->
-            remoteParticipantList.find { it.uid == uid }?.run {
-                log("$displayName 가 참여 인원에 추가됨")
-                val stage = matrix.toStage()
-                participantStageMap[uid] = stage
-                repository.bindParticipant(battleId, uid, this@BattlePlayViewModel)
-
-                // FIXME: 이거 왜 들어가 있지?...
-//                battle.value?.let { battle ->
-//                    emitParticipantEvent(
-//                        this, ParticipantEvent.OnStarted(
-//                            battle, this, stage
-//                        )
-//                    )
-//                }
-
-            }
-        }
+        val joinUserList = remoteParticipantUidList.subtract(participantUidList)
+            .mapNotNull { uid -> remoteParticipantList.find { it.uid == uid } }
+        onJoinParticipantList(joinUserList)
 
         _participantList.value = remoteParticipantList
         remoteParticipantList
             .find { it.uid == currentUserId }
             ?.run { _currentProfile.value = this }
+    }
+
+    private fun onExitParticipantList(list: List<BattleParticipantEntity>) {
+        list.forEach {
+            log("${it.displayName} 가 참여 인원에서 사라짐")
+            repository.unbindParticipant(battleId, it.uid)
+            participantStageMap.remove(it.uid)
+        }
+    }
+
+    private suspend fun onJoinParticipantList(list: List<BattleParticipantEntity>) {
+        val battle = battle.value ?: return
+        val matrix = CustomMatrix(battle.startingMatrix)
+        list.forEach {
+            log("${it.displayName} 가 참여 인원에 추가됨")
+            val stage = matrix.toStage()
+            if (it.uid == currentUserId) {
+                stage.addValueChangedListener(this)
+            }
+            participantStageMap[it.uid] = stage
+            repository.bindParticipant(battleId, it.uid, this)
+
+            when (battle) {
+
+                is BattleEntity.ClearedBattleEntity -> {
+                    if (!runningUserIdList.contains(it.uid)) {
+                        it.onStarted(battle)
+                    }
+                }
+
+                else -> {}
+            }
+        }
     }
 
     // 알고있는 참여자 리스트
@@ -222,50 +255,70 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
     // 알고있는 참여자 stage 상태
     private val participantStageMap = HashMap<String, Stage>()
 
+    // 마지막으로 알고 있던 실행중인 참여자 id(participant 이벤트에서 해당 참여자가 나가고 들어온 정보를 알아야 해서 추가함. 값을 지워주는 부분은 위의 참여자 사이즈 변환 시점에 한다.)
+    private val runningUserIdList = HashSet<String>()
+
     // 실제 remote로부터 참여자 정보를 얻는다
     private suspend fun requestParticipants() = repository.getParticipantList(battleId)
     private suspend fun IntMatrix.toStage() = BuildSudokuUseCaseImpl(this).invoke().last()
-
     override fun onChanged(participant: BattleParticipantEntity) {
         log("onChanged($participant)")
 
         battle.value?.let { battle ->
-
-            log("해당 참여자가 참여함")
-            emitEvent(participant, Event.OnJoined(battle, participant))
-
-            if (participant.isReady) {
+            if (participant.matrix is EmptyMatrix) {
+                participant.onExit(battle)
+            } else if (participant.isReady) {
                 // 레디 상태가 변경
-                log("해당 참여자가 준비됨")
                 // 기존의 알고 있던 stage와 비교하여 해당 참여자의 변경된 셀 조사
                 val stage = getStage(participant.uid)
                 val changedCellSet = stage?.update(participant.matrix)
 
-                if (changedCellSet?.isNotEmpty() == true) {
-                    log("변경된 셀의 갯수가 ${changedCellSet.size} 개 있다")
-                }
-
                 when (battle) {
-                    is BattleEntity.WaitingBattleEntity -> {
-                        log("battle이 대기중인 battle이어서 ready 상태 유지함")
-                        emitEvent(participant, Event.OnReady(battle, participant))
-
-                    }
-
+                    is BattleEntity.WaitingBattleEntity -> participant.onReady(battle)
                     is BattleEntity.RunningBattleEntity -> {
-                        log("battle이 진행중인 battle이어서 start 상태 유지함")
-                        emitEvent(participant, Event.OnReady(battle, participant))
+                        if (runningUserIdList.contains(participant.uid)) {
+                            if (changedCellSet?.isNotEmpty() == true && participant.uid != currentUserId) {
+                                // 나 자신의 stage 정보는 이미 로컬에서 알고 있기 때문에 변경된 셀이 없는걸로 구분 된다. 그러므로 set 함수에서 자체적으로 이벤트 방출 해야 한다.
 
-                        stage?.run {
-                            emitEvent(participant, Event.OnStarted(battle, participant, stage))
+                                log("변경된 셀의 갯수가 ${changedCellSet.size} 개 있다")
+
+                                val errorCell = stage.getDuplicatedCells().toList().toHashSet()
+                                getLastErrorCell(participant.uid).let { lastErrorCell ->
+                                    if (errorCell != lastErrorCell) {
+                                        lastErrorCell.subtract(errorCell)
+                                            .takeIf { it.isNotEmpty() }
+                                            ?.let { participant.onChangedCorrectSet(battle, it) }
+
+                                        errorCell.subtract(lastErrorCell)
+                                            .takeIf { it.isNotEmpty() }
+                                            ?.let { participant.onChangedErrorSet(battle, it) }
+
+                                        setLastErrorCell(participant.uid, errorCell)
+                                    }
+                                }
+
+
+                                changedCellSet
+                                    .mapNotNull { it as? IntCoordinateCellEntity }
+                                    .forEach {
+                                        participant.onChangedCell(battle, it)
+                                    }
+                                if (stage.isSudokuClear()) {
+                                    participant.onCleared(battle, stage)
+                                }
+                            }
+                        } else {
+                            // 최초 running 이벤트이므로 시작 이벤트를 방출한다.
+                            participant.onStarted(battle)
                         }
                     }
 
                     else -> {}
                 }
 
+            } else {
+                participant.onJoined(battle)
             }
-
         }
     }
 
@@ -296,6 +349,15 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
 
     private fun getStage(uid: String) = participantStageMap.takeIf { it.containsKey(uid) }?.get(uid)
 
+    private var lastErrorCell = HashMap<String, Set<CellEntity<Int>>>()
+    private fun getLastErrorCell(uid: String): Set<CellEntity<Int>> {
+        return lastErrorCell.takeIf { it.contains(uid) }?.get(uid) ?: emptySet()
+    }
+
+    private fun setLastErrorCell(uid: String, set: Set<CellEntity<Int>>) {
+        lastErrorCell[uid] = set
+    }
+
     init {
         participantSize.observeForever(observerForParticipantSize)
         battle.observeForever(observerForBattle)
@@ -305,6 +367,70 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
         super.onCleared()
         participantSize.removeObserver(observerForParticipantSize)
         battle.removeObserver(observerForBattle)
+    }
+
+    private fun BattleParticipantEntity.onJoined(battle: BattleEntity) {
+        log("참여자[$displayName]가 참여함")
+        emitEvent(this, Event.OnJoined(battle, this))
+    }
+
+    private fun BattleParticipantEntity.onReady(battle: BattleEntity) {
+        log("참여자[$displayName]가 준비됨")
+        emitEvent(this, Event.OnReady(battle, this))
+    }
+
+    private fun BattleParticipantEntity.onPrepared(battle: BattleEntity) {
+        log("참여자[$displayName]가 시작 준비됨")
+        emitEvent(this, Event.OnPrepared(battle, this))
+    }
+
+    private fun BattleParticipantEntity.onStarted(battle: BattleEntity) {
+        log("참여자[$displayName]가 시작됨")
+        emitEvent(this, Event.OnReady(battle, this))
+        getStage(uid)?.let { emitEvent(this, Event.OnStarted(battle, this, it)) }
+        runningUserIdList.add(uid)
+    }
+
+    private fun BattleParticipantEntity.onChangedCorrectSet(
+        battle: BattleEntity,
+        set: Set<CellEntity<Int>>
+    ) {
+        log("참여자[$displayName]의 ${set.size}개의 셀이 올바르게 됨")
+        emitEvent(this, Event.OnChangedCellToCorrect(battle, this, set))
+    }
+
+    private fun BattleParticipantEntity.onChangedErrorSet(
+        battle: BattleEntity,
+        set: Set<CellEntity<Int>>
+    ) {
+        log("참여자[$displayName]의 ${set.size}개의 셀이 올바르지 않게 됨")
+        emitEvent(this, Event.OnChangedCellToError(battle, this, set))
+    }
+
+    private fun BattleParticipantEntity.onChangedCell(
+        battle: BattleEntity,
+        intCoordinateCellEntity: IntCoordinateCellEntity
+    ) {
+        log("참여자[$displayName]의 셀(${intCoordinateCellEntity.row}, ${intCoordinateCellEntity.column})이 변경됨")
+        val value =
+            if (intCoordinateCellEntity.isEmpty()) null else intCoordinateCellEntity.getValue()
+        val row = intCoordinateCellEntity.row
+        val column = intCoordinateCellEntity.column
+        emitEvent(this, Event.OnChangedCell(battle, this, row, column, value))
+    }
+
+    private fun BattleParticipantEntity.onCleared(
+        battle: BattleEntity,
+        stage: Stage
+    ) {
+        log("참여자[$displayName]의 게임이 클리어 되었다")
+        emitEvent(this, Event.OnCleared(battle, this, stage))
+    }
+
+    private fun BattleParticipantEntity.onExit(battle: BattleEntity) {
+        log("참여자[$uid]가 나감")
+        emitEvent(this, Event.OnExit(battle, this))
+        runningUserIdList.remove(uid)
     }
 
     fun exit(uid: String, after: () -> Unit) {
@@ -364,6 +490,35 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
             ?.run { this[currentUserId] }
             ?.let { stage ->
                 stage[row, column] = value
+
+                val battle = battle.value
+                val participant = currentProfile.value
+
+                if (battle != null && participant != null) {
+                    participant.onChangedCell(battle, stage.getCell(row, column))
+
+                    if (stage.isSudokuClear()) {
+                        participant.onCleared(battle, stage)
+                    }
+                }
+
+                if (battle != null && participant != null) {
+                    val errorCell = stage.getDuplicatedCells().toList().toHashSet()
+                    getLastErrorCell(currentUserId).let { lastErrorCell ->
+                        if (errorCell != lastErrorCell) {
+                            lastErrorCell.subtract(errorCell)
+                                .takeIf { it.isNotEmpty() }
+                                ?.let { participant.onChangedCorrectSet(battle, it) }
+
+                            errorCell.subtract(lastErrorCell)
+                                .takeIf { it.isNotEmpty() }
+                                ?.let { participant.onChangedErrorSet(battle, it) }
+
+                            setLastErrorCell(currentUserId, errorCell)
+                        }
+                    }
+                }
+
                 viewModelScope.launch(coroutineExceptionHandler) {
                     withContext(Dispatchers.IO) {
                         repository.updateParticipantMatrix(currentUserId, stage.toValueTable())
@@ -385,5 +540,24 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
                 _isRunningProgress.value = false
             }
         }
+    }
+
+    override fun onChanged(cell: IntCoordinateCellEntity) {
+        val battle = battle.value ?: return
+        val profile = currentProfile.value ?: return
+
+        participantStageMap.takeIf { it.containsKey(currentUserId) }
+            ?.run { this[currentUserId] }
+            ?.run {
+                if (isSudokuClear() && getClearTime() >= 0) {
+                    viewModelScope.launch(coroutineExceptionHandler) {
+                        withContext(Dispatchers.IO) {
+                            repository.updateClearRecord(battle, profile, getClearTime())
+                        }
+                    }
+
+                }
+            }
+
     }
 }

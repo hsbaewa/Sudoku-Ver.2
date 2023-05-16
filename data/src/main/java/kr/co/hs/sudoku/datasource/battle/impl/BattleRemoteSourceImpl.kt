@@ -165,4 +165,8 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
     override fun deleteParticipant(transaction: Transaction, participant: BattleParticipantModel) {
         transaction.delete(getParticipantCollectionRef().document(participant.uid))
     }
+
+    override fun deleteParticipant(transaction: Transaction, uid: String) {
+        transaction.delete(getParticipantCollectionRef().document(uid))
+    }
 }

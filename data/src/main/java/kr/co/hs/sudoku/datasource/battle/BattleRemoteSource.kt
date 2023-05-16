@@ -43,4 +43,5 @@ interface BattleRemoteSource {
 
     fun deleteBattle(transaction: Transaction, battleId: String)
     fun deleteParticipant(transaction: Transaction, participant: BattleParticipantModel)
+    fun deleteParticipant(transaction: Transaction, uid: String)
 }

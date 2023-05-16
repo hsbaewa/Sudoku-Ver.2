@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.feature.battle
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -12,12 +13,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayBattleBinding
+import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.databinding.LayoutItemUserBinding
+import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.hasFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.removeFragment
@@ -91,6 +95,7 @@ class BattlePlayActivity : Activity() {
                 battleViewModel.getEventFlow(uid).collect {
                     when (it) {
                         is BattlePlayViewModel.Event.OnStarted -> it.onStart()
+                        is BattlePlayViewModel.Event.OnCleared -> it.onCleared()
                         else -> {}
                     }
                 }
@@ -135,10 +140,21 @@ class BattlePlayActivity : Activity() {
     //--------------------------------------------------------------------------------------------\\
     private suspend fun BattlePlayViewModel.Event.OnStarted.onStart() {
         if (battle is BattleEntity.RunningBattleEntity) {
-            realServerTimer.initTime(battle)
-            recordViewModel.bind(stage)
-            recordViewModel.setTimer(realServerTimer)
-            recordViewModel.play()
+            realServerTimer.initTime(battle.startedAt)
+        } else if (battle is BattleEntity.ClearedBattleEntity) {
+            realServerTimer.initTime(battle.startedAt)
+        }
+        recordViewModel.bind(stage)
+        recordViewModel.setTimer(realServerTimer)
+        recordViewModel.play()
+    }
+
+    private fun BattlePlayViewModel.Event.OnCleared.onCleared() {
+        with(recordViewModel) {
+            stop()
+            if (stage.isSudokuClear() && stage.getClearTime() >= 0) {
+                showCompleteRecordDialog(stage.getClearTime())
+            }
         }
     }
 
@@ -205,5 +221,22 @@ class BattlePlayActivity : Activity() {
 
     private fun TextView.setupUITimer(data: LiveData<String>) {
         data.observe(this@BattlePlayActivity) { text = it }
+    }
+
+
+    //--------------------------------------------------------------------------------------------\\
+    //----------------------------------------- Dialog ------------------------------------------\\
+    //--------------------------------------------------------------------------------------------\\
+
+    private fun showCompleteRecordDialog(clearRecord: Long) {
+        val dlgBinding =
+            LayoutCompleteBinding.inflate(LayoutInflater.from(this))
+        dlgBinding.tvRecord.text = clearRecord.toTimerFormat()
+        dlgBinding.lottieAnim.playAnimation()
+        MaterialAlertDialogBuilder(this)
+            .setView(dlgBinding.root)
+            .setPositiveButton(R.string.confirm) { _, _ -> finish() }
+            .setCancelable(false)
+            .show()
     }
 }

@@ -30,8 +30,15 @@ object BattleMapper {
         val pendingAt = this.pendingAt
 
         return when {
-            winner != null -> BattleEntity.ClearedBattleEntity(
-                id, hostUid, startingMatrix, createdAt, winner, participantMaxSize, participantSize
+            startedAt != null && winner != null -> BattleEntity.ClearedBattleEntity(
+                id,
+                hostUid,
+                startingMatrix,
+                createdAt,
+                startedAt.toDate(),
+                winner,
+                participantMaxSize,
+                participantSize
             )
 
             pendingAt != null && startedAt == null -> BattleEntity.PendingBattleEntity(

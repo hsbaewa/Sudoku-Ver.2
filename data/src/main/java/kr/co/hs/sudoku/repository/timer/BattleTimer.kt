@@ -2,18 +2,18 @@ package kr.co.hs.sudoku.repository.timer
 
 import android.os.SystemClock
 import kr.co.hs.sudoku.datasource.timer.impl.TimeRemoteSourceImpl
-import kr.co.hs.sudoku.model.battle.BattleEntity
+import java.util.Date
 
 class BattleTimer : Timer {
     override fun start() = startedTime
 
     fun getCurrentTime() = initTimeStamp + (SystemClock.elapsedRealtime() - (initElapsedTime))
-    suspend fun initTime(battleEntity: BattleEntity.RunningBattleEntity): Boolean {
+    suspend fun initTime(startedAt: Date): Boolean {
         val remoteSource = TimeRemoteSourceImpl()
         return remoteSource.getServerTimestamp()?.serverTime?.toDate()?.run {
             initElapsedTime = SystemClock.elapsedRealtime()
             initTimeStamp = time
-            startedTime = battleEntity.startedAt.time
+            startedTime = startedAt.time
             true
         } ?: false
     }

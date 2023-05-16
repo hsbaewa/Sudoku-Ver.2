@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.model.battle
 
+import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
@@ -13,4 +14,8 @@ data class BattleParticipantEntity(
     val matrix: IntMatrix,
     val clearTime: Long,
     val isReady: Boolean
-) : ProfileEntity
+) : ProfileEntity {
+    constructor(uid: String) : this(
+        uid, "", null, null, null, EmptyMatrix(), 0L, false
+    )
+}
