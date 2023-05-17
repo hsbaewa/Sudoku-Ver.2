@@ -56,7 +56,7 @@ class BattleTestCase3 {
         )
         battleEntity = battleRepository2.createBattle(user1, matrix)
         battleRepository2.joinBattle(battleEntity, user2)
-        battleRepository2.readyToBattle(user2)
+        battleRepository2.readyToBattle(user2.uid)
     }
 
     @Test

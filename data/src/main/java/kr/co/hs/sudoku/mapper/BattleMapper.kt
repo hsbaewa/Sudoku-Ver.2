@@ -37,7 +37,7 @@ object BattleMapper {
                 createdAt,
                 startedAt.toDate(),
                 winner,
-                participantMaxSize,
+                startingParticipants.size,
                 participantSize
             )
 
@@ -47,7 +47,7 @@ object BattleMapper {
                 startingMatrix,
                 createdAt,
                 pendingAt.toDate(),
-                participantMaxSize,
+                startingParticipants.size,
                 participantSize
             )
 
@@ -57,12 +57,12 @@ object BattleMapper {
                 startingMatrix,
                 createdAt,
                 startedAt.toDate(),
-                participantMaxSize,
+                startingParticipants.size,
                 participantSize
             )
 
             else -> BattleEntity.WaitingBattleEntity(
-                id, hostUid, startingMatrix, createdAt, participantMaxSize, participantSize
+                id, hostUid, startingMatrix, createdAt, startingParticipants.size, participantSize
             )
         }
     }

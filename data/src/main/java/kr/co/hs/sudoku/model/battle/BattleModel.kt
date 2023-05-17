@@ -17,8 +17,12 @@ class BattleModel() {
     var pendingAt: Timestamp? = null
     var startedAt: Timestamp? = null
     var winnerUid: String? = null
-    var participantMaxSize = 2
+
+    // battle 모델에도 실시간 참여자 정보를 알고 있어야 스냅샷 이벤트에서 participant 를 매번 쿼리할 필요가 없어진다.
     var participantSize = 1
+
+    // 시작 시점의 참여자 정보 저장(승률 정보 통계 낼때 필요하다. 전체 게임 진행 횟수)
+    var startingParticipants: List<String?> = emptyList()
 
     constructor(
         profile: ProfileModelImpl,
@@ -27,8 +31,8 @@ class BattleModel() {
     ) : this() {
         this.hostUid = profile.uid
         this.startingMatrix = startingMatrix.flatten()
-        this.participantMaxSize = participantMaxSize
         this.participantSize = 1
+        this.startingParticipants = List(participantMaxSize) { null }
     }
 
     fun toFirebaseData() = asMutableMap().also {

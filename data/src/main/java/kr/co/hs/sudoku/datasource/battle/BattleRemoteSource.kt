@@ -30,7 +30,7 @@ interface BattleRemoteSource {
 
     suspend fun getStatistics(uid: String): BattleStatisticsModel
 
-    fun updateBattle(transaction: Transaction, battleId: String, data: Map<String, Any>)
+    fun updateBattle(transaction: Transaction, battleId: String, data: Map<String, Any?>)
     fun setBattleRecord(
         transaction: Transaction,
         battleId: String,

@@ -121,13 +121,13 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
 
     private suspend fun getClearCount(uid: String) =
         getBattleCollectionRef()
-            .whereNotEqualTo("clearTime_${uid}", null)
+            .whereArrayContains("startingParticipants", uid)
             .count()
             .get(AggregateSource.SERVER)
             .await()
             .count
 
-    override fun updateBattle(transaction: Transaction, battleId: String, data: Map<String, Any>) {
+    override fun updateBattle(transaction: Transaction, battleId: String, data: Map<String, Any?>) {
         transaction.set(getBattleCollectionRef().document(battleId), data, merge())
     }
 

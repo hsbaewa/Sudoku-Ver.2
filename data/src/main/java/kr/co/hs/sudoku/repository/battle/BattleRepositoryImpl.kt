@@ -96,8 +96,8 @@ class BattleRepositoryImpl(
         val participants = getParticipantList(battleId)
 
         var requestUser = BattleParticipantModel()
-        val resultModel = FirebaseFirestore.getInstance().runTransaction {
-            val battleModel = remoteSource2.getBattle(it, battleId)
+        val resultModel = FirebaseFirestore.getInstance().runTransaction { t ->
+            val battleModel = remoteSource2.getBattle(t, battleId)
                 ?: throw BattleRepository.UnknownBattleException()
 
             requestUser = BattleParticipantModel(profile.toData()).apply {
@@ -113,12 +113,12 @@ class BattleRepositoryImpl(
             if (isAlreadyJoined)
                 return@runTransaction battleModel
 
-            if (participants.size >= battleModel.participantMaxSize)
+            if (participants.size >= battleModel.startingParticipants.size)
                 throw Exception("battle is full")
 
-            remoteSource2.setParticipant(it, requestUser)
+            remoteSource2.setParticipant(t, requestUser)
             remoteSource2.updateBattle(
-                it,
+                t,
                 battleId,
                 mapOf("participantSize" to FieldValue.increment(1))
             )
@@ -147,6 +147,7 @@ class BattleRepositoryImpl(
         }
             .getOrNull()
             ?.toDomain()
+            ?.apply { getParticipantList(this.id).forEach { addParticipant(it) } }
 
     override suspend fun readyToBattle(uid: String) {
         FirebaseFirestore.getInstance().runTransaction {
@@ -170,36 +171,37 @@ class BattleRepositoryImpl(
     }
 
     override suspend fun exitBattle(battleEntity: BattleEntity, uid: String) {
-        FirebaseFirestore.getInstance().runTransaction {
-            val battleModel = remoteSource2.getBattle(it, battleEntity.id)
+        FirebaseFirestore.getInstance().runTransaction { t ->
+            val battleModel = remoteSource2.getBattle(t, battleEntity.id)
                 ?: throw BattleRepository.UnknownBattleException()
-            val participantModel = remoteSource2.getParticipant(it, uid)
+            val participantModel = remoteSource2.getParticipant(t, uid)
                 ?: return@runTransaction
 
             if (battleModel.id == participantModel.battleId) {
-                remoteSource2.deleteParticipant(it, participantModel)
+                remoteSource2.deleteParticipant(t, participantModel)
             }
         }.await()
 
         val participantList = remoteSource2.getParticipantList(battleEntity.id)
-        FirebaseFirestore.getInstance().runTransaction {
+        FirebaseFirestore.getInstance().runTransaction { t ->
             if (participantList.isEmpty()) {
-                if (remoteSource2.getBattle(it, battleEntity.id)?.winnerUid == null) {
-                    remoteSource2.deleteBattle(it, battleEntity.id)
+                // 참여자가 비어 있는경우
+                if (remoteSource2.getBattle(t, battleEntity.id)?.winnerUid == null) {
+                    // winner uid 정보가 없는경우 필요없는 battle 모델이므로 지운다.
+                    remoteSource2.deleteBattle(t, battleEntity.id)
                 }
             } else {
+                // 참여자가 존재하는 경우 아무 참여자나 1명을 host 로 변경하여 준다.
                 val participant = participantList.first()
                 remoteSource2.updateBattle(
-                    it,
-                    battleEntity.id,
+                    t, battleEntity.id,
                     mapOf(
                         "hostUid" to participant.uid,
                         "participantSize" to participantList.size
                     )
                 )
                 remoteSource2.setParticipant(
-                    it,
-                    participant.uid,
+                    t, participant.uid,
                     mapOf("isReady" to true)
                 )
             }
@@ -219,10 +221,12 @@ class BattleRepositoryImpl(
             if (uid != battleModel?.hostUid)
                 throw Exception("start only host(${battleEntity.host}) but you are $uid")
 
-            remoteSource2.updateBattle(
-                it,
-                battleEntity.id,
-                mapOf("startedAt" to FieldValue.serverTimestamp())
+            remoteSource2.updateBattle(it, battleEntity.id,
+                mapOf(
+                    "startedAt" to FieldValue.serverTimestamp(),
+                    // 모든 참여자를 startingParticipants로 저장하여 시작 했던 멤버를 기억하도록 한다.(나중에 통계때 필요)
+                    "startingParticipants" to participants.map { participant -> participant.uid }
+                )
             )
         }.await()
     }
@@ -236,8 +240,8 @@ class BattleRepositoryImpl(
         profile: ProfileEntity,
         clearTime: Long
     ) {
-        FirebaseFirestore.getInstance().runTransaction {
-            val participantModel = remoteSource2.getParticipant(it, profile.uid)
+        FirebaseFirestore.getInstance().runTransaction { t ->
+            val participantModel = remoteSource2.getParticipant(t, profile.uid)
                 ?: throw BattleRepository.UnknownParticipantException()
 
             if (participantModel.battleId != battleEntity.id)
@@ -245,43 +249,40 @@ class BattleRepositoryImpl(
             if (!participantModel.isReady)
                 throw Exception("not to ready user")
 
-            val battleModel = remoteSource2.getBattle(it, battleEntity.id)
+            val battleModel = remoteSource2.getBattle(t, battleEntity.id)
                 ?: throw BattleRepository.UnknownBattleException()
 
-            val winnerUid = battleModel.winnerUid
+            battleModel.winnerUid
+                .takeIf {
+                    // winner uid 가 존재하는지 확인
+                    it != null
+                }
+                ?.let { winnerUid ->
+                    // 이미 존재하는 winner uid 가 유효한지 확인하기 위해 battle record 정보 조회
+                    remoteSource2.getBattleRecord(t, battleEntity.id, winnerUid)
+                }
+                ?.let { winnerRecordModel ->
+                    // 유효한 winner uid 의 battle record의 clearTime이 내 clearTime보다 여전히 앞서 있는지 확인
+                    winnerRecordModel.takeIf { it.clearTime <= clearTime }
+                }
+                ?.let {
+                    // 이미 winner 가 존재 하는 경우 내 clearTime만 기록
+                    val myRecordData =
+                        profile.asMutableMap().apply { this["clearTime"] = clearTime }
+                    remoteSource2.setBattleRecord(t, battleEntity.id, profile.uid, myRecordData)
+                }
+                ?: kotlin.run {
+                    // 내가 winner 기록보다 빠르거나 winner 정보가 없는 경우 battle 정보에 winner uid 정보로 내 uid 를 업데이트 한다.
+                    val winnerUidData = mapOf("winnerUid" to profile.uid)
+                    remoteSource2.updateBattle(t, battleEntity.id, winnerUidData)
 
-            val updateBattleModel = if (winnerUid == null) {
-                mapOf(
-                    "winnerUid" to profile.uid,
-                    "clearTime_${profile.uid}" to clearTime
-                )
-            } else {
-                remoteSource2.getBattleRecord(it, battleEntity.id, winnerUid)
-                    ?.let { recordModel ->
-                        if (clearTime < recordModel.clearTime) {
-                            mapOf(
-                                "winnerUid" to profile.uid,
-                                "clearTime_${profile.uid}" to clearTime
-                            )
-                        } else {
-                            mapOf("clearTime_${profile.uid}" to clearTime)
-                        }
-                    }
-                    ?: mapOf(
-                        "winnerUid" to profile.uid,
-                        "clearTime_${profile.uid}" to clearTime
-                    )
-            }
+                    // 이미 winner 가 존재 하는 경우 내 clearTime을 기록
+                    val myRecordData =
+                        profile.asMutableMap().apply { this["clearTime"] = clearTime }
+                    remoteSource2.setBattleRecord(t, battleEntity.id, profile.uid, myRecordData)
+                }
 
-            remoteSource2.updateBattle(it, battleEntity.id, updateBattleModel)
-            remoteSource2.deleteParticipant(it, profile.uid)
-            remoteSource2.setBattleRecord(
-                it,
-                battleEntity.id,
-                profile.uid,
-                profile.asMutableMap().apply { this["clearTime"] = clearTime }
-            )
-
+            remoteSource2.deleteParticipant(t, profile.uid)
         }.await()
     }
 
