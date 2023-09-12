@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
@@ -110,6 +111,13 @@ class BattlePlayActivity : Activity() {
 
         }
 
+        onBackPressedDispatcher.addCallback {
+            if (recordViewModel.isRunningTimer()) {
+                showExitDialog()
+            } else {
+                getUserId()?.run { battleViewModel.exit(this) { finish() } }
+            }
+        }
     }
 
     // play ViewModel
@@ -207,8 +215,11 @@ class BattlePlayActivity : Activity() {
     //--------------------------------------------------------------------------------------------\\
     private fun ImageButton.setupUIExitButton() {
         setOnClickListener {
-            val uid = getUserId() ?: return@setOnClickListener
-            battleViewModel.exit(uid) { finish() }
+            if (recordViewModel.isRunningTimer()) {
+                showExitDialog()
+            } else {
+                getUserId()?.run { battleViewModel.exit(this) { finish() } }
+            }
         }
     }
 
@@ -245,6 +256,17 @@ class BattlePlayActivity : Activity() {
         MaterialAlertDialogBuilder(this)
             .setView(dlgBinding.root)
             .setPositiveButton(R.string.confirm) { _, _ -> finish() }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun showExitDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setMessage(R.string.battle_exit_message)
+            .setPositiveButton(R.string.confirm) { _, _ ->
+                getUserId()?.run { battleViewModel.exit(this) { finish() } }
+            }
+            .setNegativeButton(R.string.cancel, null)
             .setCancelable(false)
             .show()
     }

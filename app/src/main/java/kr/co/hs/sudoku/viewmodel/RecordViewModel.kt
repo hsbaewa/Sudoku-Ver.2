@@ -141,4 +141,6 @@ class RecordViewModel : ViewModel() {
 
 //        initTime()
     }
+
+    fun isRunningTimer() = timerJob != null
 }

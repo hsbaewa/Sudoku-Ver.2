@@ -78,5 +78,7 @@
 
     <string name="title_select_stage_for_battle">select stage</string>
 
+    <string name="battle_exit_message">Are you sure you want to quit the game? Depending on your opponent\'s record, you may be set for a loss.</string>
+
     <string name="app_name">HS-Sudoku2</string>
 </resources>
