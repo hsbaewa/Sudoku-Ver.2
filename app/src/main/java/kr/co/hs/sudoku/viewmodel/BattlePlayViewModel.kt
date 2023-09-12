@@ -156,13 +156,21 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
 
             is BattleEntity.RunningBattleEntity -> {
                 if (battle.startedAt != lastStarted) {
-                    participantList.value?.forEach { it.onStarted(battle) }
+                    participantList.value?.forEach {
+                        if (!runningUserIdList.contains(it.uid)) {
+                            it.onStarted(battle)
+                        }
+                    }
                 }
             }
 
             is BattleEntity.ClearedBattleEntity -> {
                 if (battle.startedAt != lastStarted) {
-                    participantList.value?.forEach { it.onStarted(battle) }
+                    participantList.value?.forEach {
+                        if (!runningUserIdList.contains(it.uid)) {
+                            it.onStarted(battle)
+                        }
+                    }
                 }
             }
 
@@ -218,6 +226,9 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
             repository.unbindParticipant(battleId, it.uid)
             participantStageMap.remove(it.uid)
         }
+        list.find { it.uid == currentUserId }?.run {
+            repository.unbindBattle(battleId)
+        }
     }
 
     private suspend fun onJoinParticipantList(list: List<BattleParticipantEntity>) {
@@ -231,17 +242,6 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
             }
             participantStageMap[it.uid] = stage
             repository.bindParticipant(battleId, it.uid, this)
-
-            when (battle) {
-
-                is BattleEntity.ClearedBattleEntity -> {
-                    if (!runningUserIdList.contains(it.uid)) {
-                        it.onStarted(battle)
-                    }
-                }
-
-                else -> {}
-            }
         }
     }
 
@@ -275,7 +275,8 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
 
                 when (battle) {
                     is BattleEntity.WaitingBattleEntity -> participant.onReady(battle)
-                    is BattleEntity.RunningBattleEntity -> {
+                    is BattleEntity.RunningBattleEntity,
+                    is BattleEntity.ClearedBattleEntity -> {
                         if (runningUserIdList.contains(participant.uid)) {
                             if (changedCellSet?.isNotEmpty() == true && participant.uid != currentUserId) {
                                 // 나 자신의 stage 정보는 이미 로컬에서 알고 있기 때문에 변경된 셀이 없는걸로 구분 된다. 그러므로 set 함수에서 자체적으로 이벤트 방출 해야 한다.
@@ -347,7 +348,7 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
     }
 
 
-    private fun getStage(uid: String) = participantStageMap.takeIf { it.containsKey(uid) }?.get(uid)
+    fun getStage(uid: String) = participantStageMap.takeIf { it.containsKey(uid) }?.get(uid)
 
     private var lastErrorCell = HashMap<String, Set<CellEntity<Int>>>()
     private fun getLastErrorCell(uid: String): Set<CellEntity<Int>> {
@@ -543,21 +544,34 @@ class BattlePlayViewModel : ViewModel(), BattleRepository.ParticipantChangedList
     }
 
     override fun onChanged(cell: IntCoordinateCellEntity) {
-        val battle = battle.value ?: return
-        val profile = currentProfile.value ?: return
-
         participantStageMap.takeIf { it.containsKey(currentUserId) }
             ?.run { this[currentUserId] }
             ?.run {
                 if (isSudokuClear() && getClearTime() >= 0) {
-                    viewModelScope.launch(coroutineExceptionHandler) {
-                        withContext(Dispatchers.IO) {
-                            repository.updateClearRecord(battle, profile, getClearTime())
-                        }
-                    }
-
+                    updateClearRecord(repository, getClearTime())
                 }
             }
-
     }
+
+    private fun updateClearRecord(battleRepository: BattleRepository, clearTime: Long) {
+        viewModelScope.launch(coroutineExceptionHandler) {
+            _isRunningProgress.value = true
+
+            doUpdateClearRecord(battleRepository, clearTime)
+            _isClearSudokuRecord.value = clearTime
+
+            _isRunningProgress.value = false
+        }
+    }
+
+    private suspend fun doUpdateClearRecord(battleRepository: BattleRepository, clearTime: Long) {
+        val battle = battle.value ?: throw Exception("unknown battle")
+        val profile = currentProfile.value ?: throw Exception("unknown profile")
+        withContext(Dispatchers.IO) {
+            battleRepository.updateClearRecord(battle, profile, clearTime)
+        }
+    }
+
+    private val _isClearSudokuRecord = MutableLiveData(-1L)
+    val isClearSudokuRecord: LiveData<Long> by this::_isClearSudokuRecord
 }

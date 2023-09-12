@@ -5,8 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.usecase.battle.GetBattleListUseCase
@@ -81,13 +83,20 @@ class BattleLobbyViewModel : ViewModel() {
         }
     }
 
-    fun loadCurrent(repository: BattleRepository, uid: String) {
+    fun requestBattleLobby(repository: BattleRepository, uid: String) =
         viewModelScope.launch(coroutineExceptionHandler) {
             _isRunningProgress.value = true
-            repository.getJoinedBattle(uid)?.let {
-                _battleCurrent.value = it
-            }
+
+            withContext(Dispatchers.IO) { repository.getJoinedBattle(uid) }
+                ?.run { _battleCurrent.value = this }
+                ?: run {
+                    val list = withContext(Dispatchers.IO) {
+                        val useCase = GetBattleListUseCase(repository)
+                        useCase(20).last()
+                    }
+                    _battleList.value = list
+                }
+
             _isRunningProgress.value = false
         }
-    }
 }

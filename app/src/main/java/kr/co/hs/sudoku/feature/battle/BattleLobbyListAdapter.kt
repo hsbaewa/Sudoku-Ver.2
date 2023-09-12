@@ -6,12 +6,14 @@ import androidx.recyclerview.widget.ListAdapter
 import kr.co.hs.sudoku.databinding.LayoutItemBattleLobbyBinding
 import kr.co.hs.sudoku.model.battle.BattleEntity
 
-class BattleLobbyListAdapter(private val onItemClick: (Int, BattleEntity) -> Unit) :
+class BattleLobbyListAdapter(private val onItemClick: (BattleEntity) -> Unit) :
     ListAdapter<BattleEntity, BattleLobbyViewHolder>(BattleItemDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BattleLobbyViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = LayoutItemBattleLobbyBinding.inflate(inflater, parent, false)
-        return BattleLobbyViewHolder(binding, onItemClick)
+        return BattleLobbyViewHolder(binding).apply {
+            binding.cardView.setOnClickListener { onItemClick(getItem(bindingAdapterPosition)) }
+        }
     }
 
     override fun onBindViewHolder(holder: BattleLobbyViewHolder, position: Int) {

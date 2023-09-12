@@ -40,6 +40,8 @@ class BattlePlayActivity : Activity() {
     companion object {
         private fun Activity.newIntent(uid: String, battleId: String) =
             Intent(this, BattlePlayActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .putUserId(uid)
                 .putBattleId(battleId)
 
@@ -71,6 +73,11 @@ class BattlePlayActivity : Activity() {
             it.participantList.observe(this, observerForParticipant)
             it.error.observe(this, observerForError)
             it.isRunningProgress.observe(this, observerForProgress)
+            it.isClearSudokuRecord.observe(this) { record ->
+                if (record >= 0) {
+                    showCompleteRecordDialog(record)
+                }
+            }
         }
 
 
@@ -95,7 +102,7 @@ class BattlePlayActivity : Activity() {
                 battleViewModel.getEventFlow(uid).collect {
                     when (it) {
                         is BattlePlayViewModel.Event.OnStarted -> it.onStart()
-                        is BattlePlayViewModel.Event.OnCleared -> it.onCleared()
+                        is BattlePlayViewModel.Event.OnCleared -> onCleared()
                         else -> {}
                     }
                 }
@@ -122,8 +129,13 @@ class BattlePlayActivity : Activity() {
 
     private val observerForParticipant = Observer<List<BattleParticipantEntity>> {
         val participantProfile = getUserId()?.let { uid -> it.find { it.uid != uid } }
-        setParticipantUserProfile(participantProfile)
-        setParticipateUserStage(participantProfile?.uid)
+        val isCleared = getUserId()
+            ?.let { uid -> battleViewModel.getStage(uid)?.isSudokuClear() ?: false } ?: false
+
+        if (!isCleared) {
+            setParticipantUserProfile(participantProfile)
+            setParticipateUserStage(participantProfile?.uid)
+        }
     }
 
     private val observerForError = Observer<Throwable> {
@@ -146,16 +158,13 @@ class BattlePlayActivity : Activity() {
         }
         recordViewModel.bind(stage)
         recordViewModel.setTimer(realServerTimer)
-        recordViewModel.play()
+        battleViewModel.isClearSudokuRecord.value
+            ?.takeIf { it == -1L }
+            ?.run { recordViewModel.play() }
     }
 
-    private fun BattlePlayViewModel.Event.OnCleared.onCleared() {
-        with(recordViewModel) {
-            stop()
-            if (stage.isSudokuClear() && stage.getClearTime() >= 0) {
-                showCompleteRecordDialog(stage.getClearTime())
-            }
-        }
+    private fun onCleared() {
+        recordViewModel.stop()
     }
 
     //--------------------------------------------------------------------------------------------\\

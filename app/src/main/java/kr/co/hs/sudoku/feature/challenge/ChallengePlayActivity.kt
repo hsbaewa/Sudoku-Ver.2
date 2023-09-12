@@ -27,6 +27,7 @@ import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.stage.history.impl.CachedHistoryQueue
 import kr.co.hs.sudoku.model.stage.history.HistoryQueue
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
 import kr.co.hs.sudoku.repository.timer.RealServerTimer
 import kr.co.hs.sudoku.usecase.record.PutRecordUseCaseImpl
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
@@ -97,22 +98,20 @@ class ChallengePlayActivity : Activity() {
         }) {
             showProgressIndicator()
 
-            challenge.challengeId?.run {
-                val cachedFile = getCachedFile(this)
-                val queue = CachedHistoryQueue(FileOutputStream(cachedFile, true))
+            val cachedFile = getCachedFile(challenge.challengeId)
+            val queue = CachedHistoryQueue(FileOutputStream(cachedFile, true))
 
-                if (cachedFile.length() > 0) {
-                    val currentStatus = withContext(Dispatchers.IO) {
-                        queue.load(cachedFile.inputStream())
-                    }
-                    gamePlayViewModel.batch(currentStatus)
-                } else {
-                    withContext(Dispatchers.IO) { queue.createHeader(gamePlayViewModel.getStage()) }
+            if (cachedFile.length() > 0) {
+                val currentStatus = withContext(Dispatchers.IO) {
+                    queue.load(cachedFile.inputStream())
                 }
-
-                // 게임 상태 이벤트 수신 설정
-                collectGamePlayStatus(challenge, queue)
+                gamePlayViewModel.batch(currentStatus)
+            } else {
+                withContext(Dispatchers.IO) { queue.createHeader(gamePlayViewModel.getStage()) }
             }
+
+            // 게임 상태 이벤트 수신 설정
+            collectGamePlayStatus(challenge, queue)
 
             dismissProgressIndicator()
         }
@@ -197,10 +196,8 @@ class ChallengePlayActivity : Activity() {
     }
 
     private suspend fun ChallengeEntity.checkPlaying() {
-        challengeId?.run {
-            if (!isPlaying) {
-                app.getChallengeRepository().setPlaying(this)
-            }
+        if (!isPlaying) {
+            app.getChallengeRepository().setPlaying(challengeId)
         }
     }
 
@@ -215,7 +212,10 @@ class ChallengePlayActivity : Activity() {
     private suspend fun setClearRecordToServer(uid: String, challengeId: String, clearTime: Long) {
         val profile = getProfile(uid)
         val record = RankerEntity(profile, clearTime)
-        val useCase = PutRecordUseCaseImpl(app.getChallengeRecordRepository(challengeId))
+
+        val repo = app.getChallengeRepository() as ChallengeRepositoryImpl
+        repo.setChallengeId(challengeId)
+        val useCase = PutRecordUseCaseImpl(repo)
         useCase(record).last()
     }
 

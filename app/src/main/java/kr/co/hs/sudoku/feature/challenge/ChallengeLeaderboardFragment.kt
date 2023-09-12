@@ -5,11 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withStarted
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
@@ -17,7 +22,6 @@ import kr.co.hs.sudoku.databinding.LayoutChallengeLeaderboardBinding
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
-import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
 import kr.co.hs.sudoku.feature.challenge.ChallengePlayActivity.Companion.startChallengePlayActivity
 import kr.co.hs.sudoku.feature.profile.ProfileDialog
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
@@ -28,13 +32,10 @@ import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 class ChallengeLeaderboardFragment : Fragment() {
 
     companion object {
-        fun new(uid: String?) = ChallengeLeaderboardFragment()
-            .apply {
-                uid?.let {
-                    arguments = Bundle().apply { putUserId(it) }
-                }
-            }
+        fun new() = ChallengeLeaderboardFragment()
     }
+
+    lateinit var binding: LayoutChallengeLeaderboardBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,99 +46,32 @@ class ChallengeLeaderboardFragment : Fragment() {
         it.lifecycleOwner = this
     }.root
 
-    lateinit var binding: LayoutChallengeLeaderboardBinding
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (getUserId() == null)
-            showSnackBar(getString(R.string.error_require_authenticate))
-
-        challengeViewModel.let {
-            it.challenge.observe(viewLifecycleOwner, onChallenge)
-            it.top10.observe(viewLifecycleOwner, onChangedTop10)
-            it.myRecord.observe(viewLifecycleOwner, onMyRecord)
-            it.error.observe(viewLifecycleOwner, onError)
-            it.isRunningProgress.observe(viewLifecycleOwner, onProgress)
+        with(binding) {
+            recyclerViewLeaderBoard.onCreatedLeaderBoard()
+            swipeRefreshLayout.onCreatedRefreshLayout()
+            btnStart.onCreatedStartButton()
         }
+
+        challengeViewModel.initObserver()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { requestChallenge() }
-        }
-
-        refreshLayout.setOnRefreshListener {
-            app.clearChallengeRecordRepository()
-            app.clearChallengeRepository()
-            requestChallenge()
+            withStarted { refreshLeaderBoard() }
         }
     }
 
-    private val challengeViewModel: ChallengeViewModel by lazy { challengeLeaderboardViewModels() }
+    private val currentUser: FirebaseUser?
+        get() = FirebaseAuth.getInstance().currentUser
 
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- 도전 정보 -------------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-    private val onChallenge = Observer<ChallengeEntity> {
-        challengeSudokuBoard.setRowCount(it.matrix.rowCount, it.matrix)
+    private val challengeViewModel: ChallengeViewModel by viewModels()
 
-        val challengeId = it.challengeId
-        val uid = getUserId()
 
-        if (challengeId != null && uid != null) {
-            startButton.visibility = View.VISIBLE
-            startButton.setOnClickListener { _ ->
-                if (it.isComplete) {
-                    showSnackBar(getString(R.string.error_challenge_already_record))
-                } else {
-                    activity.startChallengePlayActivity(challengeId, uid)
-                }
-            }
-            requestLeaderboard(challengeId, uid)
-        }
+    private fun RecyclerView.onCreatedLeaderBoard() {
+        adapter = RankingAdapter(onRankerItemClick)
     }
 
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/26
-     * @comment 도전할 스도쿠 보드가 표시될 뷰
-     **/
-    private val challengeSudokuBoard by lazy {
-        binding.sudokuBoard.apply { visibility = View.VISIBLE }
-    }
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/26
-     * @comment 스도쿠 시작 버튼
-     **/
-    private val startButton by lazy {
-        binding.btnStart.apply { setAutoSizeText() }
-    }
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/26
-     * @comment 리더보드 요청
-     * @param challengeId
-     * @param uid
-     **/
-    private fun requestLeaderboard(challengeId: String, uid: String) {
-        challengeViewModel.requestLeaderboard(
-            app.getChallengeRecordRepository(challengeId), uid
-        )
-    }
-
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- 리더보드 top10 ----------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-    private val onChangedTop10 = Observer<List<RankerEntity>> {
-        leaderBoardCardView.isVisible = it.isNotEmpty()
-        rankingAdapter.submitList(it) {
-            leaderBoardView.smoothScrollToPosition(0)
-        }
-    }
-
-    private val rankingAdapter by lazy { RankingAdapter(onRankerItemClick) }
     private val onRankerItemClick = { _: Int, item: RankerEntity ->
         context?.run { item.showDialog(this) } ?: Unit
     }
@@ -147,55 +81,100 @@ class ChallengeLeaderboardFragment : Fragment() {
             ?.run { ProfileDialog(context, this) }
             ?.show()
 
-    private val leaderBoardView by lazy {
-        binding.recyclerViewLeaderBoard.apply {
-            adapter = rankingAdapter
+    private fun Button.onCreatedStartButton() {
+        setOnClickListener {
+            challengeViewModel.challenge.value?.startChallenge()
         }
     }
 
-    private val leaderBoardCardView by lazy { binding.cardLeaderBoard }
+    private fun ChallengeEntity.startChallenge() =
+        viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            showSnackBar(throwable.message.toString())
+        }) {
+            if (isComplete)
+                throw Exception(getString(R.string.error_challenge_already_record))
+            val uid =
+                currentUser?.uid ?: throw Exception(getString(R.string.error_require_authenticate))
+            startChallengePlayActivity(uid, challengeId)
+        }
 
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- 내 기록 표시 ------------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-    private val onMyRecord = Observer<RankerEntity?> {
-        it?.run {
-            RankForMineViewHolder(binding.layoutMyRank).onBind(this)
-            binding.cardMyRecord.visibility = View.VISIBLE
-        } ?: kotlin.run { binding.cardMyRecord.visibility = View.GONE }
+    private fun startChallengePlayActivity(uid: String, challengeId: String) =
+        viewLifecycleOwner.lifecycleScope.launch {
+            activity.startChallengePlayActivity(challengeId, uid)
+        }
+
+    private fun SwipeRefreshLayout.onCreatedRefreshLayout() {
+        setOnRefreshListener {
+            app.clearChallengeRepository()
+            refreshLeaderBoard()
+        }
     }
 
+    private fun refreshLeaderBoard() = currentUser
+        ?.run { challengeViewModel.requestLeaderBoard(uid, app.getChallengeRepository()) }
+        ?: viewLifecycleOwner.lifecycleScope.launch {
+            showSnackBar(getString(R.string.error_require_authenticate))
+        }
 
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- 에러 핸들 -------------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-    private val onError = Observer<Throwable> { showSnackBar(it.message.toString()) }
+    private fun ChallengeViewModel.initObserver() {
+        challenge.observe(viewLifecycleOwner) {
+            setupUIPreview(it)
+            setupUIStartButton(it)
+        }
+        top10.observe(viewLifecycleOwner) { setupUITop10List(it) }
+        myRecord.observe(viewLifecycleOwner) { setupUIMyRank(it) }
 
+        isRunningProgress.observe(viewLifecycleOwner) { setupUIOnProgress(it) }
+        error.observe(viewLifecycleOwner) {
+            viewLifecycleOwner.lifecycleScope.launch { showSnackBar(it.message.toString()) }
+        }
+    }
 
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- Progress 표시 -----------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-    private val onProgress = Observer<Boolean> {
-        if (it) {
-            showProgressIndicator()
+    private fun setupUIPreview(entity: ChallengeEntity) {
+        with(binding.sudokuBoard) {
+            isVisible = true
+            setRowCount(entity.matrix.rowCount, entity.matrix)
+        }
+    }
+
+    private fun setupUIStartButton(entity: ChallengeEntity?) {
+        with(binding) {
+            btnStart.isVisible = entity != null
+        }
+    }
+
+    private fun setupUITop10List(list: List<RankerEntity>) {
+        with(binding) {
+            cardLeaderBoard.isVisible = list.isNotEmpty()
+
+            with(recyclerViewLeaderBoard) {
+                (adapter as? RankingAdapter)?.run {
+                    submitList(list) { smoothScrollToPosition(0) }
+                }
+            }
+
+        }
+    }
+
+    private fun setupUIMyRank(entity: RankerEntity?) {
+        with(binding) {
+            cardMyRecord.isVisible = entity != null
+            entity?.run { RankForMineViewHolder(layoutMyRank).onBind(this) }
+        }
+    }
+
+    private fun setupUIOnProgress(isProgress: Boolean) {
+        if (isProgress) {
+            if (!binding.swipeRefreshLayout.isRefreshing) {
+                showProgressIndicator()
+            }
         } else {
+            with(binding.swipeRefreshLayout) {
+                if (isRefreshing) {
+                    isRefreshing = false
+                }
+            }
             dismissProgressIndicator()
-            refreshLayout.isRefreshing = false
-        }
-    }
-
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/25
-     * @comment ViewModel에 Challenge 정보 요청
-     **/
-    private fun requestChallenge() =
-        challengeViewModel.requestLatestChallenge(app.getChallengeRepository())
-
-    private val refreshLayout by lazy {
-        binding.swipeRefreshLayout.apply {
-            setColorSchemeColors(getColorCompat(R.color.gray_500))
         }
     }
 }

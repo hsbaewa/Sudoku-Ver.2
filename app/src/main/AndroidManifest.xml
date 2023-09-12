@@ -40,7 +40,13 @@
 
         <activity android:name=".feature.battle.BattleCreateActivity" />
 
-        <activity android:name=".feature.battle.BattlePlayActivity" />
+        <activity
+            android:name=".feature.battle.BattlePlayActivity"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+        </activity>
 
     </application>
 

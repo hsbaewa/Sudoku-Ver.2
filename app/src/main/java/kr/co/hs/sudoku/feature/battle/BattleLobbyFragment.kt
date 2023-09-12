@@ -5,19 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
-import androidx.fragment.app.activityViewModels
+import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.withStarted
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
@@ -33,12 +32,10 @@ import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
 
 class BattleLobbyFragment : Fragment() {
     companion object {
-        fun new(uid: String?) = BattleLobbyFragment().apply {
-            arguments = Bundle().apply {
-                uid?.run { putUserId(this) }
-            }
-        }
+        fun new() = BattleLobbyFragment()
     }
+
+    private lateinit var binding: LayoutBattleLobbyBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,131 +46,84 @@ class BattleLobbyFragment : Fragment() {
         it.lifecycleOwner = this
     }.root
 
-    private lateinit var binding: LayoutBattleLobbyBinding
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //--------------------------------------------------------------------------------------------\\
         //----------------------------------------- setup UI -----------------------------------------\\
         //--------------------------------------------------------------------------------------------\\
-        binding.swipeRefreshLayout.setupUIRefreshLayout(battleLobbyViewModel.isRunningProgress)
-        binding.recyclerView.setupUIBattleList(battleLobbyViewModel.battleList)
-        binding.tvEmptyMessage.setupUIEmptyMessage(battleLobbyViewModel.battleList)
-        binding.btnCreate.setupUIForCreateButton(getUserId())
+        with(binding) {
+            swipeRefreshLayout.onCreatedRefreshLayout()
+            recyclerView.onCreateBattleList()
+            btnCreate.onCreatedNewButton()
+        }
 
 
         //--------------------------------------------------------------------------------------------\\
         //----------------------------------------- observe LiveData -------------------------------------\\
         //--------------------------------------------------------------------------------------------\\
-        battleLobbyViewModel.run {
-            error.observe(viewLifecycleOwner, observeError)
-            isRunningProgress.observe(viewLifecycleOwner, observeProgress)
-            battleDetail.observe(viewLifecycleOwner, observeDetail)
-            battleCurrent.observe(viewLifecycleOwner, observeCurrent)
-        }
+        battleLobbyViewModel.initObserver()
 
 
         //--------------------------------------------------------------------------------------------\\
         //----------------------------------------- request Data ---------------------------------------\\
         //--------------------------------------------------------------------------------------------\\
         viewLifecycleOwner.lifecycleScope.launch {
-            withStarted { battleLobbyViewModel.loadPage(app.getBattleRepository()) }
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                getUserId()
-                    ?.run {
-                        battleLobbyViewModel.loadCurrent(app.getBattleRepository(), this)
-                    }
-                    ?: kotlin.run {
-                        showSnackBar(getString(R.string.error_require_authenticate))
-                    }
-            }
+            repeatOnLifecycle(Lifecycle.State.STARTED) { initBattleLobby() }
         }
     }
 
     // ViewModel for Lobby
-    private val battleLobbyViewModel: BattleLobbyViewModel by activityViewModels()
+    private val battleLobbyViewModel: BattleLobbyViewModel by viewModels()
 
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- setup UI -----------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
-    private fun SwipeRefreshLayout.setupUIRefreshLayout(progress: LiveData<Boolean>) {
+    private fun SwipeRefreshLayout.onCreatedRefreshLayout() {
         setOnRefreshListener { battleLobbyViewModel.loadPage(app.getBattleRepository()) }
-        progress.observe(viewLifecycleOwner) {
-            it.takeUnless { it }?.run {
-                isRefreshing = false
-            }
-        }
     }
 
-    private fun RecyclerView.setupUIBattleList(data: LiveData<List<BattleEntity>>) {
+    private fun RecyclerView.onCreateBattleList() {
         layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
-        adapter = BattleLobbyListAdapter { _, item ->
-            battleLobbyViewModel.loadDetail(app.getBattleRepository(), item.id)
-        }.apply {
-            data.observe(viewLifecycleOwner) {
-                this.submitList(it)
-            }
-        }
+        adapter = BattleLobbyListAdapter(onItemClick)
     }
 
-    private fun TextView.setupUIEmptyMessage(data: LiveData<List<BattleEntity>>) {
-        data.observe(viewLifecycleOwner) {
-            it.takeIf { it.isEmpty() }
-                ?.run {
-                    visibility = View.VISIBLE
-                }
-                ?: kotlin.run {
-                    visibility = View.GONE
-                }
-        }
+    private val onItemClick = { item: BattleEntity ->
+        battleLobbyViewModel.loadDetail(app.getBattleRepository(), item.id)
     }
 
-
-    private fun Button.setupUIForCreateButton(uid: String?) {
-        setOnClickListener {
-            uid.takeIf { it != null }
-                ?.run {
-                    activity.startBattleCreateActivity(this)
-                }
-                ?: kotlin.run {
-                    showSnackBar(getString(R.string.error_require_authenticate))
-                }
-        }
+    private fun Button.onCreatedNewButton() {
+        setOnClickListener { startNewBattle() }
     }
+
+    private fun startNewBattle() = viewLifecycleOwner.lifecycleScope.launch {
+        currentUser
+            ?.run { activity.startBattleCreateActivity(uid) }
+            ?: run { showSnackBar(getString(R.string.error_require_authenticate)) }
+    }
+
+    private val currentUser: FirebaseUser?
+        get() = FirebaseAuth.getInstance().currentUser
 
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- observer for LiveData -------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
-    private val observeError = Observer<Throwable> {
-        it.message?.run { showSnackBar(this) }
+    private fun BattleLobbyViewModel.initObserver() {
+        battleDetail.observe(viewLifecycleOwner) { it?.showDetail() }
+        battleCurrent.observe(viewLifecycleOwner) { it.startBattle() }
+        battleList.observe(viewLifecycleOwner) { setupUIBattleList(it) }
+        isRunningProgress.observe(viewLifecycleOwner) { setupUIProgress(it) }
+        error.observe(viewLifecycleOwner) { it.showError() }
     }
 
-    private val observeProgress = Observer<Boolean> {
-        it.takeIf { it }?.run { showProgressIndicator() } ?: dismissProgressIndicator()
-    }
-
-    private val observeCurrent = Observer<BattleEntity?> { battle ->
-        getUserId()?.let { uid ->
-            if (battle != null) {
-                activity.startBattlePlayActivity(uid, battle.id)
-            }
-        }
-    }
-
-    private val observeDetail = Observer<BattleEntity> {
-        it.run { showDetail(this) }
-    }
-
-
-    private fun showDetail(battle: BattleEntity) {
+    private fun BattleEntity.showDetail() {
         val dlgBinding = LayoutBattleDetailBinding.inflate(LayoutInflater.from(context))
-        dlgBinding.sudokuBoard.setRowCount(battle.startingMatrix.size, battle.startingMatrix)
-        dlgBinding.lifecycleOwner = this
+        dlgBinding.sudokuBoard.setRowCount(startingMatrix.size, startingMatrix)
+        dlgBinding.lifecycleOwner = this@BattleLobbyFragment
 
         val listAdapter = ParticipantListAdapter()
-        val participants = battle.participants.toList()
+        val participants = participants.toList()
         listAdapter.submitList(participants)
         dlgBinding.participantsList.adapter = listAdapter
 
@@ -184,14 +134,55 @@ class BattleLobbyFragment : Fragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setView(dlgBinding.root)
             .setPositiveButton(R.string.join) { _, _ ->
-                getUserId()?.let { uid ->
-                    lifecycleScope.launch {
-                        activity.startBattlePlayActivity(uid, battle.id)
+                takeIf {
+                    when (it) {
+                        is BattleEntity.PendingBattleEntity,
+                        is BattleEntity.RunningBattleEntity,
+                        is BattleEntity.WaitingBattleEntity -> true
+
+                        else -> false
                     }
-                }
+                }?.startBattle()
             }
             .setNegativeButton(R.string.cancel) { _, _ -> }
             .setCancelable(false)
             .show()
+    }
+
+    private fun BattleEntity.startBattle() =
+        currentUser?.let { startBattlePlayActivity(it.uid, id) }
+
+    private fun startBattlePlayActivity(uid: String, battleId: String) =
+        viewLifecycleOwner.lifecycleScope.launch {
+            activity.startBattlePlayActivity(uid, battleId)
+        }
+
+    private fun Throwable.showError() = message.toString().run { showSnackBar(this) }
+
+    private fun initBattleLobby() {
+        val repo = app.getBattleRepository()
+        currentUser
+            ?.run { battleLobbyViewModel.requestBattleLobby(repo, this.uid) }
+    }
+
+    private fun setupUIBattleList(data: List<BattleEntity>) {
+        with(binding) {
+            (recyclerView.adapter as? BattleLobbyListAdapter)?.submitList(data)
+            tvEmptyMessage.isVisible = data.isEmpty()
+        }
+    }
+
+    private fun setupUIProgress(isShow: Boolean) {
+        if (isShow) {
+            if (!binding.swipeRefreshLayout.isRefreshing) {
+                showProgressIndicator()
+            }
+        } else {
+            with(binding.swipeRefreshLayout) {
+                if (isRefreshing)
+                    isRefreshing = false
+            }
+            dismissProgressIndicator()
+        }
     }
 }

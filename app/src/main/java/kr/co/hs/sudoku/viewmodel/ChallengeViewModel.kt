@@ -55,43 +55,9 @@ class ChallengeViewModel : ViewModel() {
         GetChallengeUseCaseImpl(repository).invoke(challengeId).last()
     }
 
-    fun requestLatestChallenge(repository: ChallengeReaderRepository) {
-        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
-            _isRunningProgress.value = false
-            _error.value = throwable
-        }) {
-            _isRunningProgress.value = true
-            val challenge = doRequestLatestChallenge(repository)
-            _challenge.value = challenge
-            _isRunningProgress.value = false
-        }
-    }
-
     private suspend fun doRequestLatestChallenge(
         repository: ChallengeReaderRepository
     ) = withContext(Dispatchers.IO) { GetChallengeUseCaseImpl(repository).invoke().last() }
-
-    fun requestLeaderboard(
-        repository: RecordRepository,
-        uid: String?
-    ) = viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
-        _isRunningProgress.value = false
-        _error.value = throwable
-    }) {
-        _isRunningProgress.value = true
-        val ranking = doRequestLeaderboard(repository)
-
-        _top10.value = ranking
-        uid.takeIf { it != null }
-            ?.let { uid ->
-                ranking.indexOfFirst { it.uid == uid }
-                    .takeUnless { it >= 0 }
-                    ?.run { doRequestRecord(repository, uid) }
-                    ?.run { _myRecord.value = this }
-            }
-
-        _isRunningProgress.value = false
-    }
 
     private suspend fun doRequestLeaderboard(repository: RecordRepository) =
         getDefaultTop10().toMutableList().also { ranking ->
@@ -114,4 +80,34 @@ class ChallengeViewModel : ViewModel() {
     private fun getDefaultTop10() = List(10) {
         RankerEntity("", "-", null, null, null, it.toLong() + 1, -1L)
     }
+
+    fun requestLeaderBoard(
+        uid: String?,
+        challengeReaderRepository: ChallengeReaderRepository
+    ) =
+        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+            _isRunningProgress.value = false
+            _error.value = throwable
+        }) {
+            _isRunningProgress.value = true
+            val challenge = doRequestLatestChallenge(challengeReaderRepository)
+            val ranking = doRequestLeaderboard(challengeReaderRepository as RecordRepository)
+
+            _challenge.value = challenge
+            _top10.value = ranking
+            uid.takeIf { it != null }
+                ?.let { uid ->
+                    ranking.indexOfFirst { it.uid == uid }
+                        .takeUnless { it >= 0 }
+                        ?.run {
+                            doRequestRecord(
+                                challengeReaderRepository as RecordRepository,
+                                uid
+                            )
+                        }
+                        ?.run { _myRecord.value = this }
+                }
+
+            _isRunningProgress.value = false
+        }
 }

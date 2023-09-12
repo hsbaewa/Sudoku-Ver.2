@@ -8,7 +8,6 @@ import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
-import kr.co.hs.sudoku.repository.record.ChallengeRecordRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import java.lang.ref.SoftReference
 
@@ -20,16 +19,6 @@ class App : Application() {
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     }
-
-    private var challengeRecordRepositoryRef: SoftReference<ChallengeRecordRepository>? = null
-    fun getChallengeRecordRepository(challengeId: String): ChallengeRecordRepository =
-        challengeRecordRepositoryRef?.get()
-            ?.takeIf { it.challengeId == challengeId }
-            ?: ChallengeRecordRepository(challengeId).apply {
-                challengeRecordRepositoryRef = SoftReference(this)
-            }
-
-    fun clearChallengeRecordRepository() = challengeRecordRepositoryRef?.clear()
 
     private var challengeRepositoryRef: SoftReference<ChallengeRepository>? = null
     fun getChallengeRepository(): ChallengeRepository =

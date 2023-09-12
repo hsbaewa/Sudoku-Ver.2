@@ -15,13 +15,10 @@ import kr.co.hs.sudoku.extension.platform.ViewExtension.observeMeasuredSize
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.views.SudokuBoardView
 
-class BattleLobbyViewHolder(
-    private val binding: LayoutItemBattleLobbyBinding,
-    private val onItemClick: (Int, BattleEntity) -> Unit
-) : ViewHolder(binding.root) {
+class BattleLobbyViewHolder(private val binding: LayoutItemBattleLobbyBinding) :
+    ViewHolder(binding.root) {
 
     fun onBind(item: BattleEntity) {
-        binding.cardView.setOnClickListener { onItemClick(bindingAdapterPosition, item) }
         binding.cardLayout.observeMeasuredSize { width, _ ->
             binding.sudokuBoard.setupUI(width, item.startingMatrix)
         }

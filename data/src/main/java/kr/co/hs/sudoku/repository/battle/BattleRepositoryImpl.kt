@@ -281,9 +281,9 @@ class BattleRepositoryImpl(
                         profile.asMutableMap().apply { this["clearTime"] = clearTime }
                     remoteSource2.setBattleRecord(t, battleEntity.id, profile.uid, myRecordData)
                 }
-
-            remoteSource2.deleteParticipant(t, profile.uid)
         }.await()
+
+        exitBattle(battleEntity, profile)
     }
 
     override suspend fun getStatistics(uid: String) = remoteSource2.getStatistics(uid).toDomain()

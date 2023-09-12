@@ -66,14 +66,12 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
             R.id.selectStage -> replaceTabFragment(DifficultyFragment.new())
-            R.id.battle -> replaceTabFragment(BattleLobbyFragment.new(currentUserId))
-            R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.new(currentUserId))
+            R.id.battle -> replaceTabFragment(BattleLobbyFragment.new())
+            R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.new())
             R.id.settings -> replaceTabFragment(SettingsFragment.new())
         }
         true
     }
-
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, t ->
         dismissProgressIndicator()
