@@ -99,7 +99,9 @@ class ChallengePlayActivity : Activity() {
             showProgressIndicator()
 
             val cachedFile = getCachedFile(challenge.challengeId)
-            val queue = CachedHistoryQueue(FileOutputStream(cachedFile, true))
+            val queue = withContext(Dispatchers.IO) {
+                CachedHistoryQueue(FileOutputStream(cachedFile, true))
+            }
 
             if (cachedFile.length() > 0) {
                 val currentStatus = withContext(Dispatchers.IO) {
@@ -111,7 +113,7 @@ class ChallengePlayActivity : Activity() {
             }
 
             // 게임 상태 이벤트 수신 설정
-            collectGamePlayStatus(challenge, queue)
+            collectGamePlayStatus(queue)
 
             dismissProgressIndicator()
         }
@@ -120,15 +122,11 @@ class ChallengePlayActivity : Activity() {
 
     private fun getCachedFile(challengeId: String) = File(cacheDir, "challenge_$challengeId.cache")
 
-    private fun collectGamePlayStatus(challenge: ChallengeEntity, historyQueue: HistoryQueue) =
+    private fun collectGamePlayStatus(historyQueue: HistoryQueue) =
         lifecycleScope.launch {
             gamePlayViewModel.statusFlow.collect { status ->
                 when (status) {
-                    is GamePlayViewModel.Status.OnStart -> {
-                        lifecycleScope.launch(Dispatchers.IO) { challenge.checkPlaying() }
-                        status.onStartSudoku(historyQueue)
-                    }
-
+                    is GamePlayViewModel.Status.OnStart -> status.onStartSudoku(historyQueue)
                     is GamePlayViewModel.Status.Completed -> status.onCompetedSudoku()
                     else -> {}
                 }
@@ -139,6 +137,7 @@ class ChallengePlayActivity : Activity() {
         if (recordViewModel.isRunningCapturedHistoryEvent())
             return
 
+        challengeViewModel.checkPlaying(app.getChallengeRepository())
         recordViewModel.bind(stage)
         recordViewModel.setTimer(realServerTimer)
         recordViewModel.setHistoryWriter(historyQueue)
@@ -192,12 +191,6 @@ class ChallengePlayActivity : Activity() {
         val startDate = challengeEntity.startPlayAt
         if (challengeEntity.isPlaying && startDate != null) {
             pass(getCurrentTime() - startDate.time)
-        }
-    }
-
-    private suspend fun ChallengeEntity.checkPlaying() {
-        if (!isPlaying) {
-            app.getChallengeRepository().setPlaying(challengeId)
         }
     }
 

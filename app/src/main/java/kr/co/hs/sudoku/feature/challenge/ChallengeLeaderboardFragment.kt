@@ -8,8 +8,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.withStarted
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.auth.FirebaseAuth
@@ -58,7 +59,7 @@ class ChallengeLeaderboardFragment : Fragment() {
         challengeViewModel.initObserver()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            withStarted { refreshLeaderBoard() }
+            repeatOnLifecycle(Lifecycle.State.STARTED) { refreshLeaderBoard() }
         }
     }
 

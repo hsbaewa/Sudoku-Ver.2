@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.repository.challenge.ChallengeReaderRepository
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.repository.record.RecordRepository
 import kr.co.hs.sudoku.usecase.challenge.GetChallengeUseCaseImpl
 import kr.co.hs.sudoku.usecase.record.GetRecordsUseCaseImpl
@@ -110,4 +111,15 @@ class ChallengeViewModel : ViewModel() {
 
             _isRunningProgress.value = false
         }
+
+    fun checkPlaying(challengeRepository: ChallengeRepository) {
+        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+        }) {
+            _challenge.value?.run {
+                if (!isPlaying) {
+                    withContext(Dispatchers.IO) { challengeRepository.setPlaying(challengeId) }
+                }
+            }
+        }
+    }
 }
