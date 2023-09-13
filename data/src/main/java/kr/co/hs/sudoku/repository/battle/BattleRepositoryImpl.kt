@@ -15,6 +15,7 @@ import kr.co.hs.sudoku.model.battle.BattleParticipantEntity
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.user.ProfileEntity
+import org.jetbrains.annotations.TestOnly
 import java.util.Date
 
 class BattleRepositoryImpl(
@@ -208,38 +209,74 @@ class BattleRepositoryImpl(
         }.await()
     }
 
+    @TestOnly
     override suspend fun startBattle(battleEntity: BattleEntity, uid: String) {
-        val participants = remoteSource2.getParticipantList(battleEntity.id)
-        participants.filter { it.uid != uid }.takeIf { it.isEmpty() }
-            ?.run { throw Exception("is empty guest users") }
-
-        participants.filter { !it.isReady }.takeIf { it.isNotEmpty() }
-            ?.run { throw Exception("not to all ready") }
-
-        FirebaseFirestore.getInstance().runTransaction {
-            val battleModel = remoteSource2.getBattle(it, battleEntity.id)
-            if (uid != battleModel?.hostUid)
-                throw Exception("start only host(${battleEntity.host}) but you are $uid")
-
-            remoteSource2.updateBattle(it, battleEntity.id,
-                mapOf(
-                    "startedAt" to FieldValue.serverTimestamp(),
-                    // 모든 참여자를 startingParticipants로 저장하여 시작 했던 멤버를 기억하도록 한다.(나중에 통계때 필요)
-                    "startingParticipants" to participants.map { participant -> participant.uid }
-                )
-            )
-        }.await()
+        doStartBattle(battleEntity, uid)
     }
 
     override suspend fun startBattle(battleEntity: BattleEntity) {
-        startBattle(battleEntity, FirebaseAuth.getInstance().currentUser?.uid!!)
+        doStartBattle(battleEntity, currentUserUid)
     }
+
+    private suspend fun doStartBattle(battleEntity: BattleEntity, uid: String): BattleEntity {
+        val participants = doGetAllReadyParticipantsOrNull(battleEntity.id, uid)
+
+        FirebaseFirestore.getInstance().runTransaction {
+            with(remoteSource2) {
+                getBattle(it, battleEntity.id)
+                    ?.toDomain()
+                    ?.run {
+                        if (this !is BattleEntity.PendingBattleEntity)
+                            throw Exception("battle start only pending status")
+
+                        if (host != uid)
+                            throw Exception("start only host(${host}) but you are $uid")
+
+                        val battleInfoForMod =
+                            mapOf(
+                                "startedAt" to FieldValue.serverTimestamp(),
+                                // 모든 참여자를 startingParticipants로 저장하여 시작 했던 멤버를 기억하도록 한다.(나중에 통계때 필요)
+                                "startingParticipants" to participants.map { participant -> participant.uid }
+                            )
+                        updateBattle(it, id, battleInfoForMod)
+                    }
+                    ?: throw Exception("not found battle uid = $uid")
+            }
+        }.await()
+
+        return FirebaseFirestore.getInstance().runTransaction {
+            remoteSource2.getBattle(it, battleEntity.id)
+        }.await()
+            ?.toDomain()
+            ?.run {
+                takeIf { it is BattleEntity.RunningBattleEntity }
+                    ?: throw Exception("battle is not running")
+            }
+            ?: throw Exception("battle not found")
+    }
+
+    private suspend fun doGetAllReadyParticipantsOrNull(battleId: String, uid: String) =
+        remoteSource2.getParticipantList(battleId)
+            .apply {
+                when {
+                    none { it.uid != uid } -> throw Exception("is empty participants")
+                    any { !it.isReady } -> throw Exception("not to all ready")
+                }
+            }
+
+
+    private val currentUserUid: String
+        get() = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw Exception("current user is null")
 
     override suspend fun updateClearRecord(
         battleEntity: BattleEntity,
         profile: ProfileEntity,
         clearTime: Long
     ) {
+        if (battleEntity is BattleEntity.WaitingBattleEntity || battleEntity is BattleEntity.PendingBattleEntity)
+            throw Exception("battle waiting yet")
+
         FirebaseFirestore.getInstance().runTransaction { t ->
             val participantModel = remoteSource2.getParticipant(t, profile.uid)
                 ?: throw BattleRepository.UnknownParticipantException()
@@ -346,24 +383,46 @@ class BattleRepositoryImpl(
         }.await()
     }
 
-    override suspend fun pendingBattle(battleEntity: BattleEntity, uid: String) {
-        val participants = remoteSource2.getParticipantList(battleEntity.id)
-        participants.filter { it.uid != uid }.takeIf { it.isEmpty() }
-            ?.run { throw Exception("is empty guest users") }
 
-        participants.filter { !it.isReady }.takeIf { it.isNotEmpty() }
-            ?.run { throw Exception("not to all ready") }
+    override suspend fun pendingBattle(battleEntity: BattleEntity) {
+        doPendingBattle(battleEntity, currentUserUid)
+    }
+
+    @TestOnly
+    override suspend fun pendingBattle(battleEntity: BattleEntity, uid: String) {
+        doPendingBattle(battleEntity, uid)
+    }
+
+    private suspend fun doPendingBattle(battleEntity: BattleEntity, uid: String): BattleEntity {
+        doGetAllReadyParticipantsOrNull(battleEntity.id, uid)
 
         FirebaseFirestore.getInstance().runTransaction {
-            val battleModel = remoteSource2.getBattle(it, battleEntity.id)
-            if (uid != battleModel?.hostUid)
-                throw Exception("start pending only host(${battleEntity.host}) but you are $uid")
+            with(remoteSource2) {
+                getBattle(it, battleEntity.id)
+                    ?.toDomain()
+                    ?.run {
+                        if (this !is BattleEntity.WaitingBattleEntity)
+                            throw Exception("do pending is only waiting state")
 
-            remoteSource2.updateBattle(
-                it,
-                battleEntity.id,
-                mapOf("pendingAt" to FieldValue.serverTimestamp())
-            )
+                        if (host != uid)
+                            throw Exception("start pending only host(${host}) but you are $uid")
+
+                        val battleInfoForMod =
+                            mapOf("pendingAt" to FieldValue.serverTimestamp())
+                        updateBattle(it, id, battleInfoForMod)
+                    }
+                    ?: throw Exception("not found battle uid = $uid")
+            }
         }.await()
+
+        return FirebaseFirestore.getInstance().runTransaction {
+            remoteSource2.getBattle(it, battleEntity.id)
+        }.await()
+            ?.toDomain()
+            ?.run {
+                takeIf { it is BattleEntity.PendingBattleEntity }
+                    ?: throw Exception("battle is not pending")
+            }
+            ?: throw Exception("battle not found")
     }
 }

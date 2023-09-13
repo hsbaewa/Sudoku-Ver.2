@@ -21,6 +21,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+@Suppress("NonAsciiCharacters")
 @OptIn(ExperimentalCoroutinesApi::class)
 class BattleTestCase1 {
     private lateinit var battleRepository2: BattleRepositoryImpl
@@ -66,14 +67,14 @@ class BattleTestCase1 {
     }
 
     @Test
-    fun force_Start_Battle() = runTest {
+    fun 참여자_없이_강제로_시작() = runTest {
         assertThrows(Exception::class.java) {
             runBlocking { battleRepository2.startBattle(battleEntity, ownerUser.uid) }
         }
     }
 
     @Test
-    fun force_Start_Battle_Not_Ready() = runTest {
+    fun 참여자는_있지만_아직_ready_안한_상태에서_시작() = runTest {
         battleRepository2.joinBattle(battleEntity, guestUser1)
 
         assertThrows(Exception::class.java) {
@@ -84,23 +85,26 @@ class BattleTestCase1 {
     }
 
     @Test
-    fun search_battle() = runTest {
+    fun 방_검색() = runTest {
         val list = battleRepository2.getBattleList(10)
         val selectEntity = list.find { it.id == battleEntity.id }
         assertNotNull(selectEntity)
     }
 
     @Test
-    fun search_joined_battle() = runTest {
+    fun 참여중인_방_검색() = runTest {
         val ownerJoinedBattle = battleRepository2.getJoinedBattle(ownerUser.uid)
         assertEquals(ownerJoinedBattle?.id, battleEntity.id)
 
         val joinedBattle = battleRepository2.getJoinedBattle(guestUser1.uid)
         assertNotEquals(joinedBattle?.id, battleEntity.id)
+
+        val invalidJoinedBattle = battleRepository2.getJoinedBattle("없는 uid")
+        assertNull(invalidJoinedBattle)
     }
 
     @Test
-    fun ready_to_battle() = runTest {
+    fun 준비상태_확인_테스트() = runTest {
         battleRepository2.joinBattle(battleEntity, guestUser1)
         battleRepository2.joinBattle(battleEntity, guestUser2)
 
@@ -116,7 +120,7 @@ class BattleTestCase1 {
     }
 
     @Test
-    fun changed_host() = runTest {
+    fun host가_바뀌는_상황() = runTest {
         battleRepository2.joinBattle(battleEntity, guestUser1)
         battleRepository2.joinBattle(battleEntity, guestUser2)
 
@@ -131,7 +135,7 @@ class BattleTestCase1 {
     }
 
     @Test
-    fun start_battle_and_eject_not_clear() = runTest {
+    fun 게임이_시작된_방에_참여_하려_하는_경우() = runTest {
         battleRepository2.joinBattle(battleEntity, guestUser1)
         battleRepository2.joinBattle(battleEntity, guestUser2)
 
@@ -147,35 +151,72 @@ class BattleTestCase1 {
 
         battleRepository2.readyToBattle(guestUser2.uid)
 
+        battleRepository2.pendingBattle(battleEntity, ownerUser.uid)
         battleRepository2.startBattle(battleEntity, ownerUser.uid)
 
         val list = battleRepository2.getBattleList(10)
         val current = list.find { it.id == battleEntity.id }
+        // 참여 가능한 battleEntity가 존재
         assertNull(current)
+
+        // 이 상태에서 참여
+        assertThrows(Exception::class.java) {
+            val thirdparty = ProfileEntityImpl(
+                "thirdparty",
+                "thirdparty",
+                "thirdparty",
+                "http://thirdparty.com",
+                LocaleEntityImpl("ko", "KR")
+            )
+            runBlocking { battleRepository2.joinBattle(battleEntity, thirdparty) }
+        }
 
         battleRepository2.exitBattle(battleEntity, guestUser1)
         battleRepository2.exitBattle(battleEntity, guestUser2)
     }
 
     @Test
-    fun start_battle_and_clear_sequence() = runTest {
+    fun 게임_클리어_하였을때_기록() = runTest {
         battleRepository2.joinBattle(battleEntity, guestUser1)
         battleRepository2.readyToBattle(guestUser1.uid)
 
         battleRepository2.joinBattle(battleEntity, guestUser2)
         battleRepository2.readyToBattle(guestUser2.uid)
 
+        battleRepository2.pendingBattle(battleEntity, ownerUser.uid)
         battleRepository2.startBattle(battleEntity, ownerUser.uid)
 
-        battleRepository2.updateClearRecord(battleEntity, guestUser1, 1000)
-        battleRepository2.updateClearRecord(battleEntity, ownerUser, 500)
-        battleRepository2.updateClearRecord(battleEntity, guestUser2, 1500)
+        val runningBattle = battleRepository2.getBattle(battleEntity.id)!!
+
+        battleRepository2.updateClearRecord(runningBattle, guestUser1, 1000)
+        battleRepository2.updateClearRecord(runningBattle, ownerUser, 500)
+        battleRepository2.updateClearRecord(runningBattle, guestUser2, 1500)
 
         val ownerUserStatistics = battleRepository2.getStatistics(ownerUser.uid)
         assertTrue(ownerUserStatistics.winCount > 0)
 
         val guestUserStatistics = battleRepository2.getStatistics(guestUser1.uid)
         assertTrue(guestUserStatistics.clearedCount > 0)
+    }
+
+    @Test
+    fun pending_없이_시작하려고_하는_경우() = runTest {
+        battleRepository2.joinBattle(battleEntity, guestUser1)
+        battleRepository2.readyToBattle(guestUser1.uid)
+
+        battleRepository2.joinBattle(battleEntity, guestUser2)
+        battleRepository2.readyToBattle(guestUser2.uid)
+
+        assertThrows(Exception::class.java) {
+            runTest { battleRepository2.startBattle(battleEntity, ownerUser.uid) }
+        }
+
+        battleRepository2.pendingBattle(battleEntity, ownerUser.uid)
+        battleRepository2.startBattle(battleEntity, ownerUser.uid)
+
+        val running = battleRepository2.getBattle(battleEntity.id)
+
+        assertTrue(running is BattleEntity.RunningBattleEntity)
     }
 
     @After

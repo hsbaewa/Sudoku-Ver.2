@@ -41,16 +41,6 @@ object BattleMapper {
                 participantSize
             )
 
-            pendingAt != null && startedAt == null -> BattleEntity.PendingBattleEntity(
-                id,
-                hostUid,
-                startingMatrix,
-                createdAt,
-                pendingAt.toDate(),
-                startingParticipants.size,
-                participantSize
-            )
-
             startedAt != null -> BattleEntity.RunningBattleEntity(
                 id,
                 hostUid,
@@ -60,6 +50,17 @@ object BattleMapper {
                 startingParticipants.size,
                 participantSize
             )
+
+            pendingAt != null -> BattleEntity.PendingBattleEntity(
+                id,
+                hostUid,
+                startingMatrix,
+                createdAt,
+                pendingAt.toDate(),
+                startingParticipants.size,
+                participantSize
+            )
+
 
             else -> BattleEntity.WaitingBattleEntity(
                 id, hostUid, startingMatrix, createdAt, startingParticipants.size, participantSize

@@ -17,9 +17,11 @@ import kr.co.hs.sudoku.usecase.battle.BattleMonitorUseCase
 import kr.co.hs.sudoku.usecase.battle.ParticipantMonitorUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+@Suppress("NonAsciiCharacters")
 @OptIn(ExperimentalCoroutinesApi::class)
 class BattleTestCase3 {
 
@@ -60,7 +62,7 @@ class BattleTestCase3 {
     }
 
     @Test
-    fun start_monitor_participant() = runBlocking {
+    fun 방_참가자_모니터링() = runBlocking {
         val useCase = ParticipantMonitorUseCase(battleRepository2)
         var lastMatrix: List<List<Int>>? = null
         val monitorJob = launch {
@@ -83,7 +85,7 @@ class BattleTestCase3 {
     }
 
     @Test
-    fun start_monitor_battle() = runBlocking {
+    fun 게임_상태_모니터() = runBlocking {
         val useCase = BattleMonitorUseCase(battleRepository2)
         var winnerUid: String? = null
         val monitorJob = launch {
@@ -94,9 +96,17 @@ class BattleTestCase3 {
             }
         }
 
+        assertTrue(battleRepository2.isAllReady(battleEntity))
+
+        battleRepository2.pendingBattle(battleEntity, user1.uid)
+        battleRepository2.startBattle(battleEntity, user1.uid)
+
+        val startingBattle = battleRepository2.getBattle(battleId = battleEntity.id)!!
+        assertTrue(startingBattle is BattleEntity.RunningBattleEntity)
+
         delay(1000)
-        battleRepository2.updateClearRecord(battleEntity, user1, 4800)
-        battleRepository2.updateClearRecord(battleEntity, user2, 4900)
+        battleRepository2.updateClearRecord(startingBattle, user1, 4800)
+        battleRepository2.updateClearRecord(startingBattle, user2, 4900)
 
         delay(1000)
         assertEquals(user1.uid, winnerUid)

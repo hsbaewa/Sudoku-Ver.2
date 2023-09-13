@@ -66,4 +66,5 @@ interface BattleRepository {
     suspend fun updateParticipantMatrix(uid: String, matrix: List<List<Int>>)
 
     suspend fun pendingBattle(battleEntity: BattleEntity, uid: String)
+    suspend fun pendingBattle(battleEntity: BattleEntity)
 }
