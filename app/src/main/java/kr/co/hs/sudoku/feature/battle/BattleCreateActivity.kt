@@ -1,14 +1,18 @@
 package kr.co.hs.sudoku.feature.battle
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,76 +22,83 @@ import kr.co.hs.sudoku.databinding.ActivityCreateBattleBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
+import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
 
 class BattleCreateActivity : Activity() {
     companion object {
-        private fun Activity.newIntent(uid: String) = Intent(this, BattleCreateActivity::class.java)
-            .putUserId(uid)
-
-        fun Activity.startBattleCreateActivity(uid: String) =
-            startActivity(newIntent(uid))
+        private fun newIntent(context: Context) = Intent(context, BattleCreateActivity::class.java)
+        fun startBattleCreateActivity(context: Context) = context.startActivity(newIntent(context))
     }
 
-    lateinit var binding: ActivityCreateBattleBinding
-    private val matrixListAdapter: SudokuMatrixListAdapter by lazy { SudokuMatrixListAdapter() }
+    private val binding: ActivityCreateBattleBinding by lazy {
+        DataBindingUtil.setContentView(this, R.layout.activity_create_battle)
+    }
+
+    // stage list viewmodel
+    private val viewModel: SinglePlayDifficultyViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_create_battle)
         binding.lifecycleOwner = this
 
         //--------------------------------------------------------------------------------------------\\
         //----------------------------------------- setup UI -----------------------------------------\\
         //--------------------------------------------------------------------------------------------\\
 
-        binding.sudokuBoardList.setupUIStageList(stageListViewModel.matrixList)
-        binding.btnCreate.setupUICreateButton()
+        with(binding) {
+            sudokuBoardList.onCreatedStageList()
+            btnCreate.onCreatedButton(onClickCreate(sudokuBoardList.adapter as SudokuMatrixListAdapter))
+        }
+
+        viewModel.matrixList.observe(this) { updateStageList(it) }
 
         lifecycleScope.launch {
-            withStarted {
-                singlePlayDifficultyViewModels().run {
-                    requestMatrix(BeginnerMatrixRepository())
-                }
-            }
+            withStarted { viewModel.requestMatrix(BeginnerMatrixRepository()) }
         }
     }
 
-    // stage list viewmodel
-    private val stageListViewModel: SinglePlayDifficultyViewModel by lazy { singlePlayDifficultyViewModels() }
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- setup UI -----------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
-    private fun RecyclerView.setupUIStageList(data: LiveData<List<IntMatrix>>) {
+    private fun RecyclerView.onCreatedStageList() {
         layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
-        adapter = matrixListAdapter
+        adapter = SudokuMatrixListAdapter()
+    }
 
-        data.observe(this@BattleCreateActivity) {
-            matrixListAdapter.submitList(it)
+    private fun Button.onCreatedButton(createBattle: () -> Unit) {
+        setOnClickListener { createBattle() }
+    }
+
+
+    private fun updateStageList(list: List<IntMatrix>) {
+        with(binding) {
+            (sudokuBoardList.adapter as SudokuMatrixListAdapter).submitList(list)
         }
     }
 
-    private fun Button.setupUICreateButton() {
-        setOnClickListener {
-            val matrix = matrixListAdapter.getSelectedItem() ?: return@setOnClickListener
-
-            lifecycleScope.launch {
-                getUserId()
-                    ?.let { uid ->
-                        val profile = withContext(Dispatchers.IO) { getProfile(uid) }
-                        withContext(Dispatchers.IO) {
-                            app.getBattleRepository().createBattle(profile, matrix)
-                        }
-                        finish()
-                    }
-                    ?: kotlin.run {
-                        showSnackBar(getString(R.string.error_require_authenticate))
-                    }
-
+    private fun onClickCreate(adapter: SudokuMatrixListAdapter): () -> Unit = {
+        adapter.getSelectedItem()
+            ?.let { selectedMatrix ->
+                app.getBattleRepository().submitCreateBattle(selectedMatrix)
             }
-        }
-
+            ?: showSnackBar(getString(R.string.require_select_stage))
     }
 
+    private fun BattleRepository.submitCreateBattle(matrix: IntMatrix) =
+        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            showSnackBar(throwable.message.toString())
+        }) {
+            withContext(Dispatchers.IO) {
+                val uid = currentUser?.uid
+                    ?: throw Exception(getString(R.string.error_require_authenticate))
+                val profile = getProfile(uid)
+                createBattle(profile, matrix)
+            }
+            finish()
+        }
+
+    private val currentUser: FirebaseUser?
+        get() = FirebaseAuth.getInstance().currentUser
 }

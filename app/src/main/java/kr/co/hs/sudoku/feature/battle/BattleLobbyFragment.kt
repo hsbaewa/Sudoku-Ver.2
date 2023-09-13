@@ -17,6 +17,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
@@ -25,7 +26,6 @@ import kr.co.hs.sudoku.databinding.LayoutBattleLobbyBinding
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
-import kr.co.hs.sudoku.feature.battle.BattleCreateActivity.Companion.startBattleCreateActivity
 import kr.co.hs.sudoku.feature.battle.BattlePlayActivity.Companion.startBattlePlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
@@ -96,11 +96,14 @@ class BattleLobbyFragment : Fragment() {
         setOnClickListener { startNewBattle() }
     }
 
-    private fun startNewBattle() = viewLifecycleOwner.lifecycleScope.launch {
-        currentUser
-            ?.run { activity.startBattleCreateActivity(uid) }
-            ?: run { showSnackBar(getString(R.string.error_require_authenticate)) }
-    }
+    private fun startNewBattle() =
+        viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            showSnackBar(throwable.message.toString())
+        }) {
+            currentUser
+                ?.run { BattleCreateActivity.startBattleCreateActivity(requireContext()) }
+                ?: throw Exception(getString(R.string.error_require_authenticate))
+        }
 
     private val currentUser: FirebaseUser?
         get() = FirebaseAuth.getInstance().currentUser
