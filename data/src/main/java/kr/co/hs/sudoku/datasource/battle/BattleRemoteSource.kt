@@ -22,6 +22,8 @@ interface BattleRemoteSource {
         uid: String
     ): ClearTimeRecordModel?
 
+    suspend fun getBattleRecord(battleId: String, uid: String): ClearTimeRecordModel?
+
     suspend fun getBattle(battleId: String): BattleModel?
     suspend fun getBattleList(limit: Long, firstCreateTime: Long): List<BattleModel>
     suspend fun getBattleListCreatedBy(uid: String): List<BattleModel>
@@ -30,6 +32,7 @@ interface BattleRemoteSource {
 
     suspend fun getStatistics(uid: String): BattleStatisticsModel
 
+    suspend fun updateBattle(battleId: String, data: Map<String, Any?>)
     fun updateBattle(transaction: Transaction, battleId: String, data: Map<String, Any?>)
     fun setBattleRecord(
         transaction: Transaction,
@@ -40,6 +43,7 @@ interface BattleRemoteSource {
 
     fun setParticipant(transaction: Transaction, battleParticipantModel: BattleParticipantModel)
     fun setParticipant(transaction: Transaction, uid: String, data: Map<String, Any?>)
+    suspend fun setParticipant(uid: String, data: Map<String, Any?>)
 
     fun deleteBattle(transaction: Transaction, battleId: String)
     fun deleteParticipant(transaction: Transaction, participant: BattleParticipantModel)

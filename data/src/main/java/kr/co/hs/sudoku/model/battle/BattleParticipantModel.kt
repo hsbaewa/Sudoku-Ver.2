@@ -26,4 +26,22 @@ class BattleParticipantModel() : ProfileModel {
             this.locale = it.locale
         }
     }
+
+    constructor(uid: String) : this() {
+        this.uid = uid
+    }
+
+    fun update(profileModel: ProfileModel) {
+        profileModel.let {
+            this.name = it.name
+            this.message = it.message
+            this.iconUrl = it.iconUrl
+            this.locale = it.locale
+        }
+
+        battleId = null
+        matrix = null
+        clearTime = null
+        isReady = false
+    }
 }

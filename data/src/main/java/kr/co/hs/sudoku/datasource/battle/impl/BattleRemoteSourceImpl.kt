@@ -2,6 +2,8 @@ package kr.co.hs.sudoku.datasource.battle.impl
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.AggregateSource
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions.merge
@@ -15,18 +17,25 @@ import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import java.util.Date
 
-class BattleRemoteSourceImpl : BattleRemoteSource {
-    override fun getBattleCollectionRef() =
-        FirebaseFirestore.getInstance()
+class BattleRemoteSourceImpl(
+    private val battleCollection: CollectionReference = DEFAULT_BATTLE_COLLECTION,
+    private val participantsCollection: CollectionReference = DEFAULT_PARTICIPANTS_COLLECTION
+) : BattleRemoteSource {
+
+    companion object {
+        val DEFAULT_BATTLE_COLLECTION = FirebaseFirestore.getInstance()
             .collection("version")
             .document("v2")
             .collection("battle")
 
-    override fun getParticipantCollectionRef() =
-        FirebaseFirestore.getInstance()
+        val DEFAULT_PARTICIPANTS_COLLECTION = FirebaseFirestore.getInstance()
             .collection("version")
             .document("v2")
             .collection("battleParticipants")
+    }
+
+    override fun getBattleCollectionRef() = battleCollection
+    override fun getParticipantCollectionRef() = participantsCollection
 
     override fun getBattleRecordCollectionRef(battleId: String) =
         getBattleCollectionRef()
@@ -42,17 +51,33 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
     override fun getBattle(transaction: Transaction, battleId: String) =
         transaction
             .get(getBattleCollectionRef().document(battleId))
-            .toObject(BattleModel::class.java)
-            ?.apply { this.id = battleId }
+            .toBattleModel()
+
+    private fun DocumentSnapshot.toBattleModel() =
+        toObject(BattleModel::class.java)
+            ?.apply { this.id = this@toBattleModel.id }
+
+    fun changeToBattleModel(snapshot: DocumentSnapshot?) = snapshot?.toBattleModel()
 
     override fun getParticipant(transaction: Transaction, uid: String) =
         transaction
             .get(getParticipantCollectionRef().document(uid))
-            .toObject(BattleParticipantModel::class.java)
+            .toParticipantModel()
+
+    private fun DocumentSnapshot.toParticipantModel() = toObject(BattleParticipantModel::class.java)
+
+    fun changeToParticipantModel(snapshot: DocumentSnapshot?) = snapshot?.toParticipantModel()
 
     override fun getBattleRecord(transaction: Transaction, battleId: String, uid: String) =
         transaction
             .get(getBattleRecordCollectionRef(battleId).document(uid))
+            .toObject(ClearTimeRecordModel::class.java)
+
+    override suspend fun getBattleRecord(battleId: String, uid: String) =
+        getBattleRecordCollectionRef(battleId)
+            .document(uid)
+            .get()
+            .await()
             .toObject(ClearTimeRecordModel::class.java)
 
     override suspend fun getBattle(battleId: String) =
@@ -60,8 +85,7 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
             .document(battleId)
             .get()
             .await()
-            .toObject(BattleModel::class.java)
-            ?.apply { this.id = battleId }
+            .toBattleModel()
 
     override suspend fun getBattleList(limit: Long, firstCreateTime: Long) =
         getBattleCollectionRef()
@@ -77,7 +101,7 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
             .get()
             .await()
             .documents
-            .mapNotNull { it.toObject(BattleModel::class.java)?.apply { id = it.id } }
+            .mapNotNull { it.toBattleModel() }
 
     override suspend fun getBattleListCreatedBy(uid: String) =
         getBattleCollectionRef()
@@ -87,7 +111,7 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
             .get()
             .await()
             .documents
-            .mapNotNull { it.toObject(BattleModel::class.java)?.apply { id = it.id } }
+            .mapNotNull { it.toBattleModel() }
 
     override suspend fun getParticipantList(battleId: String) =
         getParticipantCollectionRef()
@@ -95,14 +119,14 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
             .get()
             .await()
             .documents
-            .mapNotNull { it.toObject(BattleParticipantModel::class.java) }
+            .mapNotNull { it.toParticipantModel() }
 
     override suspend fun getParticipant(uid: String) =
         getParticipantCollectionRef()
             .document(uid)
             .get()
             .await()
-            .toObject(BattleParticipantModel::class.java)
+            .toParticipantModel()
 
     override suspend fun getStatistics(uid: String) =
         BattleStatisticsModel().apply {
@@ -126,6 +150,10 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
             .get(AggregateSource.SERVER)
             .await()
             .count
+
+    override suspend fun updateBattle(battleId: String, data: Map<String, Any?>) {
+        getBattleCollectionRef().document(battleId).set(data, merge())
+    }
 
     override fun updateBattle(transaction: Transaction, battleId: String, data: Map<String, Any?>) {
         transaction.set(getBattleCollectionRef().document(battleId), data, merge())
@@ -156,6 +184,10 @@ class BattleRemoteSourceImpl : BattleRemoteSource {
 
     override fun setParticipant(transaction: Transaction, uid: String, data: Map<String, Any?>) {
         transaction.update(getParticipantCollectionRef().document(uid), data)
+    }
+
+    override suspend fun setParticipant(uid: String, data: Map<String, Any?>) {
+        getParticipantCollectionRef().document(uid).set(data, merge())
     }
 
     override fun deleteBattle(transaction: Transaction, battleId: String) {
