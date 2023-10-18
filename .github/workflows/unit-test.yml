@@ -7,6 +7,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        api-level: [ 21, 23, 29 ]
+        target: [ default, google_apis ]
     steps:
       - name: Branch Checkout
         uses: actions/checkout@v3
@@ -15,15 +19,26 @@ jobs:
         with:
           ruby-version: '3.0'
           bundler-cache: true
-      - name: Fastlane Action For Test
+#      - name: Fastlane Action For Test
+#        uses: maierj/fastlane-action@v3.0.0
+#        with:
+#          lane: 'test'
+#      - name: Upload Artifact
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: report
+#          path: |
+#            domain/build/reports/tests
+#            data/build/reports/tests/testDebugUnitTest
+#          retention-days: 1
+      - name: 에뮬레이터 실행
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          profile: Nexus 6
+      - name: 계측 테스트
         uses: maierj/fastlane-action@v3.0.0
         with:
-          lane: 'test'
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: report
-          path: |
-            domain/build/reports/tests
-            data/build/reports/tests/testDebugUnitTest
-          retention-days: 1
+          lane: 'doTest'
