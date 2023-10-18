@@ -17,12 +17,12 @@ jobs:
       - name: Create google-services.json
         run: |
           echo ${{ secrets.GOOGLE_SERVICES_JSON }} >> app/google-services.json
-          echo app/google-services.json
-      - name: Ruby init
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0'
-          bundler-cache: true
+          cat app/google-services.json
+#      - name: Ruby init
+#        uses: ruby/setup-ruby@v1
+#        with:
+#          ruby-version: '3.0'
+#          bundler-cache: true
 #      - name: Fastlane Action For Test
 #        uses: maierj/fastlane-action@v3.0.0
 #        with:
@@ -42,4 +42,5 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: Nexus 6
-          script: ./gradlew clean app:connectedDebugAndroidTest
+#          script: ./gradlew clean app:connectedDebugAndroidTest
+          script: ./gradlew connectedCheck
