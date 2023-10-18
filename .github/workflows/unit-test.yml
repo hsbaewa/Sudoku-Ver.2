@@ -38,7 +38,4 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: Nexus 6
-      - name: 계측 테스트
-        uses: maierj/fastlane-action@v3.0.0
-        with:
-          lane: 'doTest'
+          script: ./gradlew clean app:connectedDebugAndroidTest
