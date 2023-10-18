@@ -9,15 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [ 29 ]
+        api-level: [ 31 ]
         target: [ default, google_apis ]
     steps:
       - name: Branch Checkout
         uses: actions/checkout@v3
-      - name: Create google-services.json
-        run: |
-          echo ${{ secrets.GOOGLE_SERVICES_JSON }} >> app/google-services.json
-          cat app/google-services.json
+#      - name: Create google-services.json
+#        run: |
+#          echo ${{ secrets.GOOGLE_SERVICES_JSON }} >> app/google-services.json
+#          cat app/google-services.json
+
 #      - name: Ruby init
 #        uses: ruby/setup-ruby@v1
 #        with:
@@ -40,7 +41,8 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
-          arch: x86_64
+          arch: arm64-v8a
           profile: Nexus 6
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
 #          script: ./gradlew clean app:connectedDebugAndroidTest
           script: ./gradlew connectedCheck
