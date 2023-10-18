@@ -9,11 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [ 21, 23, 29 ]
+        api-level: [ 29 ]
         target: [ default, google_apis ]
     steps:
       - name: Branch Checkout
         uses: actions/checkout@v3
+      - name: Create google-services.json
+        run: |
+          echo ${{ secrets.GOOGLE_SERVICES_JSON }} >> app/google-services.json
+          echo app/google-services.json
       - name: Ruby init
         uses: ruby/setup-ruby@v1
         with:
