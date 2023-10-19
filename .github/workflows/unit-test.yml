@@ -55,5 +55,5 @@ jobs:
 ##          script: ./gradlew clean app:connectedDebugAndroidTest
 #          script: ./gradlew connectedCheck
 
-          api-level: 31
+          api-level: 33
           script: ./gradlew connectedCheck
