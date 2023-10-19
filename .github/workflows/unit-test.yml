@@ -6,7 +6,7 @@ on:
       - main
 jobs:
   test:
-    runs-on: macos-11
+    runs-on: macos-latest
 #    strategy:
 #      matrix:
 #        api-level: [ 31 ]
@@ -55,6 +55,5 @@ jobs:
 ##          script: ./gradlew clean app:connectedDebugAndroidTest
 #          script: ./gradlew connectedCheck
 
-          api-level: 33
-          arch: arm64-v8a
+          api-level: 29
           script: ./gradlew connectedCheck
