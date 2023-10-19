@@ -56,4 +56,5 @@ jobs:
 #          script: ./gradlew connectedCheck
 
           api-level: 33
+          arch: arm64-v8a
           script: ./gradlew connectedCheck
