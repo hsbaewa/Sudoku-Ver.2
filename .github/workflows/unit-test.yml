@@ -46,7 +46,6 @@ jobs:
 #            data/build/reports/tests/testDebugUnitTest
 #          retention-days: 1
       - name: 에뮬레이터 실행
-        shell: bash
         uses: reactivecircus/android-emulator-runner@v2
         with:
 #          api-level: 31
