@@ -47,7 +47,6 @@ jobs:
 #          retention-days: 1
       - name: 에뮬레이터 실행
         uses: reactivecircus/android-emulator-runner@v2
-        shell: bash
         with:
 #          api-level: 31
 #          profile: Nexus 6
@@ -67,3 +66,4 @@ jobs:
 
           api-level: 29
           script: ./gradlew connectedCheck
+        shell: bash
