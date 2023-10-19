@@ -22,7 +22,7 @@ jobs:
       - name: Create google-services.json
         shell: bash
         env:
-          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES_JSON }}
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           echo "$GOOGLE_SERVICES"
           echo "$GOOGLE_SERVICES" > app/google-services.json
@@ -47,6 +47,7 @@ jobs:
 #          retention-days: 1
       - name: 에뮬레이터 실행
         uses: reactivecircus/android-emulator-runner@v2
+        shell: bash
         with:
 #          api-level: 31
 #          profile: Nexus 6
