@@ -21,7 +21,8 @@ jobs:
           java-version: '18'
       - name: Create google-services.json
         run: |
-          echo ${{ env.GOOGLE_SERVICES_JSON }} >> app/google-services.json
+          echo $GOOGLE_SERVICES_JSON
+          echo $GOOGLE_SERVICES_JSON >> app/google-services.json
           cat app/google-services.json
 
 #      - name: Ruby init
