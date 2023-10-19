@@ -12,7 +12,6 @@ jobs:
 #        api-level: [ 31 ]
 #        target: [ default, google_apis ]
     steps:
-      - shell: bash
       - name: Branch Checkout
         uses: actions/checkout@v3
       - name: Setup Java Version
@@ -21,6 +20,7 @@ jobs:
           distribution: 'adopt-openj9' # See 'Supported distributions' for available options
           java-version: '18'
       - name: Create google-services.json
+      - shell: bash
         run: |
           echo $GOOGLE_SERVICES_JSON
           echo $GOOGLE_SERVICES_JSON >> app/google-services.json
