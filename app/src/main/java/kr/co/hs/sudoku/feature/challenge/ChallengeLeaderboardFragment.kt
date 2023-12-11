@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -33,7 +33,7 @@ import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 class ChallengeLeaderboardFragment : Fragment() {
 
     companion object {
-        fun new() = ChallengeLeaderboardFragment()
+        fun newInstance() = ChallengeLeaderboardFragment()
     }
 
     lateinit var binding: LayoutChallengeLeaderboardBinding
@@ -66,7 +66,7 @@ class ChallengeLeaderboardFragment : Fragment() {
     private val currentUser: FirebaseUser?
         get() = FirebaseAuth.getInstance().currentUser
 
-    private val challengeViewModel: ChallengeViewModel by viewModels()
+    private val challengeViewModel: ChallengeViewModel by activityViewModels()
 
 
     private fun RecyclerView.onCreatedLeaderBoard() {

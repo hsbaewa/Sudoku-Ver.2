@@ -31,8 +31,8 @@ class BattleLobbyViewModel(
     private val _battleList = MutableLiveData<List<BattleEntity>>()
     val battleList: LiveData<List<BattleEntity>> by this::_battleList
 
-    private val _battleDetail = MutableLiveData<BattleEntity>()
-    val battleDetail: LiveData<BattleEntity> by this::_battleDetail
+    private val _battleDetail = MutableLiveData<BattleEntity?>()
+    val battleDetail: LiveData<BattleEntity?> by this::_battleDetail
 
     private val _battleCurrent = MutableLiveData<BattleEntity>()
     val battleCurrent: LiveData<BattleEntity> by this::_battleCurrent
@@ -61,6 +61,10 @@ class BattleLobbyViewModel(
             _battleDetail.value = entity
             setProgress(false)
         }
+    }
+
+    fun clearDetail() {
+        _battleDetail.value = null
     }
 
     fun requestBattleLobby() =

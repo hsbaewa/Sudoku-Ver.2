@@ -146,7 +146,7 @@ class BattleLobbyFragment : Fragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setView(dlgBinding.root)
             .setPositiveButton(R.string.join) { _, _ -> joinBattle(id) }
-            .setNegativeButton(R.string.cancel) { _, _ -> }
+            .setNegativeButton(R.string.cancel) { _, _ -> battleLobbyViewModel.clearDetail() }
             .setCancelable(false)
             .show()
     }
