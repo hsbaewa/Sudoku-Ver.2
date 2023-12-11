@@ -81,7 +81,7 @@ class WithCPUPlayActivity : Activity() {
         getSudokuMatrix()
             .takeIf { it != null }
             ?.run {
-                replaceFragment(R.id.userBoardLayout, SudokuPlayFragment.new())
+                replaceFragment(R.id.userBoardLayout, SudokuPlayFragment.newInstance())
                 gamePlayViewModel.buildSudokuMatrix(this)
             }
     }
@@ -186,7 +186,7 @@ class WithCPUPlayActivity : Activity() {
 
     private fun replay() {
         removeFragment(SudokuAutoPlayFragment::class.java)
-        replaceFragment(R.id.userBoardLayout, SudokuHistoryFragment.new())
+        replaceFragment(R.id.userBoardLayout, SudokuHistoryFragment.newInstance())
         recordViewModel.playCapturedHistory()
         gamePlayViewModel.backToStartingMatrix()
     }

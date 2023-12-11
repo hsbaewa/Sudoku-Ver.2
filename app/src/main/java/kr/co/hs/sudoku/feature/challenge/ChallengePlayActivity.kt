@@ -90,7 +90,7 @@ class ChallengePlayActivity : Activity() {
         realServerTimer.continueIfLastPlaying(challenge)
 
         // 게임 Fragment 설정
-        replaceFragment(R.id.rootLayout, SudokuPlayFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuPlayFragment.newInstance())
 
         lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             dismissProgressIndicator()
@@ -226,7 +226,7 @@ class ChallengePlayActivity : Activity() {
     }
 
     private fun replay() {
-        replaceFragment(R.id.rootLayout, SudokuHistoryFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuHistoryFragment.newInstance())
         gamePlayViewModel.backToStartingMatrix()
         realServerTimer.pass(0)
         recordViewModel.playCapturedHistory()

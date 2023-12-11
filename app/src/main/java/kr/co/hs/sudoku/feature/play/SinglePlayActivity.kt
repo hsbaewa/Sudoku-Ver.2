@@ -67,7 +67,7 @@ class SinglePlayActivity : Activity() {
         getSudokuMatrix()
             .takeIf { it != null }
             ?.run {
-                replaceFragment(R.id.rootLayout, SudokuPlayFragment.new())
+                replaceFragment(R.id.rootLayout, SudokuPlayFragment.newInstance())
                 gamePlayViewModel.buildSudokuMatrix(this)
             }
     }
@@ -114,7 +114,7 @@ class SinglePlayActivity : Activity() {
     }
 
     private fun replay() {
-        replaceFragment(R.id.rootLayout, SudokuHistoryFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuHistoryFragment.newInstance())
         gamePlayViewModel.backToStartingMatrix()
         recordViewModel.playCapturedHistory()
     }

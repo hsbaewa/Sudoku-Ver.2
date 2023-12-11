@@ -21,7 +21,7 @@ import kr.co.hs.sudoku.views.SudokuBoardView
 
 class SudokuHistoryFragment : Fragment() {
     companion object {
-        fun new() = SudokuHistoryFragment()
+        fun newInstance() = SudokuHistoryFragment()
     }
 
     lateinit var binding: LayoutPlayAutoBinding

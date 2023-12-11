@@ -24,7 +24,7 @@ import kr.co.hs.sudoku.views.SudokuBoardView
 
 class SudokuPlayFragment : Fragment() {
     companion object {
-        fun new() = SudokuPlayFragment()
+        fun newInstance() = SudokuPlayFragment()
     }
 
     override fun onCreateView(
