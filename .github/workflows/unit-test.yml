@@ -30,7 +30,7 @@ jobs:
       - name: Update AndroidManifest.xml
         uses: jacinlowe/update-android-manifest-package-action@v1.0.1
         with:
-          android-manifest-path: './app/src/main/res/AndroidManifest.xml'
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
           metadata-key: 'com.google.android.gms.games.APP_ID'
           metadata-value: ${{secrets.GAME_SERVICE_PROJECT_ID}}
           print-file: true
