@@ -34,7 +34,7 @@ import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 
 class BattleLobbyFragment : Fragment() {
     companion object {
-        fun new() = BattleLobbyFragment()
+        fun newInstance() = BattleLobbyFragment()
     }
 
     private lateinit var binding: LayoutBattleLobbyBinding

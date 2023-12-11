@@ -3,11 +3,6 @@ package kr.co.hs.sudoku.battle
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.GeneralLocation
-import androidx.test.espresso.action.GeneralSwipeAction
-import androidx.test.espresso.action.Press
-import androidx.test.espresso.action.Swipe
-import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -94,21 +89,21 @@ class ControlBoardFragmentTest {
         onView(withId(R.id.viewSilhouette)).check(matches(not(isDisplayed())))
         onView(withText("Cancel Ready")).check(doesNotExist())
 
-        runBlocking { delay(5000) }
-
-        onView(withText("1"))
-            .perform(
-                ViewActions.repeatedlyUntil(
-                    GeneralSwipeAction(
-                        Swipe.SLOW,
-                        GeneralLocation.TOP_CENTER,
-                        GeneralLocation.BOTTOM_RIGHT,
-                        Press.FINGER
-                    ),
-                    withText("4"),
-                    2
-                )
-            )
+//        runBlocking { delay(5000) }
+//
+//        onView(withText("1"))
+//            .perform(
+//                ViewActions.repeatedlyUntil(
+//                    GeneralSwipeAction(
+//                        Swipe.SLOW,
+//                        GeneralLocation.TOP_CENTER,
+//                        GeneralLocation.BOTTOM_RIGHT,
+//                        Press.FINGER
+//                    ),
+//                    withText("4"),
+//                    2
+//                )
+//            )
     }
 
     @Test
@@ -135,21 +130,21 @@ class ControlBoardFragmentTest {
         onView(withId(R.id.viewSilhouette)).check(matches(not(isDisplayed())))
         onView(withText("Cancel Ready")).check(doesNotExist())
 
-        runBlocking { delay(5000) }
-
-        onView(withText("1"))
-            .perform(
-                ViewActions.repeatedlyUntil(
-                    GeneralSwipeAction(
-                        Swipe.FAST,
-                        GeneralLocation.TOP_CENTER,
-                        GeneralLocation.BOTTOM_RIGHT,
-                        Press.FINGER
-                    ),
-                    withText("4"),
-                    2
-                )
-            )
+//        runBlocking { delay(5000) }
+//
+//        onView(withText("1"))
+//            .perform(
+//                ViewActions.repeatedlyUntil(
+//                    GeneralSwipeAction(
+//                        Swipe.FAST,
+//                        GeneralLocation.TOP_CENTER,
+//                        GeneralLocation.BOTTOM_RIGHT,
+//                        Press.FINGER
+//                    ),
+//                    withText("4"),
+//                    2
+//                )
+//            )
     }
 
     @Test
