@@ -62,7 +62,8 @@ sealed interface BattleEntity : Cloneable {
         override val startingMatrix: IntMatrix,
         override val maxParticipants: Int,
         override val participantSize: Int,
-        val pendedAt: Date
+        val pendedAt: Date,
+        val isGeneratedSudoku: Boolean
     ) : BattleEntity {
         override val participants by this::_participants
         private val _participants = HashSet<ParticipantEntity>()
@@ -73,7 +74,7 @@ sealed interface BattleEntity : Cloneable {
         }
 
         override fun clone() = Pending(
-            id, host, createdAt, startingMatrix, maxParticipants, participantSize, pendedAt
+            id, host, createdAt, startingMatrix, maxParticipants, participantSize, pendedAt, isGeneratedSudoku
         ).also {
             it.init(participants)
         }

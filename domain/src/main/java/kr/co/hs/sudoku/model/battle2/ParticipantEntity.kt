@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.model.battle2
 
+import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
@@ -11,7 +12,8 @@ sealed interface ParticipantEntity : ProfileEntity {
         override var displayName: String,
         override var message: String? = null,
         override var iconUrl: String? = null,
-        override val locale: LocaleEntity? = null
+        override val locale: LocaleEntity? = null,
+        val matrix: IntMatrix = EmptyMatrix()
     ) : ParticipantEntity
 
     data class Guest(
@@ -27,7 +29,8 @@ sealed interface ParticipantEntity : ProfileEntity {
         override var displayName: String,
         override var message: String? = null,
         override var iconUrl: String? = null,
-        override val locale: LocaleEntity? = null
+        override val locale: LocaleEntity? = null,
+        val matrix: IntMatrix = EmptyMatrix()
     ) : ParticipantEntity
 
     data class Playing(

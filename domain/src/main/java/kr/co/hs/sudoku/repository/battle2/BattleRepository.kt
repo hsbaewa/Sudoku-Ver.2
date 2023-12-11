@@ -5,6 +5,8 @@ import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 
 interface BattleRepository {
+    // 현재의 user id
+    val currentUserUid: String
 
     /**
      * 방 생성

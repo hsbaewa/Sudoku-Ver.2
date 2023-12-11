@@ -24,6 +24,10 @@ class BattleModel() {
     // 시작 시점의 참여자 정보 저장(승률 정보 통계 낼때 필요하다. 전체 게임 진행 횟수)
     var startingParticipants: List<String?> = emptyList()
 
+    // 스도쿠 게임판 제너레이션 완료 되었는지 여부
+    @field:JvmField
+    val isGeneratedSudoku = false
+
     constructor(
         profile: ProfileModelImpl,
         startingMatrix: List<List<Int>>,

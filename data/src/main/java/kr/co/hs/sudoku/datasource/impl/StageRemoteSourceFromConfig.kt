@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.datasource.impl
 
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.gson.Gson
+import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.StageRemoteSource
 import kr.co.hs.sudoku.model.sudoku.impl.AutoGenStageModelImpl
 
@@ -14,10 +15,14 @@ class StageRemoteSourceFromConfig(
         const val CONFIG_ADVANCED = "v2_generate_mask_advanced"
     }
 
-    override suspend fun getBeginnerGenerateMask() = remoteConfig.getString(CONFIG_BEGINNER)
-        .runCatching { Gson().fromJson(this, DataList::class.java) }
-        .getOrDefault(DataList(emptyList()))
-        .data
+    override suspend fun getBeginnerGenerateMask() = with(remoteConfig) {
+        fetchAndActivate().await()
+        getString(CONFIG_BEGINNER)
+            .runCatching { Gson().fromJson(this, DataList::class.java) }
+            .getOrDefault(DataList(emptyList()))
+            .data
+    }
+
 
     override suspend fun getIntermediateGenerateMask() = remoteConfig.getString(CONFIG_INTERMEDIATE)
         .runCatching { Gson().fromJson(this, DataList::class.java) }

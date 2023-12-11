@@ -69,7 +69,7 @@ open class BattleRepositoryTest {
     }
 
     protected val userProfile: List<ProfileEntity> by ::_userProfile
-    private val userBattleRepository: List<BattleRepository> by ::_userBattleRepository
+    protected val userBattleRepository: List<BattleRepository> by ::_userBattleRepository
 
     @Test
     fun 게임_생성_테스트() = runTest {
@@ -121,7 +121,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 게임_참여_테스트() = runTest {
+    open fun 게임_참여_테스트() = runTest {
         var battle = userBattleRepository[0].create(getTestMatrix(), 3)
         assertEquals(1, battle.participantSize)
         assertEquals(userUidList[0], battle.host)
@@ -179,7 +179,7 @@ open class BattleRepositoryTest {
         assertThrows(Exception::class.java) {
             battle =
                 runBlocking { with(userBattleRepository[1]) { join(battle.id);getParticipating() } }
-        }
+        }.also { assertEquals(it.message, "참여 하려는 게임(${battle.id})에 이미 참가 중 입니다.") }
         assertEquals(2, battle.participantSize)
         assertEquals(userUidList[0], battle.host)
 
@@ -205,6 +205,16 @@ open class BattleRepositoryTest {
         battle = with(userBattleRepository[3]) { join(battle.id);getParticipating() }
         assertEquals(3, battle.participantSize)
         assertEquals(userUidList[0], battle.host)
+
+        userBattleRepository[2].exit()
+        assertThrows(Exception::class.java) {
+            runBlocking { userBattleRepository[2].join(battle.id) }
+        }.also {
+            assertEquals(
+                it.message,
+                "게임(${battle.id})의 참여자가 ${battle.participantSize}/${battle.maxParticipants}로 이미 가득 찼습니다."
+            )
+        }
     }
 
     @Test
@@ -288,7 +298,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 게임_시작_테스트() = runTest {
+    open fun 게임_시작_테스트() = runTest {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
 
@@ -359,7 +369,7 @@ open class BattleRepositoryTest {
 
 
     @Test
-    fun 게임_종료_테스트() = runTest(dispatchTimeoutMs = 1000 * 60 * 60) {
+    open fun 게임_종료_테스트() = runTest(dispatchTimeoutMs = 1000 * 60 * 60) {
         var battleId: String?
         assertEquals(
             userBattleRepository[0].create(getTestMatrix()).apply {
@@ -429,7 +439,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 게임_클리어_테스트() = runTest(dispatchTimeoutMs = 1000 * 60 * 60) {
+    open fun 게임_클리어_테스트() = runTest(dispatchTimeoutMs = 1000 * 60 * 60) {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
@@ -623,7 +633,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 셀_변경_테스트() = runTest {
+    open fun 셀_변경_테스트() = runTest {
         val battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository2 = BattleEventRepositoryImpl(battleId = battle.id)

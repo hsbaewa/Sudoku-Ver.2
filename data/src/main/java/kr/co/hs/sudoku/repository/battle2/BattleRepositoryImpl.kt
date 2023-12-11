@@ -31,7 +31,7 @@ class BattleRepositoryImpl(
     private val profileRemoteSource: ProfileRemoteSource = ProfileRemoteSourceImpl()
 ) : BattleRepository {
 
-    private val currentUserUid: String
+    override val currentUserUid: String
         get() = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw Exception("사용자 인증 정보가 없습니다. 게임 진행을 위해서는 먼저 사용자 인증이 필요합니다.")
 
@@ -195,7 +195,7 @@ class BattleRepositoryImpl(
                 }
 
                 if (battleEntity.participantSize >= battleEntity.maxParticipants)
-                    throw Exception("게임($battleId)의 참여자가 ${battleEntity.participantSize}/${battleEntity.participants.size}로 이미 가득 찼습니다.")
+                    throw Exception("게임($battleId)의 참여자가 ${battleEntity.participantSize}/${battleEntity.maxParticipants}로 이미 가득 찼습니다.")
 
                 setParticipant(t, BattleParticipantModel(currentUserUid).also {
                     it.update(profileRemoteSource.getProfile(t, currentUserUid))
@@ -289,6 +289,11 @@ class BattleRepositoryImpl(
                 )
             }
 
+            battleRemoteSource.updateBattle(
+                battle.id,
+                mapOf("isGeneratedSudoku" to true)
+            )
+
         }
     }
 
@@ -331,14 +336,16 @@ class BattleRepositoryImpl(
                 getParticipant(t, currentUserUid)
                     ?.let { participant ->
 
-                        participant.battleId
+                        val battle = participant.battleId
                             ?.let { battleId -> getBattle(t, battleId) }
-                            ?.toDomain()
-                            ?.startingMatrix
-                            ?.let { startingMatrix ->
-                                startingMatrix[row][column]
-                            }
-                            ?.takeIf { it == 0 }
+                            ?.toDomain2()
+
+                        if (battle !is BattleEntity.Playing)
+                            throw Exception("게임이 아직 시작 되지 않았습니다.")
+
+                        battle
+                            .startingMatrix[row][column]
+                            .takeIf { it == 0 }
                             ?.run {
                                 participant.matrix?.run {
                                     val columnCount = sqrt(size.toDouble()).toInt()
@@ -347,6 +354,7 @@ class BattleRepositoryImpl(
                             }
                             ?.also { it[row][column] = value }
                             ?.flatten()
+                            ?: throw Exception("변경이 불가능한 셀입니다.")
                     }
                     ?.let { setParticipant(t, currentUserUid, mapOf("matrix" to it)) }
             }

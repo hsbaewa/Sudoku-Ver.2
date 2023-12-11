@@ -8,6 +8,7 @@ import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
 import kr.co.hs.sudoku.model.battle2.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
+import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kotlin.math.sqrt
 
 @Suppress("unused")
@@ -174,7 +175,8 @@ object BattleMapper {
                 maxParticipants = startingParticipants.size,
                 participantSize = participantSize,
                 pendedAt = pendingAt?.toDate()
-                    ?: throw Exception("invalid battle model's pended at")
+                    ?: throw Exception("invalid battle model's pended at"),
+                isGeneratedSudoku = isGeneratedSudoku
             )
 
             else -> kr.co.hs.sudoku.model.battle2.BattleEntity.Opened(
@@ -191,8 +193,8 @@ object BattleMapper {
     fun BattleParticipantModel.toDomain2(battle: kr.co.hs.sudoku.model.battle2.BattleEntity): ParticipantEntity {
         val matrix = this.matrix?.run {
             val columnCount = sqrt(size.toDouble()).toInt()
-            toMatrix(columnCount)
-        } ?: emptyList()
+            CustomMatrix(toMatrix(columnCount))
+        } ?: EmptyMatrix()
 
         return when (battle) {
             is kr.co.hs.sudoku.model.battle2.BattleEntity.Opened -> when {
@@ -227,7 +229,8 @@ object BattleMapper {
                     displayName = name,
                     message = message,
                     iconUrl = iconUrl,
-                    locale = locale.toDomain()
+                    locale = locale.toDomain(),
+                    matrix = if (battle.isGeneratedSudoku) matrix else EmptyMatrix()
                 )
 
                 else -> ParticipantEntity.ReadyGuest(
@@ -235,7 +238,8 @@ object BattleMapper {
                     displayName = name,
                     message = message,
                     iconUrl = iconUrl,
-                    locale = locale.toDomain()
+                    locale = locale.toDomain(),
+                    matrix = if (battle.isGeneratedSudoku) matrix else EmptyMatrix()
                 )
             }
 
@@ -247,7 +251,7 @@ object BattleMapper {
                         message = message,
                         iconUrl = iconUrl,
                         locale = locale.toDomain(),
-                        matrix = CustomMatrix(matrix),
+                        matrix = matrix,
                         record = record
                     )
                 }
@@ -257,7 +261,7 @@ object BattleMapper {
                     message = message,
                     iconUrl = iconUrl,
                     locale = locale.toDomain(),
-                    matrix = CustomMatrix(matrix)
+                    matrix = matrix
                 )
 
             is kr.co.hs.sudoku.model.battle2.BattleEntity.Closed -> clearTime
@@ -268,7 +272,7 @@ object BattleMapper {
                         message = message,
                         iconUrl = iconUrl,
                         locale = locale.toDomain(),
-                        matrix = CustomMatrix(matrix),
+                        matrix = matrix,
                         record = record
                     )
                 }
@@ -278,7 +282,7 @@ object BattleMapper {
                     message = message,
                     iconUrl = iconUrl,
                     locale = locale.toDomain(),
-                    matrix = CustomMatrix(matrix)
+                    matrix = matrix
                 )
 
             kr.co.hs.sudoku.model.battle2.BattleEntity.Invalid -> ParticipantEntity.Guest(

@@ -230,6 +230,12 @@ class BattleEventRepositoryImpl(
                         battleEntityFlow.update(currentBattle)
                     }
 
+                    currentBattle is BattleEntity.Pending && currentBattle.isGeneratedSudoku -> {
+                        val participants = currentBattle.requestParticipants()
+                        currentBattle.init(participants.toSet())
+                        battleEntityFlow.update(currentBattle)
+                    }
+
                     // pending 에서 playing 으로 넘어간 시점
                     lastBattle is BattleEntity.Pending && currentBattle is BattleEntity.Playing -> {
                         // participant 상태를 playing으로 바꾸기 위해 다시 participant 요청

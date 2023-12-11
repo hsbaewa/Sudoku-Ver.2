@@ -194,8 +194,12 @@ object ActivityExtension {
         }
 
     inline fun <reified T : Fragment> AppCompatActivity.hasFragment(c: Class<T>) =
-        with(supportFragmentManager) {
+        runCatching { findFragment(c) }.getOrNull() != null
+
+    inline fun <reified T : Fragment> AppCompatActivity.findFragment(c: Class<T>): T {
+        return with(supportFragmentManager) {
             val name = c.simpleName
-            findFragmentByTag(name) != null
+            (findFragmentByTag(name) as? T) ?: throw Exception("not found $name")
         }
+    }
 }
