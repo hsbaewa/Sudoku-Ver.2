@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.feature
 
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -14,6 +15,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.auth.FirebaseAuthMediatorImpl
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
@@ -26,14 +28,28 @@ import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.feature.battle.BattleLobbyFragment
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
+import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
+import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     private val binding: ActivityMainBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_main) }
 
+    private val battlePlayViewModel: BattlePlayViewModel by viewModels {
+        val app = applicationContext as App
+        BattlePlayViewModel.ProviderFactory(app.getBattleRepository2())
+    }
+
+    private val battleLobbyViewModel: BattleLobbyViewModel by viewModels {
+        val app = applicationContext as App
+        BattleLobbyViewModel.ProviderFactory(app.getBattleRepository2())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        battlePlayViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
+        battleLobbyViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         binding.lifecycleOwner = this
 
         // 하단에 있는 BottomNavigationView 와 상단에 내용이 표시될 Layout과 상호 작용

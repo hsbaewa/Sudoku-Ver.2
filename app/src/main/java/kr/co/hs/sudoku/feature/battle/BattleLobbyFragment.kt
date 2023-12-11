@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -21,7 +21,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutBattleDetailBinding
@@ -29,10 +28,9 @@ import kr.co.hs.sudoku.databinding.LayoutBattleLobbyBinding
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
-import kr.co.hs.sudoku.feature.battle2.BattlePlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel2
+import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 
 class BattleLobbyFragment : Fragment() {
     companion object {
@@ -50,10 +48,7 @@ class BattleLobbyFragment : Fragment() {
         it.lifecycleOwner = this
     }.root
 
-    private val battlePlayViewModel: BattlePlayViewModel2 by viewModels {
-        val app = requireContext().applicationContext as App
-        BattlePlayViewModel2.ProviderFactory(app.getBattleRepository2())
-    }
+    private val battlePlayViewModel: BattlePlayViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -79,56 +74,17 @@ class BattleLobbyFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) { initBattleLobby() }
         }
-
-//        battlePlayViewModel.error.observe(viewLifecycleOwner) {
-//            it.showError()
-//        }
-//        battlePlayViewModel.isRunningProgress.observe(viewLifecycleOwner) {
-//            if (it) {
-//                showProgressIndicator()
-//            } else {
-//                dismissProgressIndicator()
-//            }
-//        }
-//        battlePlayViewModel.startParticipatingEventMonitoring()
-//        battlePlayViewModel.battleEntity.observe(viewLifecycleOwner) {
-//            if (it != null) {
-//                startBattlePlayActivity(it.id)
-//            }
-//        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                showProgressIndicator()
-
-                val participating = withContext(Dispatchers.IO) {
-                    battlePlayViewModel
-                        .runCatching { doGetParticipating() }
-                        .getOrNull()
-                        ?.takeIf { it is kr.co.hs.sudoku.model.battle2.BattleEntity.Opened || it is kr.co.hs.sudoku.model.battle2.BattleEntity.Playing || it is kr.co.hs.sudoku.model.battle2.BattleEntity.Pending }
-                }
-
-                participating?.run { startBattlePlayActivity(id) }
-
-
-                dismissProgressIndicator()
-            }
-
-
-        }
-
     }
 
     // ViewModel for Lobby
-    private val battleLobbyViewModel: BattleLobbyViewModel by viewModels()
+    private val battleLobbyViewModel: BattleLobbyViewModel by activityViewModels()
 
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- setup UI -----------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
     private fun SwipeRefreshLayout.onCreatedRefreshLayout() {
-        setOnRefreshListener { battleLobbyViewModel.loadPage(app.getBattleRepository()) }
+        setOnRefreshListener { battleLobbyViewModel.loadPage() }
     }
 
     private fun RecyclerView.onCreateBattleList() {
@@ -137,7 +93,7 @@ class BattleLobbyFragment : Fragment() {
     }
 
     private val onItemClick = { item: BattleEntity ->
-        battleLobbyViewModel.loadDetail(app.getBattleRepository(), item.id)
+        battleLobbyViewModel.loadDetail(item.id)
     }
 
     private fun Button.onCreatedNewButton() {
@@ -162,7 +118,7 @@ class BattleLobbyFragment : Fragment() {
     //--------------------------------------------------------------------------------------------\\
     private fun BattleLobbyViewModel.initObserver() {
         battleDetail.observe(viewLifecycleOwner) { it?.showDetail() }
-//        battleCurrent.observe(viewLifecycleOwner) { it.startBattle() }
+        battleCurrent.observe(viewLifecycleOwner) { startBattlePlayActivity(it.id) }
         battleList.observe(viewLifecycleOwner) { setupUIBattleList(it) }
         isRunningProgress.observe(viewLifecycleOwner) { setupUIProgress(it) }
         error.observe(viewLifecycleOwner) { it.showError() }
@@ -174,8 +130,13 @@ class BattleLobbyFragment : Fragment() {
         dlgBinding.lifecycleOwner = this@BattleLobbyFragment
 
         val listAdapter = ParticipantListAdapter()
-        val participants = participants.toList()
-        listAdapter.submitList(participants)
+        val participants = Array(maxParticipants) { idx ->
+            when (idx) {
+                0 -> participants.find { it.uid == host }
+                else -> participants.find { it.uid != host }
+            }
+        }
+        listAdapter.submitList(participants.toList())
         dlgBinding.participantsList.adapter = listAdapter
 
         val layoutManager = LinearLayoutManager(context)
@@ -184,49 +145,32 @@ class BattleLobbyFragment : Fragment() {
 
         MaterialAlertDialogBuilder(requireContext())
             .setView(dlgBinding.root)
-            .setPositiveButton(R.string.join) { _, _ ->
-//                takeIf {
-//                    when (it) {
-//                        is BattleEntity.PendingBattleEntity,
-//                        is BattleEntity.RunningBattleEntity,
-//                        is BattleEntity.WaitingBattleEntity -> true
-//
-//                        else -> false
-//                    }
-//                }?.startBattle()
-                viewLifecycleOwner.lifecycleScope.launch {
-                    showProgressIndicator()
-
-                    withContext(Dispatchers.IO) {
-                        battlePlayViewModel.doJoin(this@showDetail.id)
-                    }
-
-                    startBattlePlayActivity(this@showDetail.id)
-
-                    dismissProgressIndicator()
-                }
-            }
+            .setPositiveButton(R.string.join) { _, _ -> joinBattle(id) }
             .setNegativeButton(R.string.cancel) { _, _ -> }
             .setCancelable(false)
             .show()
     }
 
-//    private fun BattleEntity.startBattle() =
-//        currentUser?.let { startBattlePlayActivity(id) }
+    private fun joinBattle(battleId: String) {
+        viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            showSnackBar(throwable.message.toString())
+        }) {
+            showProgressIndicator()
+            withContext(Dispatchers.IO) { battlePlayViewModel.doJoin(battleId) }
+            dismissProgressIndicator()
+            startBattlePlayActivity(battleId)
+        }
+    }
 
     private fun startBattlePlayActivity(battleId: String) =
         viewLifecycleOwner.lifecycleScope.launch {
-//            activity.startBattlePlayActivity(uid, battleId)
-//            BattlePlayActivity.start(requireContext(), battleId)
             startActivity(BattlePlayActivity.newIntent(requireContext(), battleId))
         }
 
     private fun Throwable.showError() = message.toString().run { showSnackBar(this) }
 
     private fun initBattleLobby() {
-        val repo = app.getBattleRepository()
-        currentUser
-            ?.run { battleLobbyViewModel.requestBattleLobby(repo, this.uid) }
+        currentUser?.run { battleLobbyViewModel.requestBattleLobby() }
     }
 
     private fun setupUIBattleList(data: List<BattleEntity>) {

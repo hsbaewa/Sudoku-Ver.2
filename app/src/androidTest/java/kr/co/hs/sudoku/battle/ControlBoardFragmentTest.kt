@@ -17,8 +17,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.R
-import kr.co.hs.sudoku.feature.battle2.ControlBoardFragment
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.feature.battle.ControlBoardFragment
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.not
 import org.junit.Before
@@ -87,11 +87,14 @@ class ControlBoardFragmentTest {
 
 
         fragmentScenario.onFragment {
+            it.setValues(generatedMatrix)
             it.setStatus(playing)
         }
 
         onView(withId(R.id.viewSilhouette)).check(matches(not(isDisplayed())))
         onView(withText("Cancel Ready")).check(doesNotExist())
+
+        runBlocking { delay(5000) }
 
         onView(withText("1"))
             .perform(
@@ -102,7 +105,7 @@ class ControlBoardFragmentTest {
                         GeneralLocation.BOTTOM_RIGHT,
                         Press.FINGER
                     ),
-                    withText(""),
+                    withText("4"),
                     2
                 )
             )
@@ -132,16 +135,18 @@ class ControlBoardFragmentTest {
         onView(withId(R.id.viewSilhouette)).check(matches(not(isDisplayed())))
         onView(withText("Cancel Ready")).check(doesNotExist())
 
+        runBlocking { delay(5000) }
+
         onView(withText("1"))
             .perform(
                 ViewActions.repeatedlyUntil(
                     GeneralSwipeAction(
-                        Swipe.SLOW,
+                        Swipe.FAST,
                         GeneralLocation.TOP_CENTER,
                         GeneralLocation.BOTTOM_RIGHT,
                         Press.FINGER
                     ),
-                    withText(""),
+                    withText("4"),
                     2
                 )
             )

@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.model.battle2
+package kr.co.hs.sudoku.model.battle
 
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix

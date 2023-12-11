@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.repository.battle2
+package kr.co.hs.sudoku.repository.battle
 
 import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
@@ -13,9 +13,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.datasource.battle.impl.BattleRemoteSourceImpl
+import kr.co.hs.sudoku.mapper.BattleMapper.toDomain
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain2
-import kr.co.hs.sudoku.model.battle2.BattleEntity
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.model.battle.BattleEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 
 class BattleEventRepositoryImpl(
     override val battleId: String,
@@ -25,6 +26,7 @@ class BattleEventRepositoryImpl(
 
     companion object {
         private const val TAG = "BattleEventRepositoryImpl"
+
         @Suppress("unused")
         fun log(msg: String) = Log.d(TAG, msg)
     }
@@ -186,7 +188,7 @@ class BattleEventRepositoryImpl(
     // battle document snapshot 이벤트 수신 하여 battle entity 이벤트로 변환
     private val onChangedBattleDocumentSnapshot: (DocumentSnapshot) -> Unit = { documentSnapshot ->
         remoteSource.changeToBattleModel(documentSnapshot)
-            ?.toDomain2()
+            ?.toDomain()
             ?.run(onChangedBattleEntity)
             ?: onExceptionParseBattleEntity.invoke(NullPointerException("parse error"))
     }
@@ -307,177 +309,4 @@ class BattleEventRepositoryImpl(
 
         coroutineScope.cancel()
     }
-
-
-//    override fun startMonitoring() {
-//        CoroutineScope(Dispatchers.Default).launch {
-//            playMutex.withLock {
-//                if (isMonitoringBattle())
-//                    throw Exception("already monitoring")
-//
-//                listenerForBattle = getBattleDocument().addSnapshotListener { value, _ ->
-//                    if (value?.data == null) {
-//                        // battle 이 삭제 됨.
-//                        listenerMapForParticipants.forEach { it.value.remove() }
-//                        listenerMapForParticipants.clear()
-//
-//                        listenerForBattle?.remove()
-//                        listenerForBattle = null
-//
-//                        onChangedBattle(BattleEntity2.Invalid)
-//
-//                    } else {
-//                        remoteSource.changeToBattleModel(value)
-//                            ?.toDomain2()
-//                            ?.run { onChangedBattle(this) }
-//                    }
-//
-//                }
-//            }
-//        }
-//    }
-
-
-//    override fun stopMonitoring() {
-//        CoroutineScope(Dispatchers.Default).launch {
-//            playMutex.withLock {
-//                listenerMapForParticipants.forEach { it.value.remove() }
-//                listenerMapForParticipants.clear()
-//
-//                listenerForBattle?.remove()
-//                listenerForBattle = null
-//            }
-//        }
-//    }
-
-//
-//    private fun onChangedBattle(battleEntity: BattleEntity2) {
-//        CoroutineScope(Dispatchers.Default).launch {
-//            playMutex.withLock {
-//
-//                val currentBattle = getBattle()
-//
-//                if (battleEntity is BattleEntity2.Invalid) {
-//
-//                } else if (
-////                    currentBattle is BattleEntity2.Invalid  // 최초 이벤트 한번 조건 실행
-////                    ||
-//                    battleEntity.isDifferentParticipantSize(with = currentBattle) // 참가자 갯수 변경
-////                    || (currentBattle is BattleEntity2.Pending && battleEntity is BattleEntity2.Playing) // pending에서 playing으로 변경시 1번 참가자 조회
-//                ) {
-//                    val participants = getBattle().participants
-////                        getParticipants()
-//                    val remoteParticipants = withContext(Dispatchers.IO) {
-//                        remoteSource.getParticipantList(battleEntity.id)
-//                            .map { it.toDomain2(battleEntity) }
-//                    }
-//
-//                    val uidSet = participants.map { it.uid }.toSet()
-//                    val remoteUidSet = remoteParticipants.map { it.uid }.toSet()
-//
-//                    // 조회된 최신 참여자 정보 동기화
-//                    currentBattle.init(remoteParticipants.toSet())
-//
-//                    remoteUidSet.subtract(uidSet)
-//                        .mapNotNull { uid -> remoteParticipants.find { it.uid == uid } }
-//                        .forEach { onJoinedParticipant(it) }
-//
-//                    uidSet.subtract(remoteUidSet)
-//                        .mapNotNull { uid -> participants.find { it.uid == uid } }
-//                        .forEach { onExitedParticipant(it) }
-//
-//
-//                } else if (
-//                    (currentBattle is BattleEntity2.Pending && battleEntity is BattleEntity2.Playing) // pending에서 playing으로 변경시 1번 참가자 조회
-//                ) {
-//                    val remoteParticipants = withContext(Dispatchers.IO) {
-//                        remoteSource.getParticipantList(battleEntity.id)
-//                            .map { it.toDomain2(battleEntity) }
-//                    }
-//                    currentBattle.init(remoteParticipants.toSet())
-//                }
-//
-//
-//                // 이벤트로 들어온 정보에는 참가자 정보가 없으므로 로컬 flow 에 방출 할때 이를 포함한 정보를 방출한다.
-////                updatePlayInfoBattle(
-////                    battleEntity.apply { init(currentBattle.participants) }
-////                )
-//                battleEntityFlow.update(
-//                    battleEntity.apply { init(currentBattle.participants) }
-//                )
-//
-//            }
-//
-//        }
-//    }
-//
-//    private fun onJoinedParticipant(participant: ParticipantEntity) {
-//        coroutineScope.launch {
-//            playMutex.withLock {
-//
-//                getListenerForParticipant(participant.uid)
-//
-//                listenerMapForParticipants
-//                    .takeUnless { map -> map.containsKey(participant.uid) }
-//                    ?.run {
-//                        this[participant.uid] = getParticipantDocument(participant.uid)
-//                            .addSnapshotListener { value, _ ->
-//                                val data = remoteSource.changeToParticipantModel(value)
-//                                    ?: return@addSnapshotListener
-//
-//                                onChangedParticipant(data)
-//
-//                            }
-//                    }
-//
-////                addParticipant(participant)
-//                battleEntityFlow.add(participant)
-//            }
-//        }
-//    }
-//
-//    private fun onExitedParticipant(participant: ParticipantEntity) {
-//        coroutineScope.launch {
-//            playMutex.withLock {
-//
-//                listenerMapForParticipants
-//                    .takeIf { map -> map.containsKey(participant.uid) }
-//                    ?.run {
-//                        this[participant.uid]?.remove()
-//                        this.remove(participant.uid)
-//                    }
-//
-////                removeParticipant(participant)
-//                battleEntityFlow.remove(participant)
-//            }
-//        }
-//    }
-//
-//    private fun onChangedParticipant(model: BattleParticipantModel) {
-//        CoroutineScope(Dispatchers.Default).launch {
-//            playMutex.withLock {
-//
-//                val battleEntity = getBattle()
-//
-//                if (model.battleId == battleEntity.id) {
-//                    model.toDomain2(battleEntity)
-//                        .run {
-////                            onChangedParticipant(this)
-////                            updateParticipant(this)
-//                            battleEntityFlow.update(this)
-//                        }
-//                } else {
-//
-//                    // battle id  가 다르면 모니터링 해제
-//                    listenerMapForParticipants[model.uid]?.remove()
-//                    listenerMapForParticipants.remove(model.uid)
-//                }
-//            }
-//        }
-//
-//    }
-//
-//    private fun BattleEntity2.isDifferentParticipantSize(with: BattleEntity2) =
-//        participantSize != with.participantSize
-
 }

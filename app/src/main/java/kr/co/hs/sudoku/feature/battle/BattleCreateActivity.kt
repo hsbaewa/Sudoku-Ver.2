@@ -10,19 +10,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityCreateBattleBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
-import kr.co.hs.sudoku.repository.battle.BattleRepository
+import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
 
 class BattleCreateActivity : Activity() {
@@ -37,6 +33,11 @@ class BattleCreateActivity : Activity() {
 
     // stage list viewmodel
     private val viewModel: SinglePlayDifficultyViewModel by viewModels()
+
+    private val battlePlayViewModel: BattlePlayViewModel by viewModels {
+        val app = applicationContext as App
+        BattlePlayViewModel.ProviderFactory(app.getBattleRepository2())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +56,11 @@ class BattleCreateActivity : Activity() {
 
         lifecycleScope.launch {
             withStarted { viewModel.requestMatrix(BeginnerMatrixRepository()) }
+        }
+
+        battlePlayViewModel.battleEntity.observe(this) {
+            if (it != null)
+                finish()
         }
     }
 
@@ -80,25 +86,7 @@ class BattleCreateActivity : Activity() {
 
     private fun onClickCreate(adapter: SudokuMatrixListAdapter): () -> Unit = {
         adapter.getSelectedItem()
-            ?.let { selectedMatrix ->
-                app.getBattleRepository().submitCreateBattle(selectedMatrix)
-            }
+            ?.let { battlePlayViewModel.create(it) }
             ?: showSnackBar(getString(R.string.require_select_stage))
     }
-
-    private fun BattleRepository.submitCreateBattle(matrix: IntMatrix) =
-        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
-            showSnackBar(throwable.message.toString())
-        }) {
-            withContext(Dispatchers.IO) {
-                val uid = currentUser?.uid
-                    ?: throw Exception(getString(R.string.error_require_authenticate))
-                val profile = getProfile(uid)
-                createBattle(profile, matrix)
-            }
-            finish()
-        }
-
-    private val currentUser: FirebaseUser?
-        get() = FirebaseAuth.getInstance().currentUser
 }

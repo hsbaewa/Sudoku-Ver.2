@@ -10,15 +10,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
-import kr.co.hs.sudoku.model.battle2.BattleEntity
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.model.battle.BattleEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
-import kr.co.hs.sudoku.repository.battle2.BattleEventRepositoryImpl
-import kr.co.hs.sudoku.repository.battle2.BattleRepository
-import kr.co.hs.sudoku.repository.battle2.BattleRepositoryImpl
+import kr.co.hs.sudoku.repository.battle.BattleEventRepositoryImpl
+import kr.co.hs.sudoku.repository.battle.BattleRepository
+import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -194,9 +194,10 @@ open class BattleRepositoryTest {
             userBattleRepository[2].getParticipating()
         )
 
-        assertThrows(Exception::class.java) {
-            runBlocking { userBattleRepository[2].join(battle.id) }
-        }.also { assertTrue(it.message?.endsWith("참가 중인 게임을 종료 후 다시 시도 해 주세요.") ?: false) }
+        // 참가 중인 게임이 있는 경우 무시하고 다른 게임에 참여 하도록 변경 함.
+//        assertThrows(Exception::class.java) {
+//            runBlocking { userBattleRepository[2].join(battle.id) }
+//        }.also { assertTrue(it.message?.endsWith("참가 중인 게임을 종료 후 다시 시도 해 주세요.") ?: false) }
 
         assertThrows(Exception::class.java) {
             runBlocking { userBattleRepository[3].join("any") }

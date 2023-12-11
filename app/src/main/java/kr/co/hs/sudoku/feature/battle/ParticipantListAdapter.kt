@@ -4,10 +4,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import kr.co.hs.sudoku.databinding.LayoutItemUserStatisticsBinding
-import kr.co.hs.sudoku.model.battle.BattleParticipantEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 
 class ParticipantListAdapter :
-    ListAdapter<BattleParticipantEntity, ParticipantViewHolder>(ParticipantItemDiffCallback()) {
+    ListAdapter<ParticipantEntity, ParticipantViewHolder>(ParticipantItemDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParticipantViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -16,12 +16,9 @@ class ParticipantListAdapter :
     }
 
     override fun onBindViewHolder(holder: ParticipantViewHolder, position: Int) {
-        getItem(position)?.let { item ->
-            holder.onBind(item)
-            holder.loadStatistics(holder.app.getBattleRepository(), item.uid)
-        } ?: kotlin.run {
-            holder.onEmptyBind()
-        }
+        getItem(position)
+            ?.let { item -> holder.onBind(item) }
+            ?: run { holder.onEmptyBind() }
     }
 
     override fun onViewRecycled(holder: ParticipantViewHolder) {

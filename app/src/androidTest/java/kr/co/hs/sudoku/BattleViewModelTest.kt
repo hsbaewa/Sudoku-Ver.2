@@ -8,10 +8,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.model.battle2.BattleEntity
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.model.battle.BattleEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel2
+import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException
 @RunWith(AndroidJUnit4::class)
 class BattleViewModelTest : BattleRepositoryTest() {
 
-    private val viewModel = ArrayList<BattlePlayViewModel2>()
+    private val viewModel = ArrayList<BattlePlayViewModel>()
 
     val testStartingMatrix = listOf(
         listOf(1, 0, 0, 1),
@@ -48,7 +48,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
     private fun initViewModel() {
         userProfile.indices.forEach {
-            viewModel.add(BattlePlayViewModel2(userBattleRepository[it]))
+            viewModel.add(BattlePlayViewModel(userBattleRepository[it]))
         }
     }
 
@@ -78,7 +78,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
             runBlocking { viewModel[1].doJoin(testBattleId) }
         }.also { assertEquals(it.message, "게임(${battleEntity.id})의 참여자가 2/2로 이미 가득 찼습니다.") }
 
-
+        viewModel[3].startEventMonitoring(testBattleId)
         battleEntity = viewModel[3].battleEntity.getOrAwaitValue(10) {
             it.participants.size == 2
                     && it.participants.find { it.uid == userProfile[0].uid } != null
@@ -123,6 +123,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
         viewModel[3].doPending()
         viewModel[3].doStart()
+        viewModel[3].startEventMonitoring(testBattleId)
 
         var battleEntity = viewModel[3].battleEntity
             .getOrAwaitValue(10) { it is BattleEntity.Playing }
@@ -160,6 +161,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
         viewModel[3].doPending()
         viewModel[3].doStart()
+        viewModel[3].startEventMonitoring(testBattleId)
 
         viewModel[0].doClear(1000)
 
@@ -182,6 +184,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
         viewModel[3].doPending()
         viewModel[3].doStart()
+        viewModel[3].startEventMonitoring(testBattleId)
 
         assertThrows(Exception::class.java) {
             runBlocking { viewModel[0].doUpdateMatrix(0, 0, 2) }

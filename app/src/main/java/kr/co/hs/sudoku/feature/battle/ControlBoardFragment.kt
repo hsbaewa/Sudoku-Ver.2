@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.battle2
+package kr.co.hs.sudoku.feature.battle
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,9 +14,9 @@ import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutPlayBattleForUserBinding
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel2
+import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import kr.co.hs.sudoku.views.CountDownView
 import kr.co.hs.sudoku.views.SudokuBoardView
 
@@ -30,7 +30,7 @@ class ControlBoardFragment : BoardFragment() {
         )
     }
 
-    private val viewModel: BattlePlayViewModel2 by activityViewModels()
+    private val viewModel: BattlePlayViewModel by activityViewModels()
     private lateinit var binding: LayoutPlayBattleForUserBinding
 
     override fun onCreateView(

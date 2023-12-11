@@ -29,20 +29,14 @@ class App : Application() {
 
     fun clearChallengeRepository() = challengeRepositoryRef?.clear()
 
-    private var battleRepositoryRef: SoftReference<BattleRepository>? = null
-    fun getBattleRepository(): BattleRepository =
-        battleRepositoryRef?.get()
-            ?: BattleRepositoryImpl().apply { battleRepositoryRef = SoftReference(this) }
-
-
     private var profileRepositoryRef: SoftReference<ProfileRepository>? = null
     fun getProfileRepository(): ProfileRepository =
         profileRepositoryRef?.get()
             ?: ProfileRepositoryImpl().apply { profileRepositoryRef = SoftReference(this) }
 
-    private var battleRepository2Ref: SoftReference<kr.co.hs.sudoku.repository.battle2.BattleRepository>? = null
-    fun getBattleRepository2(): kr.co.hs.sudoku.repository.battle2.BattleRepository =
+    private var battleRepository2Ref: SoftReference<BattleRepository>? = null
+    fun getBattleRepository2(): BattleRepository =
         battleRepository2Ref?.get()
-            ?: kr.co.hs.sudoku.repository.battle2.BattleRepositoryImpl()
+            ?: BattleRepositoryImpl()
                 .apply { battleRepository2Ref = SoftReference(this) }
 }

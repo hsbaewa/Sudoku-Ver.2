@@ -1,7 +1,7 @@
-package kr.co.hs.sudoku.repository.battle2
+package kr.co.hs.sudoku.repository.battle
 
 import kotlinx.coroutines.flow.SharedFlow
-import kr.co.hs.sudoku.model.battle2.BattleEntity
+import kr.co.hs.sudoku.model.battle.BattleEntity
 
 interface BattleEventRepository {
     val battleId: String

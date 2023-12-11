@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.battle2
+package kr.co.hs.sudoku.feature.battle
 
 import android.os.Bundle
 import android.view.View
@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix

@@ -19,7 +19,6 @@ class BattleLobbyListAdapter(private val onItemClick: (BattleEntity) -> Unit) :
     override fun onBindViewHolder(holder: BattleLobbyViewHolder, position: Int) {
         val item = getItem(position)
         holder.onBind(item)
-        holder.loadHost(item.host)
     }
 
     override fun onViewRecycled(holder: BattleLobbyViewHolder) {

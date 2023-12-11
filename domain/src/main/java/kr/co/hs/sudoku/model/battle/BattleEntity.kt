@@ -1,81 +1,145 @@
 package kr.co.hs.sudoku.model.battle
 
+import kr.co.hs.sudoku.model.matrix.IntMatrix
 import java.util.Date
 
-sealed interface BattleEntity {
+sealed interface BattleEntity : Cloneable {
     val id: String
     val host: String
-    val startingMatrix: List<List<Int>>
     val createdAt: Date
+    val startingMatrix: IntMatrix
+    val maxParticipants: Int
     val participantSize: Int
-    val participants: Array<BattleParticipantEntity?>
+    val participants: Set<ParticipantEntity>
+    fun init(participants: Set<ParticipantEntity>)
 
-    fun addParticipant(participant: BattleParticipantEntity) {
-        synchronized(this) {
-            participants
-                .takeIf { list ->
-                    val result = list.find { it?.uid == participant.uid }
-                    result == null
-                }
-                ?.run {
-                    // null 인 아이템의 index를 찾아서 추가함.
-                    indexOfFirst { it == null }
-                        .takeIf { it >= 0 }
-                        ?.run { participants[this] = participant }
-                }
+    object Invalid : BattleEntity {
+        override val id: String
+            get() = ""
+        override val host: String
+            get() = throw Exception("invalid battle entity")
+        override val createdAt: Date
+            get() = throw Exception("invalid battle entity")
+        override val startingMatrix: IntMatrix
+            get() = throw Exception("invalid battle entity")
+        override val maxParticipants: Int
+            get() = 0
+        override val participantSize: Int
+            get() = 0
+        override val participants: Set<ParticipantEntity>
+            get() = emptySet()
 
+        override fun init(participants: Set<ParticipantEntity>) {}
+    }
+
+    data class Opened(
+        override val id: String,
+        override val host: String,
+        override val createdAt: Date,
+        override val startingMatrix: IntMatrix,
+        override val maxParticipants: Int,
+        override val participantSize: Int
+    ) : BattleEntity {
+        override val participants by this::_participants
+        private val _participants = HashSet<ParticipantEntity>()
+
+        override fun init(participants: Set<ParticipantEntity>) {
+            this._participants.clear()
+            this._participants.addAll(participants)
+        }
+
+        override fun clone() = Opened(
+            id, host, createdAt, startingMatrix, maxParticipants, participantSize
+        ).also {
+            it.init(participants)
         }
     }
 
-    data class WaitingBattleEntity(
+    data class Pending(
         override val id: String,
         override val host: String,
-        override val startingMatrix: List<List<Int>>,
         override val createdAt: Date,
-        private val participantMaxSize: Int,
-        override val participantSize: Int
+        override val startingMatrix: IntMatrix,
+        override val maxParticipants: Int,
+        override val participantSize: Int,
+        val pendedAt: Date,
+        val isGeneratedSudoku: Boolean
     ) : BattleEntity {
-        override val participants: Array<BattleParticipantEntity?> =
-            Array(participantMaxSize) { null }
+        override val participants by this::_participants
+        private val _participants = HashSet<ParticipantEntity>()
+
+        override fun init(participants: Set<ParticipantEntity>) {
+            this._participants.clear()
+            this._participants.addAll(participants)
+        }
+
+        override fun clone() = Pending(
+            id,
+            host,
+            createdAt,
+            startingMatrix,
+            maxParticipants,
+            participantSize,
+            pendedAt,
+            isGeneratedSudoku
+        ).also {
+            it.init(participants)
+        }
     }
 
-    data class PendingBattleEntity(
+    data class Playing(
         override val id: String,
         override val host: String,
-        override val startingMatrix: List<List<Int>>,
         override val createdAt: Date,
-        val pendingAt: Date,
-        private val participantMaxSize: Int,
-        override val participantSize: Int
+        override val startingMatrix: IntMatrix,
+        override val maxParticipants: Int,
+        override val participantSize: Int,
+        val playedAt: Date
     ) : BattleEntity {
-        override val participants: Array<BattleParticipantEntity?> =
-            Array(participantMaxSize) { null }
+        override val participants by this::_participants
+        private val _participants = HashSet<ParticipantEntity>()
+
+        override fun init(participants: Set<ParticipantEntity>) {
+            this._participants.clear()
+            this._participants.addAll(participants)
+        }
+
+        override fun clone() = Playing(
+            id, host, createdAt, startingMatrix, maxParticipants, participantSize, playedAt
+        ).also {
+            it.init(participants)
+        }
     }
 
-    data class RunningBattleEntity(
+    data class Closed(
         override val id: String,
         override val host: String,
-        override val startingMatrix: List<List<Int>>,
         override val createdAt: Date,
-        val startedAt: Date,
-        private val participantMaxSize: Int,
-        override val participantSize: Int
-    ) : BattleEntity {
-        override val participants: Array<BattleParticipantEntity?> =
-            Array(participantMaxSize) { null }
+        override val startingMatrix: IntMatrix,
+        override val maxParticipants: Int,
+        override val participantSize: Int,
+        val winner: String
+    ) : BattleEntity, Cloneable {
+        override val participants by this::_participants
+        private val _participants = HashSet<ParticipantEntity>()
+
+        override fun init(participants: Set<ParticipantEntity>) {
+            this._participants.clear()
+            this._participants.addAll(participants)
+        }
+
+        override fun clone() = Closed(
+            id, host, createdAt, startingMatrix, maxParticipants, participantSize, winner
+        ).also {
+            it.init(participants)
+        }
     }
 
-    data class ClearedBattleEntity(
-        override val id: String,
-        override val host: String,
-        override val startingMatrix: List<List<Int>>,
-        override val createdAt: Date,
-        val startedAt: Date,
-        var winner: String,
-        private val participantMaxSize: Int,
-        override val participantSize: Int
-    ) : BattleEntity {
-        override val participants: Array<BattleParticipantEntity?> =
-            Array(participantMaxSize) { null }
+    public override fun clone(): BattleEntity = when (this) {
+        is Closed -> clone()
+        Invalid -> Invalid
+        is Opened -> clone()
+        is Pending -> clone()
+        is Playing -> clone()
     }
 }

@@ -1,19 +1,19 @@
 package kr.co.hs.sudoku.feature.battle
 
 import androidx.recyclerview.widget.DiffUtil
-import kr.co.hs.sudoku.model.battle.BattleParticipantEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 
-class ParticipantItemDiffCallback : DiffUtil.ItemCallback<BattleParticipantEntity>() {
+class ParticipantItemDiffCallback : DiffUtil.ItemCallback<ParticipantEntity>() {
     override fun areItemsTheSame(
-        oldItem: BattleParticipantEntity,
-        newItem: BattleParticipantEntity
+        oldItem: ParticipantEntity,
+        newItem: ParticipantEntity
     ): Boolean {
         return oldItem.uid == newItem.uid
     }
 
     override fun areContentsTheSame(
-        oldItem: BattleParticipantEntity,
-        newItem: BattleParticipantEntity
+        oldItem: ParticipantEntity,
+        newItem: ParticipantEntity
     ): Boolean {
         return oldItem == newItem
     }

@@ -1,130 +1,20 @@
 package kr.co.hs.sudoku.mapper
 
 import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
+import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleModel
-import kr.co.hs.sudoku.model.battle.BattleParticipantEntity
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kotlin.math.sqrt
 
 @Suppress("unused")
 object BattleMapper {
-    fun BattleModel.toDomain(): kr.co.hs.sudoku.model.battle.BattleEntity? {
-
-        val id = this.id ?: return null
-        var columnCount: Int
-        var startingMatrix: List<List<Int>> = emptyList()
-
-        this.startingMatrix?.run {
-            columnCount = sqrt(size.toDouble()).toInt()
-            startingMatrix = toMatrix(columnCount)
-        } ?: return null
-
-        val createdAt = createdAt?.toDate() ?: return null
-
-        val winner = winnerUid
-        val startedAt = this.startedAt
-        val pendingAt = this.pendingAt
-
-        return when {
-            startedAt != null && winner != null -> kr.co.hs.sudoku.model.battle.BattleEntity.ClearedBattleEntity(
-                id,
-                hostUid,
-                startingMatrix,
-                createdAt,
-                startedAt.toDate(),
-                winner,
-                startingParticipants.size,
-                participantSize
-            )
-
-            startedAt != null -> kr.co.hs.sudoku.model.battle.BattleEntity.RunningBattleEntity(
-                id,
-                hostUid,
-                startingMatrix,
-                createdAt,
-                startedAt.toDate(),
-                startingParticipants.size,
-                participantSize
-            )
-
-            pendingAt != null -> kr.co.hs.sudoku.model.battle.BattleEntity.PendingBattleEntity(
-                id,
-                hostUid,
-                startingMatrix,
-                createdAt,
-                pendingAt.toDate(),
-                startingParticipants.size,
-                participantSize
-            )
-
-
-            else -> kr.co.hs.sudoku.model.battle.BattleEntity.WaitingBattleEntity(
-                id, hostUid, startingMatrix, createdAt, startingParticipants.size, participantSize
-            )
-        }
-    }
-
     private fun List<Int>.toMatrix(columnCount: Int) = List(columnCount) { row ->
         List(columnCount) { column -> this[(row * columnCount) + column] }
-    }
-
-    fun BattleParticipantModel.toDomain(): BattleParticipantEntity {
-        val matrix = this.matrix?.run {
-            val columnCount = sqrt(size.toDouble()).toInt()
-            toMatrix(columnCount)
-        } ?: emptyList()
-        return BattleParticipantEntity(
-            uid = uid,
-            displayName = name,
-            message = message,
-            iconUrl = iconUrl,
-            locale = locale.toDomain(),
-            matrix = CustomMatrix(matrix),
-            clearTime = clearTime ?: -1,
-            isReady = isReady
-        )
-
-//        return when {
-//            !isReady -> BattleParticipantEntity.UnReady(
-//                uid = uid,
-//                displayName = name,
-//                message = message,
-//                iconUrl = iconUrl,
-//                locale = locale.toDomain()
-//            )
-//
-//            isReady -> BattleParticipantEntity.Ready(
-//                uid = uid,
-//                displayName = name,
-//                message = message,
-//                iconUrl = iconUrl,
-//                locale = locale.toDomain(),
-//                matrix = CustomMatrix(matrix)
-//            )
-//
-//            clearTime != null -> BattleParticipantEntity.Cleared(
-//                uid = uid,
-//                displayName = name,
-//                message = message,
-//                iconUrl = iconUrl,
-//                locale = locale.toDomain(),
-//                matrix = CustomMatrix(matrix),
-//                clearTime = clearTime ?: -1
-//            )
-//
-//            else -> BattleParticipantEntity.Invalid(
-//                uid = uid,
-//                displayName = name,
-//                message = message,
-//                iconUrl = iconUrl,
-//                locale = locale.toDomain()
-//            )
-//        }
     }
 
     fun BattleStatisticsModel.toDomain() = BattleStatisticsEntity(
@@ -133,8 +23,7 @@ object BattleMapper {
         winCount = winCount
     )
 
-
-    fun BattleModel.toDomain2() = runCatching {
+    fun BattleModel.toDomain() = runCatching {
         val id = id
             ?: throw Exception("invalid battle model's id")
         val matrix = startingMatrix
@@ -146,7 +35,7 @@ object BattleMapper {
             ?: throw Exception("invalid battle model's createAt")
 
         when {
-            startedAt != null && winnerUid != null -> kr.co.hs.sudoku.model.battle2.BattleEntity.Closed(
+            startedAt != null && winnerUid != null -> BattleEntity.Closed(
                 id = id,
                 host = hostUid,
                 createdAt = createdAt,
@@ -156,7 +45,7 @@ object BattleMapper {
                 winner = winnerUid ?: throw Exception("invalid battle model's winner uid")
             )
 
-            startedAt != null -> kr.co.hs.sudoku.model.battle2.BattleEntity.Playing(
+            startedAt != null -> BattleEntity.Playing(
                 id = id,
                 host = hostUid,
                 createdAt = createdAt,
@@ -167,7 +56,7 @@ object BattleMapper {
                     ?: throw Exception("invalid battle model's started at")
             )
 
-            pendingAt != null -> kr.co.hs.sudoku.model.battle2.BattleEntity.Pending(
+            pendingAt != null -> BattleEntity.Pending(
                 id = id,
                 host = hostUid,
                 createdAt = createdAt,
@@ -179,7 +68,7 @@ object BattleMapper {
                 isGeneratedSudoku = isGeneratedSudoku
             )
 
-            else -> kr.co.hs.sudoku.model.battle2.BattleEntity.Opened(
+            else -> BattleEntity.Opened(
                 id = id,
                 host = hostUid,
                 createdAt = createdAt,
@@ -188,16 +77,16 @@ object BattleMapper {
                 participantSize = participantSize
             )
         }
-    }.getOrElse { kr.co.hs.sudoku.model.battle2.BattleEntity.Invalid }
+    }.getOrElse { BattleEntity.Invalid }
 
-    fun BattleParticipantModel.toDomain2(battle: kr.co.hs.sudoku.model.battle2.BattleEntity): ParticipantEntity {
+    fun BattleParticipantModel.toDomain2(battle: BattleEntity): ParticipantEntity {
         val matrix = this.matrix?.run {
             val columnCount = sqrt(size.toDouble()).toInt()
             CustomMatrix(toMatrix(columnCount))
         } ?: EmptyMatrix()
 
         return when (battle) {
-            is kr.co.hs.sudoku.model.battle2.BattleEntity.Opened -> when {
+            is BattleEntity.Opened -> when {
                 uid == battle.host -> ParticipantEntity.Host(
                     uid = uid,
                     displayName = name,
@@ -223,7 +112,7 @@ object BattleMapper {
                 )
             }
 
-            is kr.co.hs.sudoku.model.battle2.BattleEntity.Pending -> when (uid) {
+            is BattleEntity.Pending -> when (uid) {
                 battle.host -> ParticipantEntity.Host(
                     uid = uid,
                     displayName = name,
@@ -243,7 +132,7 @@ object BattleMapper {
                 )
             }
 
-            is kr.co.hs.sudoku.model.battle2.BattleEntity.Playing -> clearTime
+            is BattleEntity.Playing -> clearTime
                 ?.let { record ->
                     ParticipantEntity.Cleared(
                         uid = uid,
@@ -264,7 +153,7 @@ object BattleMapper {
                     matrix = matrix
                 )
 
-            is kr.co.hs.sudoku.model.battle2.BattleEntity.Closed -> clearTime
+            is BattleEntity.Closed -> clearTime
                 ?.let { record ->
                     ParticipantEntity.Cleared(
                         uid = uid,
@@ -285,7 +174,7 @@ object BattleMapper {
                     matrix = matrix
                 )
 
-            kr.co.hs.sudoku.model.battle2.BattleEntity.Invalid -> ParticipantEntity.Guest(
+            BattleEntity.Invalid -> ParticipantEntity.Guest(
                 uid = uid,
                 displayName = name,
                 message = message,

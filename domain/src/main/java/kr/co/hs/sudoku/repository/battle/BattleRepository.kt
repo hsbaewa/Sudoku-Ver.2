@@ -1,70 +1,80 @@
 package kr.co.hs.sudoku.repository.battle
 
 import kr.co.hs.sudoku.model.battle.BattleEntity
-import kr.co.hs.sudoku.model.battle.BattleParticipantEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.user.ProfileEntity
-import java.util.Date
 
 interface BattleRepository {
-    suspend fun createBattle(profile: ProfileEntity, matrix: IntMatrix): BattleEntity
+    // 현재의 user id
+    val currentUserUid: String
 
-    suspend fun createBattle(
-        profile: ProfileEntity,
-        matrix: IntMatrix,
-        participantSize: Int
-    ): BattleEntity
+    /**
+     * 방 생성
+     */
+    suspend fun create(matrix: IntMatrix): BattleEntity
+    suspend fun create(matrix: IntMatrix, participantSize: Int): BattleEntity
 
-    class BattleCreateFailedException(p0: String? = null) : Exception(p0)
 
-    suspend fun getBattle(battleId: String): BattleEntity?
-    suspend fun getBattleList(limit: Long): List<BattleEntity>
-    suspend fun getBattleList(limit: Long, lastAt: Date): List<BattleEntity>
-    suspend fun getBattleListCreatedBy(uid: String): List<BattleEntity>
-    suspend fun getParticipantList(battleId: String): List<BattleParticipantEntity>
-    suspend fun getParticipant(uid: String): BattleParticipantEntity?
+    /**
+     * 방 찾기
+     */
+    suspend fun search(battleId: String): BattleEntity
+    suspend fun list(): List<BattleEntity>
 
-    suspend fun joinBattle(battleEntity: BattleEntity, profile: ProfileEntity): BattleEntity?
-    suspend fun joinBattle(battleId: String, profile: ProfileEntity): BattleEntity?
-    suspend fun getJoinedBattle(uid: String): BattleEntity?
+    /**
+     * 방 참여자 정보 획득
+     */
+    suspend fun getParticipants(battleEntity: BattleEntity)
+    suspend fun searchWithParticipants(battleId: String): BattleEntity
 
-    class UnknownBattleException(p0: String? = null) : Exception(p0)
 
-    suspend fun readyToBattle(uid: String)
-    suspend fun unreadyToBattle(uid: String)
-    suspend fun isAllReady(battleEntity: BattleEntity): Boolean
+    /**
+     * 내가 참여중인 방 확인
+     */
+    suspend fun isParticipating(): Boolean
+    suspend fun getParticipating(): BattleEntity
 
-    suspend fun exitBattle(battleEntity: BattleEntity, profile: ProfileEntity)
-    suspend fun exitBattle(battleEntity: BattleEntity, uid: String)
 
-    suspend fun startBattle(battleEntity: BattleEntity, uid: String)
-    suspend fun startBattle(battleEntity: BattleEntity)
+    /**
+     * 방 참여
+     */
+    suspend fun join(battleId: String)
 
-    suspend fun updateClearRecord(
-        battleEntity: BattleEntity,
-        profile: ProfileEntity,
-        clearTime: Long
-    )
 
-    class UnknownParticipantException(p0: String? = null) : Exception(p0)
+    /**
+     * 준비
+     */
+    suspend fun ready()
+    suspend fun unready()
 
+    /**
+     * 시작
+     */
+    suspend fun pendingStart()
+    suspend fun start()
+
+    /**
+     * 조작
+     */
+    suspend fun updateMatrix(row: Int, column: Int, value: Int)
+
+    /**
+     * 기록
+     */
+    suspend fun clear(record: Long)
+
+
+    /**
+     * 나가기
+     */
+    suspend fun exit()
+
+
+    /**
+     * 기록 조회
+     */
+    suspend fun getStatistics(): BattleStatisticsEntity
     suspend fun getStatistics(uid: String): BattleStatisticsEntity
 
-    fun bindBattle(battleId: String, changedListener: BattleChangedListener)
-    fun unbindBattle(battleId: String)
-    interface BattleChangedListener {
-        fun onChanged(battle: BattleEntity)
-    }
 
-    fun bindParticipant(battleId: String, uid: String, changedListener: ParticipantChangedListener)
-    fun unbindParticipant(battleId: String, uid: String)
-    interface ParticipantChangedListener {
-        fun onChanged(participant: BattleParticipantEntity)
-    }
-
-    suspend fun updateParticipantMatrix(uid: String, matrix: List<List<Int>>)
-
-    suspend fun pendingBattle(battleEntity: BattleEntity, uid: String)
-    suspend fun pendingBattle(battleEntity: BattleEntity)
 }

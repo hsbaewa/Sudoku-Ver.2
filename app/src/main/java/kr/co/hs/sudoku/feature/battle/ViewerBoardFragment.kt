@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.battle2
+package kr.co.hs.sudoku.feature.battle
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +10,7 @@ import androidx.core.view.isVisible
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutPlayBattleForParticipantBinding
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
-import kr.co.hs.sudoku.model.battle2.ParticipantEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.views.SudokuBoardView
 

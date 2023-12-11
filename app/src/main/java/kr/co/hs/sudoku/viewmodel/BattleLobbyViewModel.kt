@@ -2,101 +2,88 @@ package kr.co.hs.sudoku.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
-import kr.co.hs.sudoku.usecase.battle.GetBattleListUseCase
-import kr.co.hs.sudoku.usecase.battle.GetBattleUseCase
 
-class BattleLobbyViewModel : ViewModel() {
+class BattleLobbyViewModel(
+    private val battleRepository: BattleRepository
+) : ViewModel() {
+
+    class ProviderFactory(
+        private val battleRepository: BattleRepository
+    ) : ViewModelProvider.Factory {
+
+        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            return if (modelClass.isAssignableFrom(BattleLobbyViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                BattleLobbyViewModel(battleRepository) as T
+            } else {
+                throw IllegalArgumentException()
+            }
+        }
+    }
+
     private val _battleList = MutableLiveData<List<BattleEntity>>()
     val battleList: LiveData<List<BattleEntity>> by this::_battleList
 
     private val _battleDetail = MutableLiveData<BattleEntity>()
     val battleDetail: LiveData<BattleEntity> by this::_battleDetail
 
-    private val _error = MutableLiveData<Throwable>()
-    val error: LiveData<Throwable> by this::_error
-
-    private val _isRunningProgress = MutableLiveData(false)
-    val isRunningProgress: LiveData<Boolean> by this::_isRunningProgress
-
     private val _battleCurrent = MutableLiveData<BattleEntity>()
     val battleCurrent: LiveData<BattleEntity> by this::_battleCurrent
 
-    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        _isRunningProgress.value = false
-        _error.value = throwable
-    }
+    fun loadPage() {
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            setProgress(true)
+            val list = doLoadPage()
+            _battleList.value = list
 
-    fun loadPage(repository: BattleRepository) {
-        viewModelScope.launch(coroutineExceptionHandler) {
-            _isRunningProgress.value = true
-            val useCase = GetBattleListUseCase(repository)
-            useCase(20).collect { _battleList.value = it }
-            _isRunningProgress.value = false
+            setProgress(false)
         }
     }
 
-    @Suppress("unused")
-    fun loadNextPage(repository: BattleRepository) {
-        viewModelScope.launch(coroutineExceptionHandler) {
-            _isRunningProgress.value = true
-            battleList.value
-                .takeUnless { it.isNullOrEmpty() }
-                ?.let { battleList ->
-                    _battleList.value = buildList {
-                        addAll(battleList)
-                        val useCase = GetBattleListUseCase(repository)
-                        addAll(useCase(20, battleList.last().createdAt).last())
-                    }
+    suspend fun doLoadPage() = withContext(Dispatchers.IO) { battleRepository.list() }
+
+    fun loadDetail(battleId: String) {
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            setProgress(true)
+            val entity = withContext(Dispatchers.IO) {
+                with(battleRepository) {
+                    search(battleId)
+                        .apply { getParticipants(this) }
                 }
-                ?: throw Exception("먼저 첫번째 페이지를 로드해주세요.")
-            _isRunningProgress.value = false
-        }
-    }
-
-    @Suppress("unused")
-    fun loadCreatedFrom(repository: BattleRepository, uid: String) {
-        viewModelScope.launch(coroutineExceptionHandler) {
-            _isRunningProgress.value = true
-            val useCase = GetBattleListUseCase(repository)
-            useCase(uid).collect { _battleList.value = it }
-            _isRunningProgress.value = false
-        }
-    }
-
-    fun loadDetail(repository: BattleRepository, battleId: String) {
-        viewModelScope.launch(coroutineExceptionHandler) {
-            _isRunningProgress.value = true
-            val useCase = GetBattleUseCase(repository)
-            useCase(battleId).collect {
-                _battleDetail.value = it
             }
-            _isRunningProgress.value = false
+            _battleDetail.value = entity
+            setProgress(false)
         }
     }
 
-    fun requestBattleLobby(repository: BattleRepository, uid: String) =
-        viewModelScope.launch(coroutineExceptionHandler) {
-            _isRunningProgress.value = true
+    fun requestBattleLobby() =
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            setProgress(true)
 
-            withContext(Dispatchers.IO) { repository.getJoinedBattle(uid) }
+            val currentBattle = withContext(Dispatchers.IO) {
+                battleRepository
+                    .runCatching { getParticipating() }
+                    .getOrNull()
+                    ?.takeIf {
+                        it is BattleEntity.Opened
+                                || it is BattleEntity.Pending
+                                || it is BattleEntity.Playing
+                    }
+            }
+            currentBattle
                 ?.run { _battleCurrent.value = this }
                 ?: run {
-                    val list = withContext(Dispatchers.IO) {
-                        val useCase = GetBattleListUseCase(repository)
-                        useCase(20).last()
-                    }
+                    val list = doLoadPage()
                     _battleList.value = list
                 }
 
-            _isRunningProgress.value = false
+            setProgress(false)
         }
 }
