@@ -17,7 +17,7 @@ jobs:
       - name: Setup Java Version
         uses: actions/setup-java@v3
         with:
-          distribution: 'adopt-openj9' # See 'Supported distributions' for available options
+          distribution: 'adopt' # See 'Supported distributions' for available options
           java-version: '17'
       - name: Create google-services.json
         shell: bash
