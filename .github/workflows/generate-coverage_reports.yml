@@ -1,5 +1,5 @@
 name: 단위 테스트 실행 및 Coverage Report 생성
-run-name: 작업 브랜치 ${{ github.ref }} 로부터 ${{ github.base_ref }} 브랜치로 pull request 및 단위 테스트 및 Coverage Report 생성
+run-name: 작업 브랜치 ${{ github.head_ref }} 로부터 ${{ github.base_ref }} 브랜치로 pull request 및 단위 테스트 및 Coverage Report 생성
 
 on:
   pull_request:
