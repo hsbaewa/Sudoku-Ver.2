@@ -1,81 +1,63 @@
-name: Unit Test Workflow
-
-on:
-  pull_request:
-    branches:
-      - main
-jobs:
-  test:
-    runs-on: macos-latest
-#    strategy:
-#      matrix:
-#        api-level: [ 31 ]
-#        target: [ default, google_apis ]
-    steps:
-      - name: Branch Checkout
-        uses: actions/checkout@v3
-      - name: Setup Java Version
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'adopt' # See 'Supported distributions' for available options
-          java-version: '17'
-      - name: Create google-services.json
-        shell: bash
-        env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: |
-          echo "$GOOGLE_SERVICES"
-          echo "$GOOGLE_SERVICES" > app/google-services.json
-          cat app/google-services.json
-      - name: Update AndroidManifest.xml
-        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
-        with:
-          android-manifest-path: './app/src/main/AndroidManifest.xml'
-          metadata-key: 'com.google.android.gms.games.APP_ID'
-          metadata-value: ${{secrets.GAME_SERVICE_PROJECT_ID}}
-          print-file: true
-
-#      - name: Ruby init
-#        uses: ruby/setup-ruby@v1
+#name: Unit Test Workflow
+#
+#on:
+#  pull_request:
+#    branches:
+#      - main
+#jobs:
+#  test:
+#    runs-on: macos-latest
+##    strategy:
+##      matrix:
+##        api-level: [ 31 ]
+##        target: [ default, google_apis ]
+#    steps:
+#      - name: Branch Checkout
+#        uses: actions/checkout@v3
+#      - name: Setup Java Version
+#        uses: actions/setup-java@v3
 #        with:
-#          ruby-version: '3.0'
-#          bundler-cache: true
-#      - name: Fastlane Action For Test
-#        uses: maierj/fastlane-action@v3.0.0
+#          distribution: 'adopt' # See 'Supported distributions' for available options
+#          java-version: '17'
+#      - name: Create google-services.json
+#        shell: bash
+#        env:
+#          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
+#        run: |
+#          echo "$GOOGLE_SERVICES"
+#          echo "$GOOGLE_SERVICES" > app/google-services.json
+#          cat app/google-services.json
+#      - name: Update AndroidManifest.xml
+#        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
 #        with:
-#          lane: 'test'
-#      - name: Upload Artifact
+#          android-manifest-path: './app/src/main/AndroidManifest.xml'
+#          metadata-key: 'com.google.android.gms.games.APP_ID'
+#          metadata-value: ${{secrets.GAME_SERVICE_PROJECT_ID}}
+#          print-file: true
+#      - name: 계측 테스트 코드 실행
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+##          api-level: 31
+##          profile: Nexus 6
+##          arch: arm64-v8a
+##          force-avd-creation: false
+##          avd-name: macOS-avd-arm64-v8a-31
+##          emulator-build: 6110076
+##          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+##          disable-animations: true
+###          api-level: ${{ matrix.api-level }}
+###          target: ${{ matrix.target }}
+###          arch: arm64-v8a
+###          profile: Nexus 6
+###          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+###          script: ./gradlew clean app:connectedDebugAndroidTest
+##          script: ./gradlew connectedCheck
+#
+#          api-level: 29
+#          script: ./gradlew clean :app:generateMultiModuleCodeCoverageReports
+#
+#      - name: 계측 테스트 리포트 생성
 #        uses: actions/upload-artifact@v3
 #        with:
-#          name: report
-#          path: |
-#            domain/build/reports/tests
-#            data/build/reports/tests/testDebugUnitTest
-#          retention-days: 1
-      - name: 계측 테스트 코드 실행
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-#          api-level: 31
-#          profile: Nexus 6
-#          arch: arm64-v8a
-#          force-avd-creation: false
-#          avd-name: macOS-avd-arm64-v8a-31
-#          emulator-build: 6110076
-#          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-#          disable-animations: true
-##          api-level: ${{ matrix.api-level }}
-##          target: ${{ matrix.target }}
-##          arch: arm64-v8a
-##          profile: Nexus 6
-##          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-##          script: ./gradlew clean app:connectedDebugAndroidTest
-#          script: ./gradlew connectedCheck
-
-          api-level: 29
-          script: ./gradlew clean :app:generateMultiModuleCodeCoverageReports
-
-      - name: 계측 테스트 리포트 생성
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-report
-          path: output/coverage-report
+#          name: coverage-report
+#          path: output/coverage-report
