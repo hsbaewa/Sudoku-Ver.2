@@ -1,0 +1,151 @@
+// Jacoco 플러그인을 사용하겠다
+apply plugin: 'jacoco'
+apply plugin: 'jacoco-report-aggregation'
+
+// 적용할 jacoco의 버전은 0.8.5
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+
+// flavor가 설정된 모듈의 경우, 적용된 flavor 명칭을 알아야한다
+// 모듈의 build.gradle 파일에 설정된 flavor 값을 가져온다
+String flavor = project.ext.has('pFlavor') ? project.ext.pFlavor : ''
+
+// jacoco는 jutni test 결과를 기반으로 동작한다
+// jacoco 리포트 생성 작업 이전에 unit test task가 완료되어야한다
+def dependsOnTask = [
+        ":domain:jacocoTestReport",
+        "test${flavor.capitalize()}DebugUnitTest",
+        "create${flavor.capitalize()}DebugCoverageReport"
+]
+
+def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        'android/**/*.*',
+        '**/*InjectAdapter*.*',
+        '**/*StaticInjection*.*',
+        '**/*ModuleAdapter*.*',
+        // Dagger
+        '**/*_Provide*/**',
+        '**/*_Factory*/**',
+        '**/*_MembersInjector.class',
+        '**/*Dagger*'
+]
+
+// jacoco gradle task 추가
+// jacocoReport 타입의 task이며,
+// 위에서 알아낸 dependsOnTask를 종속 task로 설정한다
+
+tasks.register('generateCodeCoverageReports', JacocoReport) {
+    dependsOn dependsOnTask
+    group = "Reporting"
+    description = "Generate Jaoco Coverage Reports"
+
+    def reportDirPath = "$buildDir/reports/codeCoverage"
+
+    reports {
+        html {
+            required = true
+            destination file("$reportDirPath/${project.name}")
+        }
+        xml {
+            required = true
+            destination file("$reportDirPath/${project.name}.xml")
+        }
+    }
+
+    def javaClassDirPath = "$project.buildDir/intermediates/javac/debug/classes"
+    def kotlinClassDirPath = "$project.buildDir/tmp/kotlin-classes/debug"
+    def mainJavaSrcPath = "$project.projectDir/src/main/java"
+    def mainKotlinSrcPath = "$project.projectDir/src/main/kotlin"
+
+    // flavor가 설정된 경우, 결과물의 경로가 변하기 때문에, 꼭 설정해줘야한다
+    if (!flavor.isEmpty()) {
+        javaClassDirPath = "$project.buildDir/intermediates/javac/${flavor}Debug/classes"
+        kotlinClassDirPath = "$project.buildDir/tmp/kotlin-classes/${flavor}Debug"
+        coverageExecutionDataPath = "$project.buildDir/outputs/unit_test_code_coverage/debugUnitTest/test${flavor.capitalize()}DebugUnitTest.exec"
+        coverageConnectedExecutionDataPath = "$project.buildDir/outputs/code_coverage/debug${flavor.capitalize()}AndroidTest/connected/*coverage.ec"
+    }
+
+    sourceDirectories.from = files([mainJavaSrcPath, mainKotlinSrcPath])
+    classDirectories.from = files([
+            fileTree(
+                    dir: javaClassDirPath,
+                    excludes: fileFilter
+            ),
+            fileTree(
+                    dir: kotlinClassDirPath,
+                    excludes: fileFilter
+            )
+    ])
+
+    executionData.from = fileTree(dir: project.buildDir, includes: [
+            "outputs/unit_test_code_coverage/debugUnitTest/test${flavor.capitalize()}DebugUnitTest.exec",
+            "outputs/code_coverage/debug${flavor.capitalize()}AndroidTest/connected/**/coverage.ec",
+            "outputs/code_coverage/debugAndroidTest/connected/Pixel_7_API_33(AVD) - 13/coverage.ec",
+            "outputs/code_coverage/debugAndroidTest/connected/**/*.ec"
+    ])
+}
+
+//tasks.all { task ->
+//    if (task.name == dependsOnTask[0] || task.name == dependsOnTask[1]) {
+//        task.finalizedBy generateCodeCoverageReports
+//    }
+//}
+
+
+// 멀티모듈을 1개의 커버리지 리포트로 병합
+tasks.register('generateMultiModuleCodeCoverageReports', JacocoReport) {
+    dependsOn dependsOnTask
+    description = 'Generates an aggregate report from all subprojects'
+    group = "Reporting"
+
+    def srcPathList = []
+    def classDirPathList = []
+    def executionDataIncludesList = []
+
+    rootProject.subprojects.forEach {
+        srcPathList.add("$it.projectDir/src/main/java")
+        srcPathList.add("$it.projectDir/src/main/kotlin")
+
+        // :app, :data
+        classDirPathList.add(fileTree(dir: "$it.buildDir/intermediates/javac/debug/classes", excludes: fileFilter))
+        classDirPathList.add(fileTree(dir: "$it.buildDir/tmp/kotlin-classes/debug", excludes: fileFilter))
+        // :domain
+        classDirPathList.add(fileTree(dir: "$it.buildDir/classes/kotlin/main", excludes: fileFilter))
+    }
+
+    // :app, :data
+    executionDataIncludesList.add("**/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+    executionDataIncludesList.add("**/outputs/code_coverage/debugAndroidTest/connected/**/coverage.ec")
+    executionDataIncludesList.add("**/outputs/code_coverage/debugAndroidTest/connected/Pixel_7_API_33(AVD) - 13/coverage.ec")
+    executionDataIncludesList.add("**/outputs/code_coverage/debugAndroidTest/connected/**/*.ec")
+    // :domain
+    executionDataIncludesList.add("**/jacoco/test.exec")
+
+    sourceDirectories.from = files(srcPathList)
+    additionalSourceDirs.from = files(srcPathList)
+    classDirectories.from = files(classDirPathList)
+    executionData.from = fileTree(dir: '.', includes: executionDataIncludesList)
+
+//    def reportDirPath = "$buildDir/reports/multiModuleCoverage"
+    def reportDirPath = "$rootDir/output/coverage-report"
+
+    reports {
+        html {
+            required = true
+            destination file("$reportDirPath/${project.name}")
+        }
+        xml {
+            required = true
+            destination file("$reportDirPath/${project.name}.xml")
+        }
+    }
+}
+
+

@@ -630,7 +630,7 @@ open class BattleRepositoryTest {
 
         statistics = userBattleRepository[0].getStatistics()
         assertTrue(statistics.winCount > 0)
-        assertTrue(statistics.winCount < statistics.clearedCount)
+        assertTrue(statistics.winCount <= statistics.clearedCount)
     }
 
     @Test

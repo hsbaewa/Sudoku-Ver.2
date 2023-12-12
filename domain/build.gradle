@@ -1,12 +1,30 @@
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
+    id 'jacoco'
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+//test {
+//    finalizedBy jacocoTestReport // report is always generated after tests run
+//}
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
@@ -15,7 +33,6 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 
-    testImplementation 'io.mockk:mockk:1.12.0'
-
-
+    def mockk_version = '1.13.8'
+    testImplementation "io.mockk:mockk:$mockk_version"
 }

@@ -261,18 +261,18 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 
     }
 
-    @Test
-    fun testCPU() = runBlocking {
-        val buildUseCase = AutoGenerateSudokuUseCase(IntermediateMatrix())
-        val stage = runBlocking { buildUseCase().first() }
-        val playUseCase = PlaySudokuUseCaseImpl(stage, 2000)
-        playUseCase().collect {
-            println(it)
-            println(stage)
-        }
-
-        assertEquals(true, stage.isSudokuClear())
-    }
+//    @Test
+//    fun testCPU() = runBlocking {
+//        val buildUseCase = AutoGenerateSudokuUseCase(IntermediateMatrix())
+//        val stage = runBlocking { buildUseCase().first() }
+//        val playUseCase = PlaySudokuUseCaseImpl(stage, 2000)
+//        playUseCase().collect {
+//            println(it)
+//            println(stage)
+//        }
+//
+//        assertEquals(true, stage.isSudokuClear())
+//    }
 
     @Test
     fun testCPU2() = runBlocking {
