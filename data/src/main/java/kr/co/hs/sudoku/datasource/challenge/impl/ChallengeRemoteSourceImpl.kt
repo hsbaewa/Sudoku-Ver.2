@@ -5,8 +5,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
+import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
-import kotlin.reflect.full.memberProperties
 
 class ChallengeRemoteSourceImpl : ChallengeRemoteSource {
 
@@ -39,22 +39,15 @@ class ChallengeRemoteSourceImpl : ChallengeRemoteSource {
                 ?: challengeCollection.document()
         ) {
             challengeModel.id = id
-            challengeModel.asMap().toMutableMap()
             set(
                 challengeModel
                     .also { it.id = id }
-                    .asMap()
-                    .toMutableMap()
+                    .asMutableMap()
                     .also { it["createdAt"] = FieldValue.serverTimestamp() }
             )
 
             true
         }
-
-    private inline fun <reified T : Any> T.asMap(): Map<String, Any?> {
-        val props = T::class.memberProperties.associateBy { it.name }
-        return props.keys.associateWith { props[it]?.get(this) }
-    }
 
     override suspend fun removeChallenge(id: String) =
         with(challengeCollection.document(id)) {

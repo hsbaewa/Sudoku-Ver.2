@@ -21,16 +21,15 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.feature.play.PlayFragment
-import kr.co.hs.sudoku.feature.play.ReplayFragment
+import kr.co.hs.sudoku.feature.play.SudokuPlayFragment
+import kr.co.hs.sudoku.feature.play.SudokuHistoryFragment
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.stage.history.impl.CachedHistoryQueue
 import kr.co.hs.sudoku.model.stage.history.HistoryQueue
-import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
 import kr.co.hs.sudoku.repository.timer.RealServerTimer
 import kr.co.hs.sudoku.usecase.record.PutRecordUseCaseImpl
-import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
@@ -91,7 +90,7 @@ class ChallengePlayActivity : Activity() {
         realServerTimer.continueIfLastPlaying(challenge)
 
         // 게임 Fragment 설정
-        replaceFragment(R.id.rootLayout, PlayFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuPlayFragment.newInstance())
 
         lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             dismissProgressIndicator()
@@ -99,22 +98,22 @@ class ChallengePlayActivity : Activity() {
         }) {
             showProgressIndicator()
 
-            challenge.challengeId?.run {
-                val cachedFile = getCachedFile(this)
-                val queue = CachedHistoryQueue(FileOutputStream(cachedFile, true))
-
-                if (cachedFile.length() > 0) {
-                    val currentStatus = withContext(Dispatchers.IO) {
-                        queue.load(cachedFile.inputStream())
-                    }
-                    gamePlayViewModel.batch(currentStatus)
-                } else {
-                    withContext(Dispatchers.IO) { queue.createHeader(gamePlayViewModel.getStage()) }
-                }
-
-                // 게임 상태 이벤트 수신 설정
-                collectGamePlayStatus(challenge, queue)
+            val cachedFile = getCachedFile(challenge.challengeId)
+            val queue = withContext(Dispatchers.IO) {
+                CachedHistoryQueue(FileOutputStream(cachedFile, true))
             }
+
+            if (cachedFile.length() > 0) {
+                val currentStatus = withContext(Dispatchers.IO) {
+                    queue.load(cachedFile.inputStream())
+                }
+                gamePlayViewModel.batch(currentStatus)
+            } else {
+                withContext(Dispatchers.IO) { queue.createHeader(gamePlayViewModel.getStage()) }
+            }
+
+            // 게임 상태 이벤트 수신 설정
+            collectGamePlayStatus(queue)
 
             dismissProgressIndicator()
         }
@@ -123,33 +122,45 @@ class ChallengePlayActivity : Activity() {
 
     private fun getCachedFile(challengeId: String) = File(cacheDir, "challenge_$challengeId.cache")
 
-    private fun collectGamePlayStatus(challenge: ChallengeEntity, historyQueue: HistoryQueue) =
+    private fun collectGamePlayStatus(historyQueue: HistoryQueue) =
         lifecycleScope.launch {
             gamePlayViewModel.statusFlow.collect { status ->
                 when (status) {
-                    is GamePlayViewModel.Status.Completed -> {
-                        recordViewModel.stopTimer()
-                        val clearTime = gamePlayViewModel.getCompleteTime()
-                        val uid = getUserId()
-                        val challengeId = challengeViewModel.challenge.value?.challengeId
-                        if (clearTime >= 0 && uid != null && challengeId != null) {
-                            onCompleteSudoku(uid, challengeId, clearTime)
-                        }
-                    }
-
-                    is GamePlayViewModel.Status.OnStart -> {
-                        recordViewModel.bind(status.stage)
-                        recordViewModel.setTimer(realServerTimer)
-                        recordViewModel.setHistoryWriter(historyQueue)
-                        recordViewModel.startTimer()
-
-                        lifecycleScope.launch(Dispatchers.IO) { challenge.checkPlaying() }
-                    }
-
+                    is GamePlayViewModel.Status.OnStart -> status.onStartSudoku(historyQueue)
+                    is GamePlayViewModel.Status.Completed -> status.onCompetedSudoku()
                     else -> {}
                 }
             }
         }
+
+    private fun GamePlayViewModel.Status.OnStart.onStartSudoku(historyQueue: HistoryQueue) {
+        if (recordViewModel.isRunningCapturedHistoryEvent())
+            return
+
+        challengeViewModel.checkPlaying(app.getChallengeRepository())
+        recordViewModel.bind(stage)
+        recordViewModel.setTimer(realServerTimer)
+        recordViewModel.setHistoryWriter(historyQueue)
+        recordViewModel.play()
+    }
+
+    private fun GamePlayViewModel.Status.Completed.onCompetedSudoku() {
+        with(recordViewModel) {
+            if (isRunningCapturedHistoryEvent()) {
+                stopCapturedHistory()
+            } else {
+                stop()
+                val clearTime = stage.getClearTime()
+                if (clearTime >= 0) {
+                    val uid = getUserId()
+                    val challengeId = challengeViewModel.challenge.value?.challengeId
+                    if (uid != null && challengeId != null) {
+                        onCompleteSudoku(uid, challengeId, clearTime)
+                    }
+                }
+            }
+        }
+    }
 
     private val recordViewModel: RecordViewModel by lazy { recordViewModels() }
 
@@ -183,14 +194,6 @@ class ChallengePlayActivity : Activity() {
         }
     }
 
-    private suspend fun ChallengeEntity.checkPlaying() {
-        challengeId?.run {
-            if (!isPlaying) {
-                app.getChallengeRepository().setPlaying(this)
-            }
-        }
-    }
-
     private fun onChangedRunningProgressState(progress: Boolean) = if (progress) {
         showProgressIndicator()
     } else {
@@ -202,17 +205,18 @@ class ChallengePlayActivity : Activity() {
     private suspend fun setClearRecordToServer(uid: String, challengeId: String, clearTime: Long) {
         val profile = getProfile(uid)
         val record = RankerEntity(profile, clearTime)
-        val useCase = PutRecordUseCaseImpl(app.getChallengeRecordRepository(challengeId))
+
+        val repo = app.getChallengeRepository() as ChallengeRepositoryImpl
+        repo.setChallengeId(challengeId)
+        val useCase = PutRecordUseCaseImpl(repo)
         useCase(record).last()
     }
-
-    private suspend fun getProfile(uid: String) =
-        GetProfileUseCase(ProfileRepositoryImpl()).invoke(uid).last()
 
     private fun showCompleteRecordDialog(clearRecord: String) {
         val dlgBinding =
             LayoutCompleteBinding.inflate(LayoutInflater.from(this@ChallengePlayActivity))
         dlgBinding.tvRecord.text = clearRecord
+        dlgBinding.lottieAnim.playAnimation()
         MaterialAlertDialogBuilder(this@ChallengePlayActivity)
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }
@@ -222,9 +226,9 @@ class ChallengePlayActivity : Activity() {
     }
 
     private fun replay() {
-        replaceFragment(R.id.rootLayout, ReplayFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuHistoryFragment.newInstance())
         gamePlayViewModel.backToStartingMatrix()
         realServerTimer.pass(0)
-        recordViewModel.startTimer()
+        recordViewModel.playCapturedHistory()
     }
 }

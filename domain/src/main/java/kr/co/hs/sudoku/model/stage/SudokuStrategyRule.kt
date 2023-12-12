@@ -6,5 +6,5 @@ interface SudokuStrategyRule {
     fun getDuplicatedCellCount(): Int
     fun getEmptyCells(): CellList<Int>
     fun getEmptyCellCount(): Int
-    fun isCompleted(): Boolean
+    fun isSudokuClear(): Boolean
 }

@@ -31,7 +31,8 @@ interface Stage : CellTable<Int>, SudokuStrategyRule {
 
     fun setTimer(timer: Timer)
 
-    fun getCompletedTime(): Long
+    fun getClearTime(): Long
 
-    fun startCaptureHistory(timer: Timer, writer: HistoryQueue)
+    fun startCaptureHistory(writer: HistoryQueue)
+    fun stopCaptureHistory()
 }

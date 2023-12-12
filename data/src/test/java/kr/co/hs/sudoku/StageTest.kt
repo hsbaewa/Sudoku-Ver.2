@@ -30,26 +30,26 @@ class StageTest {
 
     @Before
     fun initializeRemoteSource() = runTest {
-        val beginnerSourceRes = javaClass.classLoader.getResource("beginnerSource.json")
+        val beginnerSourceRes = javaClass.classLoader?.getResource("beginnerSource.json")
         val beginnerStream = ByteArrayOutputStream()
         withContext(Dispatchers.IO) {
-            beginnerSourceRes.openStream()
+            beginnerSourceRes?.openStream()
         }.use {
-            it.copyTo(beginnerStream)
+            it?.copyTo(beginnerStream)
         }
-        val intermediateSourceRes = javaClass.classLoader.getResource("intermediateSource.json")
+        val intermediateSourceRes = javaClass.classLoader?.getResource("intermediateSource.json")
         val intermediateStream = ByteArrayOutputStream()
         withContext(Dispatchers.IO) {
-            intermediateSourceRes.openStream()
+            intermediateSourceRes?.openStream()
         }.use {
-            it.copyTo(intermediateStream)
+            it?.copyTo(intermediateStream)
         }
-        val advancedSourceRes = javaClass.classLoader.getResource("advancedSource.json")
+        val advancedSourceRes = javaClass.classLoader?.getResource("advancedSource.json")
         val advancedStream = ByteArrayOutputStream()
         withContext(Dispatchers.IO) {
-            advancedSourceRes.openStream()
+            advancedSourceRes?.openStream()
         }.use {
-            it.copyTo(advancedStream)
+            it?.copyTo(advancedStream)
         }
 
         stageRemoteSource = StageRemoteSourceImpl(
@@ -79,15 +79,15 @@ class StageTest {
 
         val stage = stageBuilder().first()
         println(stage)
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
-        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+        val playUseCase = PlaySudokuUseCaseImpl(stage, 2000)
         playUseCase().collect()
 
         println(stage)
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
@@ -100,7 +100,7 @@ class StageTest {
 
         val stage = stageBuilder().first()
         println(stage)
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
@@ -108,17 +108,17 @@ class StageTest {
         playUseCase().collect()
 
         println(stage)
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
     fun testCustomStageRepository() = runTest {
-        val sourceRes = javaClass.classLoader.getResource("customSource.json")
+        val sourceRes = javaClass.classLoader?.getResource("customSource.json")
         val stream = ByteArrayOutputStream()
         withContext(Dispatchers.IO) {
-            sourceRes.openStream()
+            sourceRes?.openStream()
         }.use {
-            it.copyTo(stream)
+            it?.copyTo(stream)
         }
         val model = Gson().fromJson(String(stream.toByteArray()), CustomStageModelImpl::class.java)
 
@@ -127,7 +127,7 @@ class StageTest {
         val stage = buildUseCase().first()
 
         println(stage)
-        assertEquals(false, stage.isCompleted())
+        assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
@@ -135,6 +135,6 @@ class StageTest {
         playUseCase().collect()
 
         println(stage)
-        assertEquals(true, stage.isCompleted())
+        assertEquals(true, stage.isSudokuClear())
     }
 }

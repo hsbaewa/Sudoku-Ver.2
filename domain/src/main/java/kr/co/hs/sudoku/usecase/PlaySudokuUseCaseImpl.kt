@@ -23,7 +23,7 @@ class PlaySudokuUseCaseImpl(
     }
 
     private suspend fun Stage.play(row: Int, column: Int) {
-        if (isCompleted()) {
+        if (isSudokuClear()) {
             threashold = 0
             return
         }
@@ -47,7 +47,7 @@ class PlaySudokuUseCaseImpl(
         }
         available.forEach {
             delay((threashold / 5) + (available.size * (threashold / 8)))
-            if (isCompleted()) {
+            if (isSudokuClear()) {
                 threashold = 0
                 return
             }

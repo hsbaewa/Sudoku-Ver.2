@@ -12,7 +12,7 @@ class ChallengeReaderRepositoryImpl(
     private val recordRemoteSource: RecordRemoteSource = ChallengeRecordRemoteSourceImpl()
 ) : ChallengeReaderRepository {
     override suspend fun getChallenge(challengeId: String) =
-        remoteSource.getChallenge(challengeId).toDomain().apply {
+        remoteSource.getChallenge(challengeId).toDomain()?.apply {
             FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
                 with(recordRemoteSource) {
                     runCatching { getReservedMyRecord(challengeId, uid) }
@@ -26,28 +26,26 @@ class ChallengeReaderRepositoryImpl(
                         ?.run { isComplete = this.clearTime >= 0 }
                 }
             }
-        }
+        } ?: throw Exception("invalid challenge entity")
 
     override suspend fun getLatestChallenge() =
-        remoteSource.getLatestChallenge().toDomain().apply {
+        remoteSource.getLatestChallenge().toDomain()?.apply {
 
-            challengeId.takeIf { it != null }?.let { challengeId ->
-                FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
-                    with(recordRemoteSource) {
-                        runCatching { getReservedMyRecord(challengeId, uid) }
-                            .getOrNull()
-                            ?.run {
-                                startPlayAt = this.startAt?.toDate()
-                                isPlaying = startPlayAt != null
-                            }
-                        runCatching { getRecord(challengeId, uid) }
-                            .getOrNull()
-                            ?.run { isComplete = this.clearTime >= 0 }
-                    }
+            FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
+                with(recordRemoteSource) {
+                    runCatching { getReservedMyRecord(challengeId, uid) }
+                        .getOrNull()
+                        ?.run {
+                            startPlayAt = this.startAt?.toDate()
+                            isPlaying = startPlayAt != null
+                        }
+                    runCatching { getRecord(challengeId, uid) }
+                        .getOrNull()
+                        ?.run { isComplete = this.clearTime >= 0 }
                 }
             }
 
-        }
+        } ?: throw Exception("invalid challenge entity")
 
     override suspend fun getChallengeIds() = remoteSource.getChallengeIds()
 }

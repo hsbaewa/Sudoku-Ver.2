@@ -20,4 +20,8 @@ platform :android do
   lane :test do
     gradle(task: 'clean data:testDebugUnitTest domain:test')
   end
+  lane :doTest do
+#     gradle(task: 'clean createDebugCoverageReport')
+    gradle(task: 'clean app:connectedDebugAndroidTest')
+  end
 end

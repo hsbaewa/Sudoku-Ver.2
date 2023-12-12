@@ -183,4 +183,23 @@ object ActivityExtension {
             replace(containerViewId, fragment, fragment::class.java.simpleName)
             commit()
         }
+
+    inline fun <reified T : Fragment> AppCompatActivity.removeFragment(c: Class<T>) =
+        with(supportFragmentManager) {
+            findFragmentByTag(c.simpleName)?.let { fragment ->
+                val transaction = beginTransaction()
+                transaction.remove(fragment)
+                transaction.commit()
+            }
+        }
+
+    inline fun <reified T : Fragment> AppCompatActivity.hasFragment(c: Class<T>) =
+        runCatching { findFragment(c) }.getOrNull() != null
+
+    inline fun <reified T : Fragment> AppCompatActivity.findFragment(c: Class<T>): T {
+        return with(supportFragmentManager) {
+            val name = c.simpleName
+            (findFragmentByTag(name) as? T) ?: throw Exception("not found $name")
+        }
+    }
 }

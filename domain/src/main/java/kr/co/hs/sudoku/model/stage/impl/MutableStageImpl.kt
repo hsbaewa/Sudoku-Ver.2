@@ -164,7 +164,7 @@ class MutableStageImpl(
 
     override fun getEmptyCellCount() = getEmptyCells().count
 
-    override fun isCompleted() =
+    override fun isSudokuClear() =
         getDuplicatedCells().isEmpty() && getEmptyCells().isEmpty()
 
     override fun setTimer(timer: Timer) {
@@ -179,26 +179,27 @@ class MutableStageImpl(
     override fun onChanged(cell: IntCoordinateCellEntity) {
         if (this::timer.isInitialized) {
             val time = timer.getPassedTime()
-            val isComplete = isCompleted()
+            val isComplete = isSudokuClear()
             if (isComplete)
                 completeTime = time
 
-            if (this::historyQueue.isInitialized) {
-                historyQueue.push(cell, time, isComplete)
-            }
+            historyQueue?.push(cell, time, isComplete)
         }
 
         val list = this.listenerSet.toList()
         list.forEach { it.onChanged(cell) }
     }
 
-    override fun getCompletedTime() = completeTime
+    override fun getClearTime() = completeTime
     private var completeTime = -1L
 
-    override fun startCaptureHistory(timer: Timer, writer: HistoryQueue) {
-        this.timer = timer
+    override fun startCaptureHistory(writer: HistoryQueue) {
         this.historyQueue = writer
     }
 
-    lateinit var historyQueue: HistoryQueue
+    private var historyQueue: HistoryQueue? = null
+
+    override fun stopCaptureHistory() {
+        historyQueue = null
+    }
 }

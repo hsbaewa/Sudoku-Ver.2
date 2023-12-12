@@ -4,7 +4,7 @@ import kr.co.hs.sudoku.model.matrix.IntMatrix
 import java.util.Date
 
 interface ChallengeEntity {
-    val challengeId: String?
+    val challengeId: String
     val matrix: IntMatrix
     val createdAt: Date?
     var isPlaying: Boolean

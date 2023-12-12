@@ -26,7 +26,7 @@
             android:id="@+id/btnRetry"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_refresh"
+            android:src="@drawable/ic_renew"
             app:layout_constraintBottom_toTopOf="@id/rootLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="wrap"

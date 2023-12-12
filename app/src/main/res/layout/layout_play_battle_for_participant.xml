@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <kr.co.hs.sudoku.views.SudokuBoardView
+            android:id="@+id/sudokuBoard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="20dp"
+            android:layout_marginBottom="50dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:accentColor="@color/white"
+            app:borderColor="@color/gray_600"
+            app:disabledColor="@color/gray_400"
+            app:layout_constrainedHeight="true"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="wrap"
+            app:numberColor="@color/gray_600"
+            app:numberDisabledColor="@color/white" />
+
+        <View
+            android:id="@+id/viewSilhouette"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#AAFFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
+            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
+            app:layout_constraintHeight_default="spread"
+            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
+            app:layout_constraintTop_toTopOf="@id/sudokuBoard"
+            app:layout_constraintWidth_default="spread" />
+
+        <TextView
+            android:id="@+id/tvStatusMessage"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:gravity="center"
+            android:lines="1"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
+            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
+            app:layout_constraintHeight_default="spread"
+            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
+            app:layout_constraintTop_toTopOf="@id/sudokuBoard"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

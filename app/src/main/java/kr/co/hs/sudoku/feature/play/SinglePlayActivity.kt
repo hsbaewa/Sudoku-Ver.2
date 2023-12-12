@@ -17,17 +17,16 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.model.stage.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.repository.timer.TimerImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 
-class PlayActivity : Activity() {
+class SinglePlayActivity : Activity() {
     companion object {
         fun Activity.startPlayActivity(matrix: IntMatrix?) =
             startActivity(
-                Intent(this, PlayActivity::class.java)
+                Intent(this, SinglePlayActivity::class.java)
                     .putSudokuMatrix(matrix)
             )
     }
@@ -49,15 +48,9 @@ class PlayActivity : Activity() {
 
             gamePlayViewModel.statusFlow.collect {
                 when (it) {
-                    is GamePlayViewModel.Status.ChangedCell -> showSnackBar("(${it.row}, ${it.column})셀의 값이 ${it.value} 로 변경됨")
-                    is GamePlayViewModel.Status.Completed -> {
-                        recordViewModel.stopTimer()
-                        if (it.stage.getCompletedTime() >= 0) {
-                            showCompleteRecordDialog(it.stage.getCompletedTime())
-                        }
-                    }
-
-                    is GamePlayViewModel.Status.OnStart -> onStartSudoku(it.stage)
+                    is GamePlayViewModel.Status.OnStart -> it.onStartSudoku()
+                    is GamePlayViewModel.Status.ChangedCell -> it.onChangedSudokuCell()
+                    is GamePlayViewModel.Status.Completed -> it.onCompletedSudoku()
                     else -> {}
                 }
             }
@@ -74,23 +67,44 @@ class PlayActivity : Activity() {
         getSudokuMatrix()
             .takeIf { it != null }
             ?.run {
-                replaceFragment(R.id.rootLayout, PlayFragment.new())
+                replaceFragment(R.id.rootLayout, SudokuPlayFragment.newInstance())
                 gamePlayViewModel.buildSudokuMatrix(this)
             }
     }
 
-    private fun onStartSudoku(stage: Stage) {
+    private fun GamePlayViewModel.Status.OnStart.onStartSudoku() {
+        if (recordViewModel.isRunningCapturedHistoryEvent())
+            return
+
         recordViewModel.bind(stage)
         recordViewModel.setTimer(TimerImpl())
         recordViewModel.setHistoryWriter(HistoryQueueImpl())
-        recordViewModel.startTimer()
+        recordViewModel.play()
+    }
+
+    private fun GamePlayViewModel.Status.ChangedCell.onChangedSudokuCell() {
+        showSnackBar("(${row}, ${column})셀의 값이 $value 로 변경됨")
+    }
+
+    private fun GamePlayViewModel.Status.Completed.onCompletedSudoku() {
+        with(recordViewModel) {
+            if (isRunningCapturedHistoryEvent()) {
+                stopCapturedHistory()
+            } else {
+                stop()
+                if (stage.isSudokuClear() && stage.getClearTime() >= 0) {
+                    showCompleteRecordDialog(stage.getClearTime())
+                }
+            }
+        }
     }
 
     private fun showCompleteRecordDialog(clearRecord: Long) {
         val dlgBinding =
-            LayoutCompleteBinding.inflate(LayoutInflater.from(this@PlayActivity))
+            LayoutCompleteBinding.inflate(LayoutInflater.from(this@SinglePlayActivity))
         dlgBinding.tvRecord.text = clearRecord.toTimerFormat()
-        MaterialAlertDialogBuilder(this@PlayActivity)
+        dlgBinding.lottieAnim.playAnimation()
+        MaterialAlertDialogBuilder(this@SinglePlayActivity)
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }
             .setNeutralButton(R.string.show_replay) { _, _ -> replay() }
@@ -100,15 +114,15 @@ class PlayActivity : Activity() {
     }
 
     private fun replay() {
-        replaceFragment(R.id.rootLayout, ReplayFragment.new())
+        replaceFragment(R.id.rootLayout, SudokuHistoryFragment.newInstance())
         gamePlayViewModel.backToStartingMatrix()
-        recordViewModel.startTimer()
+        recordViewModel.playCapturedHistory()
     }
 
     private fun retry() {
         initMatrix()
-        recordViewModel.stopTimer()
-        recordViewModel.clearTime()
+        recordViewModel.stop()
+        binding.tvTimer.text = 0L.toTimerFormat()
     }
 
     private fun ImageButton.setupUIRetry() {

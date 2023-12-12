@@ -401,10 +401,12 @@ class SudokuBoardView : ViewGroup {
                     }
                     setTextColor(numberTextDisabledColorResId)
                 }
+
                 isAccentArea -> {
                     setBackgroundColor(accentColorResId)
                     setTextColor(numberTextColorResId)
                 }
+
                 else -> {
                     setBackgroundColor(backgroundColorResId)
                     setTextColor(numberTextColorResId)
@@ -569,16 +571,16 @@ class SudokuBoardView : ViewGroup {
             .children()
             .find { it.getHitRect(hitRect); hitRect.contains(x, y) }
             ?.let { numberPadCell ->
-                val selectedNumber = numberPadCell.tag as? Int
+                val selectedNumber = (numberPadCell.tag as? Int)?.takeIf { it >= 0 }
                 if (numberPopup.isMemoMode()) {
                     if (!isInitMemo()) {
+                        cellValueChangedListener?.run {
+                            val cellCoordinate = getCoordinate()
+                            this(cellCoordinate.first, cellCoordinate.second, null)
+                        }
                         initMemo()
                     }
                     selectedNumber?.run { toggleNumberInMemo(this) }
-                    cellValueChangedListener?.run {
-                        val cellCoordinate = getCoordinate()
-                        this(cellCoordinate.first, cellCoordinate.second, null)
-                    }
                 } else {
                     clearMemo()
                     cellValueChangedListener?.run {

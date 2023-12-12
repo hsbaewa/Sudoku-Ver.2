@@ -36,6 +36,6 @@ class SudokuStrategyRuleImpl : SudokuStrategyRule {
 
     override fun getEmptyCellCount() = getEmptyCells().count
 
-    override fun isCompleted() =
+    override fun isSudokuClear() =
         getDuplicatedCells().isEmpty() && getEmptyCells().isEmpty()
 }
