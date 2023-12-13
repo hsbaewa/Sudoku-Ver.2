@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: keystore
-          path: $HOME/sign.keystore
+          path: ${{ env.HOME }}/sign.keystore
 
   check:
     needs: init-environment
@@ -46,7 +46,7 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: keystore
-          path: $HOME/sign.keystore
+          path: ${{ env.HOME }}/sign.keystore
       - name: 키스토어 체크
         shell: bash
         run: |
