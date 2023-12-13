@@ -8,4 +8,6 @@ plugins {
     id 'com.android.library' version '8.1.2' apply false
     id 'org.jetbrains.kotlin.android' version '1.8.20-RC' apply false
     id 'jacoco'
+    // Add the dependency for the App Distribution Gradle plugin
+    id 'com.google.firebase.appdistribution' version '4.0.0' apply false
 }

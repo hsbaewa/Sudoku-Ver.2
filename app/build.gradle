@@ -3,6 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
     id 'kotlin-parcelize'
+    // Add the App Distribution Gradle plugin
+    id 'com.google.firebase.appdistribution'
 }
 
 def getVersionCodeFromParameter = { ->
@@ -35,6 +37,11 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            firebaseAppDistribution {
+                artifactType="APK"
+                releaseNotesFile="app-distribution-release-note.txt"
+                testersFile="app-distribution-testers.txt"
+            }
         }
         alpha {
             minifyEnabled false

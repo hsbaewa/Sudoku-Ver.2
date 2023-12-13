@@ -8,10 +8,6 @@ on:
       #        description: '버전 코드(숫자)'
       #        required: true
       #        default: '1'
-#      versionName:
-#        description: '버전 이름(ex : 1.0.0)'
-#        required: true
-#        default: '1.0.0'
       type:
         description: 'type'
         required: true
@@ -19,38 +15,152 @@ on:
         options:
           - download
           - firebase
+      versionName:
+        description: '버전 이름(ex : 1.0.0)'
+        required: true
+        default: '1.0.0'
+      testers:
+        description: '테스터 gmail (ex : a@gmail.com, anyone@gmail.com)'
+        required: true
+        default: ''
+      releaseNote:
+        description: '릴리즈 정보'
+        required: false
+        default: ''
 
 jobs:
-  init-environment:
+  build-release:
     runs-on: ubuntu-latest
     steps:
+      - name: 소스코드 Checkout
+        uses: actions/checkout@v3
+      - name: google-services.json 파일 생성
+        shell: bash
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          echo "$GOOGLE_SERVICES"
+          echo "$GOOGLE_SERVICES" > app/google-services.json
+          cat app/google-services.json
+      - name: AndroidManifest.xml 메타정보 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'com.google.android.gms.games.APP_ID'
+          metadata-value: ${{secrets.GAME_SERVICE_PROJECT_ID}}
+          print-file: true
+      - name: 빌드 환경 java 버전 설정
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt' # See 'Supported distributions' for available options
+          java-version: '17'
       - name: 키스토어 파일 생성
         shell: bash
         env:
           KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
-          mkdir -p ./keystore
-          base64 -d -i $HOME/sign.base64 > ./keystore/sign.keystore
-          cat ./keystore/sign.keystore
-      - name: 키스토어 캐싱
+          base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
+      - name: assembleRelease
+        shell: bash
+        env:
+          PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          #          VERSION_CODE: ${{ inputs.versionCode }}
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: ${{ inputs.versionName }}
+        run: |
+          ./gradlew clean assembleRelease \
+            -Pandroid.injected.signing.store.file=$HOME/sign.keystore \
+            -Pandroid.injected.signing.store.password=$PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+            -PversionCode=$VERSION_CODE \
+            -PversionName=$VERSION_NAME \
+            --stacktrace
+      - name: build를 artifact에 업로드
         uses: actions/upload-artifact@v3
         with:
-          name: keystore
-          path: ./keystore
+          name: build
+          path: app/build
 
-  check:
-    needs: init-environment
+  download:
     runs-on: ubuntu-latest
+    if: ${{ inputs.type == 'download' }}
+    needs: build-release
     steps:
-      - name: 키스토어 캐싱 복구
+      - name: build를 artifact로부터 다운로드
         uses: actions/download-artifact@v3
         with:
-          name: keystore
-          path: ./keystore
-      - name: 키스토어 체크
+          name: build
+          path: app/build
+      - name: apk를 artifact에 업로드
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/app-release.apk
+
+  firebase-distribution:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.type == 'firebase' }}
+    needs: build-release
+    steps:
+      - name: 소스코드 Checkout
+        uses: actions/checkout@v3
+      - name: build를 artifact로부터 다운로드
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: app/build
+      - name: release note 파일 생성
         shell: bash
+        env:
+          RELEASE_NOTE: ${{ inputs.releaseNote }}
         run: |
-          mv ./keystore/sign.keystore $HOME/sign.keystore
-          echo $HOME/sign.keystore
-          cat $HOME/sign.keystore
+          echo "$RELEASE_NOTE" > app-distribution-release-note.txt
+      - name: tester 정보 파일 생성
+        shell: bash
+        env:
+          TESTERS: ${{ inputs.testers }}
+        run: |
+          echo "$TESTERS" > app-distribution-testers.txt
+      - name: Firebase에 배포
+        shell: bash
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          ./gradlew appDistributionUploadRelease
+#  init-environment:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: 키스토어 파일 생성
+#        shell: bash
+#        env:
+#          KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
+#        run: |
+#          echo "$KEYSTORE" > $HOME/sign.base64
+#          mkdir -p ./keystore
+#          base64 -d -i $HOME/sign.base64 > ./keystore/sign.keystore
+#          cat ./keystore/sign.keystore
+#      - name: 키스토어 캐싱
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: keystore
+#          path: ./keystore
+#
+#  check:
+#    needs: init-environment
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: 키스토어 캐싱 복구
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: keystore
+#          path: ./keystore
+#      - name: 키스토어 체크
+#        shell: bash
+#        run: |
+#          mv ./keystore/sign.keystore $HOME/sign.keystore
+#          echo $HOME/sign.keystore
+#          cat $HOME/sign.keystore
