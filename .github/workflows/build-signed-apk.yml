@@ -57,14 +57,12 @@ jobs:
           VERSION_NAME: ${{ inputs.versionName }}
         run: |
           echo "{path}" >> $GITHUB_PATH
-          echo $GITHUB_PATH
-          echo $HOME
-          echo "$KEYSTORE" > app/sign.base64
-          base64 -d -i app/sign.base64 > app/sign.keystore
-          cat app/sign.keystore
-          readlink -f app/sign.keystore
+          echo "$KEYSTORE" > $GITHUB_PATH/sign.base64
+          base64 -d -i $GITHUB_PATH/sign.base64 > $GITHUB_PATH/sign.keystore
+          cat $GITHUB_PATH/sign.keystore
+          readlink -f $GITHUB_PATH/sign.keystore
           ./gradlew clean assembleRelease \
-            -Pandroid.injected.signing.store.file=./sign.keystore \
+            -Pandroid.injected.signing.store.file=$GITHUB_PATH/sign.keystore \
             -Pandroid.injected.signing.store.password=$PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
