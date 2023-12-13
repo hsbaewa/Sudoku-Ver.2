@@ -30,26 +30,26 @@ jobs:
           KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
-          base64 -d -i $HOME/sign.base64 > ./sign.keystore
-          cat ./sign.keystore
+          base64 -d -i $HOME/sign.base64 > ./keystore/sign.keystore
+          cat ./keystore/sign.keystore
       - name: 키스토어 캐싱
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         with:
           name: keystore
-          path: ./sign.keystore
+          path: ./keystore
 
   check:
     needs: init-environment
     runs-on: ubuntu-latest
     steps:
       - name: 키스토어 캐싱 복구
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v3
         with:
           name: keystore
-          path: ./sign.keystore
+          path: ./keystore
       - name: 키스토어 체크
         shell: bash
         run: |
-          mv ./sign.keystore $HOME/sign.keystore
+          mv ./keystore/sign.keystore $HOME/sign.keystore
           echo $HOME/sign.keystore
           cat $HOME/sign.keystore
