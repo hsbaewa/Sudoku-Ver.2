@@ -23,8 +23,6 @@ on:
 jobs:
   init-environment:
     runs-on: ubuntu-latest
-    outputs:
-      keystore: ${{ steps.keystore.outputs.keystoreFile }}
     steps:
       - name: 키스토어 파일 생성
         shell: bash
@@ -33,16 +31,18 @@ jobs:
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
           base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
-      - id: keystore
-        run: echo "keystoreFile=$HOME/sign.keystore" >> "$GITHUB_OUTPUT"
+      - name: 키스토어 캐싱
+        uses: actions/cache@v3
+        with:
+          path: $HOME/sign.keystore
+          key: keystoreFile
+
   check:
     needs: init-environment
     runs-on: ubuntu-latest
     steps:
       - name: 키스토어 체크
         shell: bash
-        env:
-          KEYSTORE: ${{ needs.init-environment.outputs.keystore }}
         run: |
-          echo $KEYSTORE
-          cat $KEYSTORE
+          echo $HOME/sign.keystore
+          cat $HOME/sign.keystore
