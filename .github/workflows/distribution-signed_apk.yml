@@ -39,3 +39,4 @@ jobs:
         shell: bash
         run: |
           echo $HOME/sign.keystore
+          cat $HOME/sign.keystore
