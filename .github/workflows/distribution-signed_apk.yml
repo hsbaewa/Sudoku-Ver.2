@@ -32,22 +32,28 @@ jobs:
           echo "$KEYSTORE" > $HOME/sign.base64
           base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
       - name: 키스토어 캐싱
+        id: cache-keystore
         uses: actions/cache@v3
+        env:
+          cache-name: cache-keystore
         with:
           path: $HOME/sign.keystore
           key: keystoreFile
+          restore-keys: |
+            keystoreFile
 
   check:
     needs: init-environment
     runs-on: ubuntu-latest
     steps:
-      - name: 키스토어 캐싱 복구
-        uses: actions/cache@v3
-        with:
-          restore-keys: |
-            keystoreFile
+#      - name: 키스토어 캐싱 복구
+#        uses: actions/cache@v3
+#        with:
+#          restore-keys: |
+#            keystoreFile
       - name: 키스토어 체크
         shell: bash
         run: |
+          echo ${{ steps.cache-keystore.outputs.keystoreFile }}
           echo $HOME/sign.keystore
           cat $HOME/sign.keystore
