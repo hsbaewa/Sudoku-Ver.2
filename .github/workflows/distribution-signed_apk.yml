@@ -26,7 +26,6 @@ jobs:
     outputs:
       keystore: ${{ steps.keystore.outputs.keystoreFile }}
     steps:
-      - id: keystore
       - name: 키스토어 파일 생성
         shell: bash
         env:
@@ -34,7 +33,8 @@ jobs:
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
           base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
-          echo "keystoreFile=$HOME/sign.keystore" >> "$GITHUB_OUTPUT"
+      - id: keystore
+        run: echo "keystoreFile=$HOME/sign.keystore" >> "$GITHUB_OUTPUT"
   check:
     needs: init-environment
     runs-on: ubuntu-latest
