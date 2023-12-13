@@ -57,7 +57,8 @@ jobs:
           VERSION_NAME: ${{ inputs.versionName }}
         run: |
           echo "{path}" >> $GITHUB_PATH
-          echo "$HOME
+          echo $GITHUB_PATH
+          echo $HOME
           echo "$KEYSTORE" > app/sign.base64
           base64 -d -i app/sign.base64 > app/sign.keystore
           cat app/sign.keystore
