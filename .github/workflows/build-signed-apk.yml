@@ -58,7 +58,6 @@ jobs:
         run: |
           pwd
           echo "$KEYSTORE" > ./sign.base64
-#          cat app/sign.base64
           base64 -d -i ./sign.base64 > ./sign.keystore
           cat ./sign.keystore
           readlink -f ./sign.keystore
