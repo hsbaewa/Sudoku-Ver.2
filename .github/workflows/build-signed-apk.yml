@@ -4,10 +4,10 @@ run-name: Signed Apk 생성(VersionCode = ${{ github.run_number }})
 on:
   workflow_dispatch:
     inputs:
-      versionCode:
-        description: '버전 코드(숫자)'
-        required: true
-        default: '1'
+#      versionCode:
+#        description: '버전 코드(숫자)'
+#        required: true
+#        default: '1'
       versionName:
         description: '버전 이름(ex : 1.0.0)'
         required: true
@@ -19,8 +19,8 @@ jobs:
     steps:
       - name: env check
         env:
-          RUN_ID: ${{ github.run_id }})
-          RUN_NUMBER: ${{ github.run_number }})
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
           echo $RUN_ID
           echo $RUN_NUMBER
@@ -56,15 +56,15 @@ jobs:
       - name: Signed Release APK 빌드
         shell: bash
         env:
-          KEYSTORE_PATH: $HOME/sign.keystore
           PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
-          VERSION_CODE: ${{ inputs.versionCode }}
+#          VERSION_CODE: ${{ inputs.versionCode }}
+          VERSION_CODE: ${{ github.run_number }}
           VERSION_NAME: ${{ inputs.versionName }}
         run: |
           ./gradlew clean assembleRelease \
-            -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
+            -Pandroid.injected.signing.store.file=$HOME/sign.keystore \
             -Pandroid.injected.signing.store.password=$PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
