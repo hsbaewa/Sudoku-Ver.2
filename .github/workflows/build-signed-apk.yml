@@ -4,23 +4,14 @@ run-name: ${{ github.base_ref }} 브랜치의 Signed Apk
 on:
   workflow_dispatch:
     inputs:
-      logLevel:
-        description: 'Log level'
+      versionCode:
+        description: '버전 코드(숫자)'
         required: true
-        default: 'warning'
-        type: choice
-        options:
-          - info
-          - warning
-          - debug
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
-      environment:
-        description: 'Environment to run tests against'
-        type: environment
+        default: '1'
+      versionName:
+        description: '버전 이름(ex : 1.0.0)'
         required: true
+        default: '1.0.0'
 
 jobs:
   build-signed-apk:
@@ -61,14 +52,16 @@ jobs:
           PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          VERSION_CODE: ${{ inputs.versionCode }}
+          VERSION_NAME: ${{ inputs.versionName }}
         run: |
           bash ./gradlew clean assembleRelease \
             -Pandroid.injected.signing.store.file=./sign.keystore \
             -Pandroid.injected.signing.store.password=$PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
-            -PversionCode=2 \
-            -PversionName=4.0.0 \
+            -PversionCode=$VERSION_CODE \
+            -PversionName=$VERSION_NAME \
             --stacktrace
       - name: Signed Release APK 생성
         uses: actions/upload-artifact@v3
