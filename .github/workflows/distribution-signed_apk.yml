@@ -39,21 +39,20 @@ jobs:
         with:
           path: $HOME/sign.keystore
           key: keystoreFile
-          restore-keys: |
-            keystoreFile
+    outputs:
+      keystore-cache-key: ${{ steps.keystoreFile }}
 
   check:
     needs: init-environment
     runs-on: ubuntu-latest
     steps:
-#      - name: 키스토어 캐싱 복구
-#        uses: actions/cache@v3
-#        with:
-#          restore-keys: |
-#            keystoreFile
+      - name: 키스토어 캐싱 복구
+        uses: actions/cache@v3
+        with:
+          path: $HOME/sign.keystore
+          key: ${{ needs.init-environment.outputs.keystore-cache-key }}
       - name: 키스토어 체크
         shell: bash
         run: |
-          echo ${{ steps.cache-keystore.outputs.keystoreFile }}
           echo $HOME/sign.keystore
           cat $HOME/sign.keystore
