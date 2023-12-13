@@ -1,0 +1,41 @@
+name: Signed Apk 배포
+run-name: Signed Apk 배포(VersionCode = ${{ github.run_number }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      #      versionCode:
+      #        description: '버전 코드(숫자)'
+      #        required: true
+      #        default: '1'
+#      versionName:
+#        description: '버전 이름(ex : 1.0.0)'
+#        required: true
+#        default: '1.0.0'
+      type:
+        description: 'type'
+        required: true
+        type: choice
+        options:
+          - download
+          - firebase
+
+jobs:
+  init-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 키스토어 파일 생성
+        shell: bash
+        env:
+          KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
+        run: |
+          echo "$KEYSTORE" > $HOME/sign.base64
+          base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
+  check:
+    needs: init-environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: 키스토어 체크
+        shell: bash
+        run: |
+          echo $HOME/sign.keystore
