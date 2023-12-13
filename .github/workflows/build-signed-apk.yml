@@ -39,23 +39,26 @@ jobs:
         with:
           distribution: 'adopt' # See 'Supported distributions' for available options
           java-version: '17'
-      - name: 키스토어 파일 생성
-        shell: bash
-        env:
-          KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
-        run: |
-          echo "$KEYSTORE" > ./sign.base64
-          base64 -d -i ./sign.base64 > ./sign.keystore
+#      - name: 키스토어 파일 생성
+#        shell: bash
+#        env:
+#          KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
+#        run: |
+#          echo "$KEYSTORE" > ./sign.base64
+#          base64 -d -i ./sign.base64 > ./sign.keystore
       - name: Signed Release APK 빌드
         shell: bash
         env:
+          KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
           PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
           VERSION_CODE: ${{ inputs.versionCode }}
           VERSION_NAME: ${{ inputs.versionName }}
         run: |
-          bash ./gradlew clean assembleRelease \
+          echo "$KEYSTORE" > ./sign.base64
+          base64 -d -i ./sign.base64 > ./sign.keystore
+          ./gradlew clean assembleRelease \
             -Pandroid.injected.signing.store.file=./sign.keystore \
             -Pandroid.injected.signing.store.password=$PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
