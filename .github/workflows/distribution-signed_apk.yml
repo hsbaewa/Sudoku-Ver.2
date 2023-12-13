@@ -33,30 +33,20 @@ jobs:
           base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
           cat $HOME/sign.keystore
       - name: 키스토어 캐싱
-        id: cache-keystore
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-keystore
+        uses: actions/upload-artifact@master
         with:
+          name: keystore
           path: $HOME/sign.keystore
-          key: keystore
-      - if: ${{ steps.cache-keystore.outputs.cache-hit != 'true' }}
-        name: aaaa
-        continue-on-error: true
-        run: |
-          echo "$KEYSTORE" > $HOME/sign.base64
-          base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
-          cat $HOME/sign.keystore
 
   check:
     needs: init-environment
     runs-on: ubuntu-latest
     steps:
-#      - name: 키스토어 캐싱 복구
-#        uses: actions/cache@v3
-#        with:
-#          path: $HOME/sign.keystore
-#          key: ${{ needs.init-environment.outputs.keystore-cache-key }}
+      - name: 키스토어 캐싱 복구
+        uses: actions/download-artifact@master
+        with:
+          name: keystore
+          path: $HOME/sign.keystore
       - name: 키스토어 체크
         shell: bash
         run: |
