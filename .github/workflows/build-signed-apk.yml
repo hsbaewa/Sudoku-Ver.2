@@ -1,5 +1,5 @@
 name: Signed Apk 생성
-run-name: ${{ github.base_ref }} 브랜치의 Signed Apk
+run-name: Signed Apk 생성(VersionCode = ${{ github.run_number }})
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
       versionCode:
         description: '버전 코드(숫자)'
         required: true
-        default: '1'
+        default: ${{ github.run_number }})
       versionName:
         description: '버전 이름(ex : 1.0.0)'
         required: true
@@ -17,6 +17,13 @@ jobs:
   build-signed-apk:
     runs-on: ubuntu-latest
     steps:
+      - name: env check
+        env:
+          RUN_ID: ${{ github.run_id }})
+          RUN_NUMBER: ${{ github.run_number }})
+        run: |
+          echo $RUN_ID
+          echo $RUN_NUMBER
       - name: 소스코드 Checkout
         uses: actions/checkout@v3
       - name: google-services.json 파일 생성
@@ -39,30 +46,25 @@ jobs:
         with:
           distribution: 'adopt' # See 'Supported distributions' for available options
           java-version: '17'
-#      - name: 키스토어 파일 생성
-#        shell: bash
-#        env:
-#          KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
-#        run: |
-#          echo "$KEYSTORE" > ./sign.base64
-#          base64 -d -i ./sign.base64 > ./sign.keystore
-      - name: Signed Release APK 빌드
+      - name: 키스토어 파일 생성
         shell: bash
         env:
           KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
+        run: |
+          echo "$KEYSTORE" > $HOME/sign.base64
+          base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
+      - name: Signed Release APK 빌드
+        shell: bash
+        env:
+          KEYSTORE_PATH: $HOME/sign.keystore
           PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
           VERSION_CODE: ${{ inputs.versionCode }}
           VERSION_NAME: ${{ inputs.versionName }}
         run: |
-          echo $HOME
-          echo "$KEYSTORE" > $HOME/sign.base64
-          base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
-          cat $HOME/sign.keystore
-          readlink -f $HOME/sign.keystore
           ./gradlew clean assembleRelease \
-            -Pandroid.injected.signing.store.file=$HOME/sign.keystore \
+            -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
             -Pandroid.injected.signing.store.password=$PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
