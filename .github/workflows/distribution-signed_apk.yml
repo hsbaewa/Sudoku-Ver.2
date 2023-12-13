@@ -28,16 +28,15 @@ jobs:
         shell: bash
         env:
           KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
-          MY_HOME: $HOME
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
-          base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
-          cat $HOME/sign.keystore
+          base64 -d -i $HOME/sign.base64 > ./sign.keystore
+          cat ./sign.keystore
       - name: 키스토어 캐싱
         uses: actions/upload-artifact@master
         with:
           name: keystore
-          path: ${{ env.MY_HOME }}/sign.keystore
+          path: ./sign.keystore
 
   check:
     needs: init-environment
@@ -47,9 +46,10 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: keystore
-          path: ${{ env.HOME }}/sign.keystore
+          path: ./sign.keystore
       - name: 키스토어 체크
         shell: bash
         run: |
+          mv ./sign.keystore $HOME/sign.keystore
           echo $HOME/sign.keystore
           cat $HOME/sign.keystore
