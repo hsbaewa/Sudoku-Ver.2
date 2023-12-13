@@ -30,6 +30,7 @@ jobs:
           KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
+          mkdir -p ./keystore
           base64 -d -i $HOME/sign.base64 > ./keystore/sign.keystore
           cat ./keystore/sign.keystore
       - name: 키스토어 캐싱
