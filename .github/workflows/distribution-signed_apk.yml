@@ -28,6 +28,7 @@ jobs:
         shell: bash
         env:
           KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
+          MY_HOME: $HOME
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
           base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
@@ -36,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: keystore
-          path: ${{ env.HOME }}/sign.keystore
+          path: ${{ env.MY_HOME }}/sign.keystore
 
   check:
     needs: init-environment
