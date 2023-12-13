@@ -32,6 +32,9 @@ jobs:
           echo "$KEYSTORE" > $HOME/sign.base64
           base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
           cat $HOME/sign.keystore
+      - name: Compute dependency cache key
+        id: keystoreFile
+        run: echo "::set-output name=hash::hsbaewa"
       - name: 키스토어 캐싱
         id: cache-keystore
         uses: actions/cache@v3
@@ -39,9 +42,9 @@ jobs:
           cache-name: cache-keystore
         with:
           path: $HOME/sign.keystore
-          key: keystoreFile
+          key: ${{ steps.keystoreFile.outputs.hash }}
     outputs:
-      keystore-cache-key: ${{ steps.keystoreFile }}
+      keystore-cache-key: ${{ steps.keystoreFile.outputs.hash }}
 
   check:
     needs: init-environment
