@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="level_format">Level %1$d</string>
     <string name="start">Start</string>
@@ -45,10 +46,6 @@
     <string name="challenge_title">today\'s Challenge</string>
     <string name="challenge_title_leaderboard">Leaderboard</string>
 
-    <string name="rank_format_first" translatable="false">1st</string>
-    <string name="rank_format_second" translatable="false">2nd</string>
-    <string name="rank_format_third" translatable="false">3rd</string>
-    <string name="rank_format" translatable="false">%1$dth</string>
     <string name="record_format">record : %1$s</string>
     <string name="rank_mine_format_name">[me]%1$s</string>
 
@@ -82,5 +79,5 @@
 
     <string name="require_select_stage">require select stage</string>
 
-    <string name="app_name">Sudoku Battle</string>
+    <string name="app_name">스도쿠 배틀</string>
 </resources>
