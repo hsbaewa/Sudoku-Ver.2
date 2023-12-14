@@ -2,8 +2,10 @@ package kr.co.hs.sudoku.core
 
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import kotlinx.coroutines.flow.last
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
@@ -104,4 +106,10 @@ abstract class Activity : AppCompatActivity() {
 
     fun Intent.putBattleId(battleId: String) = putExtra(EXTRA_BATTLE_ID, battleId)
     fun getBattleId() = intent.getStringExtra(EXTRA_BATTLE_ID)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        installSplashScreen()
+    }
+
 }
