@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="difficulty">
+        <item>@string/beginner_matrix_size</item>
+        <item>@string/intermediate_matrix_size</item>
+        <item>@string/advanced_matrix_size</item>
+    </string-array>
+</resources>

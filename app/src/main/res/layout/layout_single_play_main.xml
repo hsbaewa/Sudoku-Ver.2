@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Spinner
+            android:id="@+id/spinner_difficulty"
+            style="@style/Theme.HSSudoku2.Spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:minWidth="0dp"
+            android:minHeight="50dp"
+            android:padding="0dp"
+            android:theme="@style/Theme.HSSudoku2.Spinner"
+            app:layout_constraintBottom_toTopOf="@id/recycler_view_matrix_list"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="wrap" />
+
+        <kr.co.hs.sudoku.views.RecyclerView
+            android:id="@+id/recycler_view_matrix_list"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="20dp"
+            android:paddingHorizontal="10dp"
+            app:layout_constrainedHeight="true"
+            app:layout_constraintBottom_toTopOf="@id/btn_start"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/spinner_difficulty"
+            tools:listitem="@layout/layout_matrix_list_item" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_start"
+            style="@style/Theme.HSSudoku2.OutlineButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50dp"
+            android:lines="1"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="9dp"
+            android:text="@string/start"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/recycler_view_matrix_list"
+            app:layout_constraintVertical_bias="1.0" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

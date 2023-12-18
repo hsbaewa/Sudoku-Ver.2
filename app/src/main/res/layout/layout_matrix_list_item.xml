@@ -11,6 +11,12 @@
         app:cardElevation="0dp"
         app:contentPadding="8dp"
         app:strokeColor="@color/gray_600"
-        app:strokeWidth="2dp" />
+        app:strokeWidth="2dp">
+
+        <kr.co.hs.sudoku.views.MatrixItemView
+            android:id="@+id/matrix"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.card.MaterialCardView>
 
 </layout>

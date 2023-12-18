@@ -14,4 +14,12 @@
         <attr name="numberDisabledColor" format="color" />
         <attr name="disabledColor" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="MatrixItemView">
+        <attr name="matrix_outline_thickness" format="dimension" />
+        <attr name="matrix_divider_thickness" format="dimension" />
+        <attr name="matrix_enabled_color" format="color" />
+        <attr name="matrix_disabled_color" format="color" />
+        <attr name="matrix_border_color" format="color" />
+    </declare-styleable>
 </resources>

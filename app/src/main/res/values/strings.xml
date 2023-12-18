@@ -83,4 +83,8 @@
     <string name="require_select_stage">require select stage</string>
 
     <string name="app_name">Sudoku Battle</string>
+
+    <string name="beginner_matrix_size" translatable="false">4 X 4</string>
+    <string name="intermediate_matrix_size" translatable="false">9 X 9</string>
+    <string name="advanced_matrix_size" translatable="false">16 X 16</string>
 </resources>
