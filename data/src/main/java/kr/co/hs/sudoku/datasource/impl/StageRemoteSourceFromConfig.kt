@@ -23,16 +23,21 @@ class StageRemoteSourceFromConfig(
             .data
     }
 
+    override suspend fun getIntermediateGenerateMask() = with(remoteConfig) {
+        fetchAndActivate().await()
+        getString(CONFIG_INTERMEDIATE)
+            .runCatching { Gson().fromJson(this, DataList::class.java) }
+            .getOrDefault(DataList(emptyList()))
+            .data
+    }
 
-    override suspend fun getIntermediateGenerateMask() = remoteConfig.getString(CONFIG_INTERMEDIATE)
-        .runCatching { Gson().fromJson(this, DataList::class.java) }
-        .getOrDefault(DataList(emptyList()))
-        .data
-
-    override suspend fun getAdvancedGenerateMask() = remoteConfig.getString(CONFIG_ADVANCED)
-        .runCatching { Gson().fromJson(this, DataList::class.java) }
-        .getOrDefault(DataList(emptyList()))
-        .data
+    override suspend fun getAdvancedGenerateMask() = with(remoteConfig) {
+        fetchAndActivate().await()
+        getString(CONFIG_ADVANCED)
+            .runCatching { Gson().fromJson(this, DataList::class.java) }
+            .getOrDefault(DataList(emptyList()))
+            .data
+    }
 
     private data class DataList(val data: List<AutoGenStageModelImpl>)
 }
