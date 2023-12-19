@@ -12,7 +12,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.R
-import kr.co.hs.sudoku.feature.battle.ControlBoardFragment
+import kr.co.hs.sudoku.feature.stage.StageFragment
+import kr.co.hs.sudoku.feature.battle.MultiPlayControlStageFragment
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.not
@@ -37,12 +38,12 @@ class ControlBoardFragmentTest {
         testStartingMatrix[3].map { if (it > 0) 2 else 0 }
     )
 
-    private lateinit var fragmentScenario: FragmentScenario<ControlBoardFragment>
+    private lateinit var fragmentScenario: FragmentScenario<MultiPlayControlStageFragment>
 
     @Before
     fun initFragmentScenario() {
         fragmentScenario = launchFragmentInContainer(
-            fragmentArgs = ControlBoardFragment.newInstanceArguments(CustomMatrix(testStartingMatrix)),
+            fragmentArgs = StageFragment.newInstanceArguments(CustomMatrix(testStartingMatrix)),
             themeResId = R.style.Theme_HSSudoku2,
         )
     }

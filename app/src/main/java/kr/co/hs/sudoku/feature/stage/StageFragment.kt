@@ -1,13 +1,13 @@
-package kr.co.hs.sudoku.feature.battle
+package kr.co.hs.sudoku.feature.stage
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
@@ -23,9 +23,17 @@ import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.views.SudokuBoardView
 import kotlin.math.sqrt
 
-abstract class BoardFragment : Fragment() {
+abstract class StageFragment : Fragment() {
     companion object {
-        const val EXTRA_FIX_CELL = "EXTRA_FIX_CELL"
+        private const val EXTRA_FIX_CELL = "EXTRA_FIX_CELL"
+
+        inline fun <reified T : StageFragment> newInstance(matrix: IntMatrix) =
+            T::class.java.newInstance()
+                .apply { arguments = newInstanceArguments(matrix) }
+
+        fun newInstanceArguments(matrix: IntMatrix) = bundleOf(
+            EXTRA_FIX_CELL to matrix.flatten().toIntArray()
+        )
     }
 
     // 결정된 고정 셀
@@ -149,9 +157,6 @@ abstract class BoardFragment : Fragment() {
     }
 
 
-    abstract fun setStatus(participant: ParticipantEntity)
-
-
     // 전달 받은 matrix를 stage에 적용 후 view에 적용하는 함수
     fun setValues(matrix: List<List<Int>>) {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -220,5 +225,28 @@ abstract class BoardFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         valueChangedListener?.run { stage.removeValueChangedListener(this) }
+    }
+
+    fun clearAllStageValues() {
+        with(stage) {
+            valueChangedListener?.run { removeValueChangedListener(this) }
+            fixCell.forEachIndexed { row, ints ->
+                ints.forEachIndexed { column, value ->
+                    val cell = getCell(row, column)
+                    when {
+                        value > 0 -> cell.toImmutable(cell.getValue())
+                        else -> cell.toEmpty()
+                    }
+                }
+            }
+            valueChangedListener?.run { addValueChangedListener(this) }
+        }
+        board.initFixCell()
+        setValues(stage.toValueTable())
+    }
+
+    fun clearBoard() {
+        clearAllStageValues()
+        board.initFixCell()
     }
 }

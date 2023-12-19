@@ -13,7 +13,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.R
-import kr.co.hs.sudoku.feature.battle.ViewerBoardFragment
+import kr.co.hs.sudoku.feature.stage.StageFragment
+import kr.co.hs.sudoku.feature.battle.MultiPlayViewerStageFragment
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.not
@@ -38,12 +39,12 @@ class ViewerBoardFragmentTest {
         testStartingMatrix[3].map { if (it > 0) 2 else 0 }
     )
 
-    private lateinit var fragmentScenario: FragmentScenario<ViewerBoardFragment>
+    private lateinit var fragmentScenario: FragmentScenario<MultiPlayViewerStageFragment>
 
     @Before
     fun initFragmentScenario() {
         fragmentScenario = launchFragmentInContainer(
-            fragmentArgs = ViewerBoardFragment.newInstanceArguments(CustomMatrix(testStartingMatrix)),
+            fragmentArgs = StageFragment.newInstanceArguments(CustomMatrix(testStartingMatrix)),
             themeResId = R.style.Theme_HSSudoku2,
             initialState = Lifecycle.State.RESUMED
         )

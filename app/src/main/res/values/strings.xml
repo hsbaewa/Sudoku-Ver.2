@@ -75,6 +75,7 @@
     <string name="status_ready_battle_for_participant">is Ready</string>
     <string name="status_pending_battle_for_participant">Pending</string>
     <string name="status_host_battle_for_participant">Host</string>
+    <string name="status_clear_battle_for_participant">Clear</string>
 
     <string name="title_select_stage_for_battle">select stage</string>
 

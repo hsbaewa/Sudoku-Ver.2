@@ -23,6 +23,7 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
+import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
@@ -159,12 +160,13 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
     }
 
 
-    fun controlBoard(on: (ControlBoardFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = ControlBoardFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? ControlBoardFragment }
+    fun controlBoard(on: (MultiPlayControlStageFragment) -> Unit) = with(supportFragmentManager) {
+        val tag = MultiPlayControlStageFragment::class.java.simpleName
+        findFragmentByTag(tag)?.run { this as? MultiPlayControlStageFragment }
             ?.also(on)
             ?: with(beginTransaction()) {
-                val fragment = ControlBoardFragment.newInstance(startingMatrix)
+                val fragment =
+                    StageFragment.newInstance<MultiPlayControlStageFragment>(startingMatrix)
                 fragment.setValueChangedListener(this@BattlePlayActivity)
                 replace(R.id.userBoardLayout, fragment, tag).runOnCommit { on(fragment) }
             }.commit()
@@ -172,23 +174,24 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
 
 
     private fun releaseControlBoard() = with(supportFragmentManager) {
-        findFragmentByTag(ControlBoardFragment::class.java.simpleName)
+        findFragmentByTag(MultiPlayControlStageFragment::class.java.simpleName)
             ?.also { with(beginTransaction()) { remove(it) }.commit() }
     }
 
 
-    fun viewerBoard(on: (ViewerBoardFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = ViewerBoardFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? ViewerBoardFragment }
+    fun viewerBoard(on: (MultiPlayViewerStageFragment) -> Unit) = with(supportFragmentManager) {
+        val tag = MultiPlayViewerStageFragment::class.java.simpleName
+        findFragmentByTag(tag)?.run { this as? MultiPlayViewerStageFragment }
             ?.also(on)
             ?: with(beginTransaction()) {
-                val fragment = ViewerBoardFragment.newInstance(startingMatrix)
+                val fragment =
+                    StageFragment.newInstance<MultiPlayViewerStageFragment>(startingMatrix)
                 replace(R.id.targetBoardLayout, fragment, tag).runOnCommit { on(fragment) }
             }.commit()
     }
 
     private fun releaseViewerBoard() = with(supportFragmentManager) {
-        findFragmentByTag(ViewerBoardFragment::class.java.simpleName)
+        findFragmentByTag(MultiPlayViewerStageFragment::class.java.simpleName)
             ?.also { with(beginTransaction()) { remove(it) }.commit() }
     }
 
