@@ -15,6 +15,11 @@
         <item name="android:windowLightStatusBar">true</item>
 
         <item name="bottomSheetDialogTheme">@style/Theme.HSSudoku2.BottomSheetDialog</item>
+
+        <!-- 툴바 스타일 -->
+        <item name="toolbarStyle">@style/Theme.HSSudoku2.Toolbar</item>
+        <!-- 앱바 스타일 -->
+        <item name="appBarLayoutStyle">@style/Theme.HSSudoku2.AppBarLayout</item>
     </style>
 
     <style name="Theme.HSSudoku2.BottomNavigation" parent="Theme.HSSudoku2">
@@ -64,4 +69,26 @@
         <item name="postSplashScreenTheme">@style/Theme.HSSudoku2</item>
         # Required.
     </style>
+
+    <!-- AppBarLayout 스타일 -->
+    <style name="Theme.HSSudoku2.AppBarLayout" parent="Widget.Design.AppBarLayout">
+        <item name="android:background">@color/white</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <!-- Toolbar 스타일 -->
+    <style name="Theme.HSSudoku2.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="titleTextAppearance">@style/Appearance.HSSudoku2.Toolbar.Title</item>
+        <item name="titleTextColor">@color/gray_600</item>
+        <item name="titleCentered">true</item>
+        <!--        <item name="navigationIcon">@drawable/icon_go_back</item>-->
+        <!--        <item name="homeAsUpIndicator">@drawable/icon_go_back</item>-->
+    </style>
+
+    <style name="Appearance.HSSudoku2.Toolbar.Title" parent="">
+        <item name="android:textSize">16sp</item>
+        <item name="fontFamily">@font/goreyong_ddalgi</item>
+    </style>
+
+
 </resources>

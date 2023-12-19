@@ -126,8 +126,6 @@ class RecordViewModel : ViewModel() {
     fun stop() {
         cancelTimer()
         disableCaptureHistory()
-
-//        initTime()
     }
 
     fun playCapturedHistory() {
@@ -137,9 +135,6 @@ class RecordViewModel : ViewModel() {
 
     fun stopCapturedHistory() {
         cancelTimer()
-        stopLog()
-
-//        initTime()
     }
 
     fun isRunningTimer() = timerJob != null

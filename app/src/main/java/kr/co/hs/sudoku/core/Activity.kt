@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NavUtils
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import kotlinx.coroutines.flow.last
 import kr.co.hs.sudoku.App
@@ -69,7 +70,6 @@ abstract class Activity : AppCompatActivity() {
         private const val EXTRA_DIFFICULTY = "kr.co.hs.sudoku.EXTRA_DIFFICULTY"
         private const val EXTRA_CHALLENGE_ID = "kr.co.hs.sudoku.EXTRA_CHALLENGE_ID"
         private const val EXTRA_USER_ID = "kr.co.hs.sudoku.EXTRA_USER_ID"
-        private const val EXTRA_BATTLE_ID = "kr.co.hs.sudoku.EXTRA_BATTLE_ID"
     }
 
     /**
@@ -104,12 +104,21 @@ abstract class Activity : AppCompatActivity() {
     fun Intent.putUserId(uid: String) = putExtra(EXTRA_USER_ID, uid)
     fun getUserId() = intent.getStringExtra(EXTRA_USER_ID)
 
-    fun Intent.putBattleId(battleId: String) = putExtra(EXTRA_BATTLE_ID, battleId)
-    fun getBattleId() = intent.getStringExtra(EXTRA_BATTLE_ID)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
     }
 
+    protected fun navigateUpToParent() =
+        NavUtils.getParentActivityIntent(this)
+            ?.let { parentActivityIntent ->
+                val bundle = Bundle()
+                onNavigateUpToParent(bundle)
+                parentActivityIntent.putExtras(bundle)
+                NavUtils.navigateUpTo(this, parentActivityIntent)
+            }
+            ?: runCatching { NavUtils.navigateUpFromSameTask(this) }
+                .onFailure { finish() }
+
+    protected open fun onNavigateUpToParent(bundle: Bundle) {}
 }

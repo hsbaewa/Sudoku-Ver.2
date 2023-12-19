@@ -27,7 +27,7 @@ import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.feature.battle.BattleLobbyFragment
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
-import kr.co.hs.sudoku.feature.single.SinglePlayMainFragment
+import kr.co.hs.sudoku.feature.single.SinglePlayListFragment
 import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
 import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
@@ -86,7 +86,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
-            R.id.selectStage -> replaceTabFragment(SinglePlayMainFragment.newInstance())
+            R.id.selectStage -> replaceTabFragment(SinglePlayListFragment.newInstance())
             R.id.battle -> replaceTabFragment(BattleLobbyFragment.newInstance())
             R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.newInstance())
             R.id.settings -> replaceTabFragment(SettingsFragment.new())
