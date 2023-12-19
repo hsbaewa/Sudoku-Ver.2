@@ -227,26 +227,30 @@ abstract class StageFragment : Fragment() {
         valueChangedListener?.run { stage.removeValueChangedListener(this) }
     }
 
-    fun clearAllStageValues() {
-        with(stage) {
-            valueChangedListener?.run { removeValueChangedListener(this) }
-            fixCell.forEachIndexed { row, ints ->
-                ints.forEachIndexed { column, value ->
-                    val cell = getCell(row, column)
-                    when {
-                        value > 0 -> cell.toImmutable(cell.getValue())
-                        else -> cell.toEmpty()
-                    }
-                }
-            }
-            valueChangedListener?.run { addValueChangedListener(this) }
-        }
+    // mutable 값을 모두 삭제
+    fun clearBoard() {
         board.initFixCell()
+        stage.clearAllMutableValue()
         setValues(stage.toValueTable())
     }
 
-    fun clearBoard() {
-        clearAllStageValues()
+    private fun Stage.clearAllMutableValue() {
+        valueChangedListener?.run { removeValueChangedListener(this) }
+        fixCell.forEachIndexed { row, ints ->
+            ints.forEachIndexed { column, value ->
+                val cell = getCell(row, column)
+                when {
+                    value > 0 -> cell.toImmutable(cell.getValue())
+                    else -> cell.toEmpty()
+                }
+            }
+        }
+        valueChangedListener?.run { addValueChangedListener(this) }
+    }
+
+    // 보드 초기화
+    fun initBoard() {
+        stage.clearAllMutableValue()
         board.initFixCell()
     }
 }

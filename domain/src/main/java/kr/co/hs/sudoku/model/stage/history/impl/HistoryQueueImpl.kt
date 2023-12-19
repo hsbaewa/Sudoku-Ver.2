@@ -14,9 +14,11 @@ class HistoryQueueImpl : HistoryQueue {
         time: Long,
         completed: Boolean
     ) = cell.run {
-        takeIf { it.isEmpty() }
-            ?.run { treeSet.add(HistoryItem.Removed(row, column, time)) }
-            ?: treeSet.add(HistoryItem.Set(row, column, time, getValue(), completed))
+        when {
+            isEmpty() -> treeSet.add(HistoryItem.Removed(row, column, time))
+            isMutable() -> treeSet.add(HistoryItem.Set(row, column, time, getValue(), completed))
+            else -> false
+        }
     }
 
     override fun pop(toTimeStamp: Long) =

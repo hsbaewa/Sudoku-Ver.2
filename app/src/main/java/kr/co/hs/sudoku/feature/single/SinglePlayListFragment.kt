@@ -21,27 +21,27 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListItem
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListItemAdapter
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
-import kr.co.hs.sudoku.feature.play.SinglePlayActivity.Companion.startPlayActivity
 import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
 import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
 
 
-class SinglePlayMainFragment : Fragment() {
+class SinglePlayListFragment : Fragment() {
     companion object {
         private const val EXTRA_IS_TEST = "EXTRA_IS_TEST"
         private const val EXTRA_IS_DEBUG = "EXTRA_IS_DEBUG"
+
         @Suppress("unused")
         fun newTestArgument() = bundleOf(
             EXTRA_IS_TEST to true,
             EXTRA_IS_DEBUG to true
         )
 
-        fun newInstance() = SinglePlayMainFragment()
+        fun newInstance() = SinglePlayListFragment()
 
         @Suppress("unused")
-        fun newDebugInstance() = SinglePlayMainFragment().apply {
+        fun newDebugInstance() = SinglePlayListFragment().apply {
             arguments = bundleOf(
                 EXTRA_IS_DEBUG to true
             )
@@ -50,6 +50,7 @@ class SinglePlayMainFragment : Fragment() {
 
     private val isTest: Boolean
         get() = arguments?.getBoolean(EXTRA_IS_TEST, false) ?: false
+
     @Suppress("unused")
     private val isDebug: Boolean
         get() = arguments?.getBoolean(EXTRA_IS_DEBUG, false) ?: false
@@ -94,7 +95,7 @@ class SinglePlayMainFragment : Fragment() {
 
         val adapterList = list.map { MatrixListItem.MatrixItem(it) }.toMutableList<MatrixListItem>()
             .apply {
-                add(0, MatrixListItem.TitleItem(getString(R.string.caption_single_play)))
+                add(0, MatrixListItem.TitleItem(getString(R.string.title_single_play)))
 
                 indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is BeginnerMatrix }
                     .takeIf { it >= 0 }
@@ -125,6 +126,6 @@ class SinglePlayMainFragment : Fragment() {
     }
 
     private fun IntMatrix.startSinglePlay() = viewLifecycleOwner.lifecycleScope.launch {
-        activity.startPlayActivity(this@startSinglePlay)
+        SinglePlayActivity.start(requireContext(), this@startSinglePlay)
     }
 }
