@@ -3,50 +3,59 @@ package kr.co.hs.sudoku.feature.single
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.feature.stage.ControlStageFragment
-import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.model.stage.history.impl.HistoryQueueImpl
-import kr.co.hs.sudoku.repository.timer.TimerImpl
+import kr.co.hs.sudoku.model.stage.history.HistoryItem
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 
 class SinglePlayControlStageFragment : ControlStageFragment() {
 
-    private val viewModel: SinglePlayViewModel by activityViewModels()
+    private val singlePlayViewModel: SinglePlayViewModel by activityViewModels()
     private val recordViewModel: RecordViewModel by activityViewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.stage.observe(viewLifecycleOwner) {
-            it?.run {
-                startPending(this)
-            } ?: run {
-                clearAllStageValues()
-                setStatus(false, getString(R.string.start))
+        viewLifecycleOwner.lifecycleScope.launch {
+            recordViewModel.cellEventHistoryFlow.collect { item ->
+                when (item) {
+                    is HistoryItem.Removed -> setValue(item.row, item.column, 0)
+                    is HistoryItem.Set -> setValue(item.row, item.column, item.value)
+                }
+            }
+        }
+        singlePlayViewModel.command.observe(viewLifecycleOwner) {
+            when (it) {
+                is SinglePlayViewModel.Matrix -> {
+                    initBoard()
+                    setStatus(false, getString(R.string.start))
+                }
+
+                is SinglePlayViewModel.Created -> {
+                    setStatus(false, null)
+                    startCountDown { singlePlayViewModel.start() }
+                }
+
+                is SinglePlayViewModel.Started -> {
+                    setStatus(true, null)
+                    setValues(it.stage)
+                }
+
+                SinglePlayViewModel.StartReplay -> clearBoard()
             }
         }
     }
 
     override fun onClickFunctionButton() {
         super.onClickFunctionButton()
-        viewModel.createStage()
+        singlePlayViewModel.create()
     }
 
-    private fun startPending(stage: Stage) {
-        setStatus(false, null)
-        startCountDown { startGame(stage) }
-    }
-
-    private fun startGame(stage: Stage) {
-        setStatus(true, null)
-        setValues(stage.toValueTable())
-
-        with(recordViewModel) {
-            bindStage(this)
-            setTimer(TimerImpl())
-            setHistoryWriter(HistoryQueueImpl())
+    override fun onCellTouchDown(row: Int, column: Int) =
+        if (recordViewModel.isRunningCapturedHistoryEvent() || isCleared()) {
+            false
+        } else {
+            super.onCellTouchDown(row, column)
         }
-
-        recordViewModel.play()
-    }
 }

@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
@@ -27,22 +26,9 @@ class SinglePlayViewModel(
         }
     }
 
-    private val _stage = MutableLiveData<Stage?>()
-    val stage: LiveData<Stage?> by this::_stage
-
-    fun createStage() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        setProgress(true)
-        val stage = withContext(Dispatchers.IO) {
-            val useCase = AutoGenerateSudokuUseCase(matrix.boxSize, matrix.boxCount, matrix)
-            useCase().last()
-        }
-        _stage.value = stage
-        setProgress(false)
-    }
-
-
     private val _command = MutableLiveData<Command>(Matrix(matrix))
     val command: LiveData<Command> by this::_command
+    private var lastCreatedStage: List<List<Int>>? = null
 
     fun create() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
@@ -50,25 +36,21 @@ class SinglePlayViewModel(
             val useCase = AutoGenerateSudokuUseCase(matrix.boxSize, matrix.boxCount, matrix)
             useCase().last()
         }
-        _command.value = Created(stage.toValueTable())
+        val table = stage.toValueTable()
+        this@SinglePlayViewModel.lastCreatedStage = table
+        _command.value = Created(table)
         setProgress(false)
     }
 
     fun start() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        _command.value = Started
+        lastCreatedStage?.run { _command.value = Started(this) }
     }
 
-    fun recreate() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        setProgress(true)
-        val stage = withContext(Dispatchers.IO) {
-            val useCase = AutoGenerateSudokuUseCase(matrix.boxSize, matrix.boxCount, matrix)
-            useCase().last()
-        }
-        _command.value = Recreated(stage.toValueTable())
-        setProgress(false)
+    fun initMatrix() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        _command.value = Matrix(matrix)
     }
 
-    fun replay() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+    fun startReplay() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         _command.value = StartReplay
     }
 
@@ -76,7 +58,6 @@ class SinglePlayViewModel(
     sealed interface Command
     data class Matrix(val matrix: IntMatrix) : Command
     data class Created(val stage: List<List<Int>>) : Command
-    object Started : Command
-    data class Recreated(val stage: List<List<Int>>) : Command
+    data class Started(val stage: List<List<Int>>) : Command
     object StartReplay : Command
 }

@@ -61,7 +61,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
         // BottomNavigationView 아이템 선택 리스너 등록
         bottomNavigationBar.setOnItemSelectedListener(this)
-        bottomNavigationBar.selectedItemId = R.id.selectStage
+        bottomNavigationBar.selectedItemId = R.id.menu_single
 
         // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
         lifecycleScope.launch(coroutineExceptionHandler) {
@@ -86,7 +86,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
-            R.id.selectStage -> replaceTabFragment(SinglePlayListFragment.newInstance())
+            R.id.menu_single -> replaceTabFragment(SinglePlayListFragment.newInstance())
             R.id.battle -> replaceTabFragment(BattleLobbyFragment.newInstance())
             R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.newInstance())
             R.id.settings -> replaceTabFragment(SettingsFragment.new())

@@ -10,9 +10,7 @@ import android.view.MenuItem
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlaySingleBinding
@@ -24,11 +22,12 @@ import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
-import kr.co.hs.sudoku.model.stage.history.HistoryItem
+import kr.co.hs.sudoku.model.stage.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
+import kr.co.hs.sudoku.repository.timer.TimerImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 
-class SinglePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
+class SinglePlayActivity : Activity() {
     companion object {
         private const val EXTRA_MATRIX = "EXTRA_MATRIX"
 
@@ -64,25 +63,46 @@ class SinglePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         onBackPressedDispatcher.addCallback { showExitDialog() }
 
-        controlBoard {
-            it.setStatus(false, getString(R.string.start))
+        val controlFragment =
+            StageFragment.newInstance<SinglePlayControlStageFragment>(startingMatrix)
+        controlFragment.setValueChangedListener(object :
+            IntCoordinateCellEntity.ValueChangedListener {
+            override fun onChanged(cell: IntCoordinateCellEntity) {
+                if (controlFragment.isCleared()) {
+                    if (recordViewModel.isRunningCapturedHistoryEvent()) {
+                        recordViewModel.stopCapturedHistory()
+                    } else {
+                        recordViewModel.stop()
+                        val record = controlFragment.getClearTime()
+                        showCompleteRecordDialog(record)
+                    }
+                }
+            }
+        })
+
+        with(supportFragmentManager.beginTransaction()) {
+            replace(R.id.layout_control, controlFragment)
+            commit()
         }
 
-        recordViewModel.timer.observe(this) {
-            binding.tvTimer.text = it
-        }
-        lifecycleScope.launch {
-            recordViewModel.cellEventHistoryFlow.collect { item ->
-                when (item) {
-                    is HistoryItem.Removed ->
-                        controlBoard { it.setValue(item.row, item.column, 0) }
+        recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
+        with(singlePlayViewModel) {
+            isRunningProgress.observe(this@SinglePlayActivity) { isShowProgressIndicator = it }
+            command.observe(this@SinglePlayActivity) {
+                when (it) {
+                    is SinglePlayViewModel.Started -> {
+                        with(recordViewModel) {
+                            controlFragment.bindStage(this)
+                            setTimer(TimerImpl())
+                            setHistoryWriter(HistoryQueueImpl())
+                        }
+                        recordViewModel.play()
+                    }
 
-                    is HistoryItem.Set ->
-                        controlBoard { it.setValue(item.row, item.column, item.value) }
+                    else -> {}
                 }
             }
         }
-        singlePlayViewModel.isRunningProgress.observe(this) { isShowProgressIndicator = it }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -106,37 +126,6 @@ class SinglePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
         }
     }
 
-    fun controlBoard(on: (SinglePlayControlStageFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = SinglePlayControlStageFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? SinglePlayControlStageFragment }
-            ?.also(on)
-            ?: with(beginTransaction()) {
-                val fragment =
-                    StageFragment.newInstance<SinglePlayControlStageFragment>(startingMatrix)
-                fragment.setValueChangedListener(this@SinglePlayActivity)
-                replace(R.id.layout_control, fragment, tag).runOnCommit { on(fragment) }
-            }.commit()
-    }
-
-    override fun onChanged(cell: IntCoordinateCellEntity) {
-        controlBoard {
-            if (it.isCleared()) {
-
-                if (recordViewModel.isRunningCapturedHistoryEvent()) {
-                    recordViewModel.stopCapturedHistory()
-                } else {
-                    stopTimer()
-                    val record = it.getClearTime()
-                    showCompleteRecordDialog(record)
-                }
-            }
-        }
-    }
-
-    fun stopTimer() {
-        recordViewModel.stop()
-    }
-
     private fun showCompleteRecordDialog(clearRecord: Long) {
         val dlgBinding =
             LayoutCompleteBinding.inflate(LayoutInflater.from(this@SinglePlayActivity))
@@ -145,12 +134,8 @@ class SinglePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
         MaterialAlertDialogBuilder(this@SinglePlayActivity)
             .setView(dlgBinding.root)
             .setNegativeButton(R.string.confirm) { _, _ -> finish() }
-            .setNeutralButton(R.string.show_replay) { _, _ ->
-                replay()
-            }
-            .setPositiveButton(R.string.retry) { _, _ ->
-                retry()
-            }
+            .setNeutralButton(R.string.show_replay) { _, _ -> replay() }
+            .setPositiveButton(R.string.retry) { _, _ -> retry() }
             .setCancelable(false)
             .show()
     }
@@ -173,18 +158,13 @@ class SinglePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
             .show()
 
     private fun retry() {
-        controlBoard {
-            it.clearBoard()
-            it.setStatus(false, getString(R.string.start))
-        }
         recordViewModel.stop()
         binding.tvTimer.text = 0L.toTimerFormat()
+        singlePlayViewModel.initMatrix()
     }
 
     private fun replay() {
-        controlBoard {
-            it.clearAllStageValues()
-        }
         recordViewModel.playCapturedHistory()
+        singlePlayViewModel.startReplay()
     }
 }

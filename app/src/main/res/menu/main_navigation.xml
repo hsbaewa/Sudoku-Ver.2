@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/selectStage"
+        android:id="@+id/menu_single"
         android:icon="@drawable/ic_person"
-        android:title="@string/navigation_tab_select_stage" />
+        android:title="@string/navigation_tab_single" />
 
     <item
         android:id="@+id/battle"

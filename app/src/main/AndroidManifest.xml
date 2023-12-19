@@ -40,7 +40,7 @@
 
         <activity
             android:name=".feature.single.SinglePlayActivity"
-            android:label="@string/caption_single_play"
+            android:label="@string/title_single_play"
             android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

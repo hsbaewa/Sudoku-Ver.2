@@ -95,7 +95,7 @@ class SinglePlayListFragment : Fragment() {
 
         val adapterList = list.map { MatrixListItem.MatrixItem(it) }.toMutableList<MatrixListItem>()
             .apply {
-                add(0, MatrixListItem.TitleItem(getString(R.string.caption_single_play)))
+                add(0, MatrixListItem.TitleItem(getString(R.string.title_single_play)))
 
                 indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is BeginnerMatrix }
                     .takeIf { it >= 0 }

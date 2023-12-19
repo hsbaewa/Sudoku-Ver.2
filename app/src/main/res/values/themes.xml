@@ -25,6 +25,15 @@
     <style name="Theme.HSSudoku2.BottomNavigation" parent="Theme.HSSudoku2">
         <item name="colorPrimary">@color/black</item>
         <item name="tabSelectedTextColor">@color/black</item>
+        <item name="fontFamily">@font/goreyong_ddalgi</item>
+        <item name="itemIconTint">@color/color_navigation_tab</item>
+        <item name="itemTextColor">@color/color_navigation_tab</item>
+        <item name="itemTextAppearanceActive">
+            @style/Theme.HSSudoku2.BottomNavigation.TextAppearance
+        </item>
+        <item name="itemTextAppearanceInactive">
+            @style/Theme.HSSudoku2.BottomNavigation.TextAppearance
+        </item>
     </style>
 
     <style name="Theme.HSSudoku2.OutlineButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
@@ -34,7 +43,7 @@
     </style>
 
     <style name="Theme.HSSudoku2.BottomNavigation.TextAppearance" parent="TextAppearance.AppCompat">
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">15sp</item>
     </style>
 
     <style name="Theme.HSSudoku2.BottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
