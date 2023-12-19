@@ -26,14 +26,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".feature.level.LevelActivity"
-            android:exported="true"
-            android:label="" />
-
-
-        <activity android:name=".feature.play.SinglePlayActivity" />
-
         <activity android:name=".feature.challenge.ChallengePlayActivity" />
 
         <activity android:name=".feature.play.WithCPUPlayActivity" />
