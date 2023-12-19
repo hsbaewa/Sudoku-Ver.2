@@ -4,27 +4,55 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
-import kotlinx.coroutines.Dispatchers
+import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutSinglePlayMainBinding
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndicator
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
+import kr.co.hs.sudoku.feature.matrixlist.MatrixListItem
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListItemAdapter
-import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
-import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
-import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
+import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
+import kr.co.hs.sudoku.feature.play.SinglePlayActivity.Companion.startPlayActivity
+import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
+import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
+import kr.co.hs.sudoku.model.matrix.IntMatrix
+import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
 
 
-class SinglePlayMainFragment : Fragment(), AdapterView.OnItemSelectedListener {
+class SinglePlayMainFragment : Fragment() {
     companion object {
+        private const val EXTRA_IS_TEST = "EXTRA_IS_TEST"
+        private const val EXTRA_IS_DEBUG = "EXTRA_IS_DEBUG"
+        @Suppress("unused")
+        fun newTestArgument() = bundleOf(
+            EXTRA_IS_TEST to true,
+            EXTRA_IS_DEBUG to true
+        )
+
         fun newInstance() = SinglePlayMainFragment()
+
+        @Suppress("unused")
+        fun newDebugInstance() = SinglePlayMainFragment().apply {
+            arguments = bundleOf(
+                EXTRA_IS_DEBUG to true
+            )
+        }
     }
+
+    private val isTest: Boolean
+        get() = arguments?.getBoolean(EXTRA_IS_TEST, false) ?: false
+    @Suppress("unused")
+    private val isDebug: Boolean
+        get() = arguments?.getBoolean(EXTRA_IS_DEBUG, false) ?: false
 
     private lateinit var binding: LayoutSinglePlayMainBinding
 
@@ -38,73 +66,65 @@ class SinglePlayMainFragment : Fragment(), AdapterView.OnItemSelectedListener {
         return binding.root
     }
 
+    private val viewModel: MatrixListViewModel by viewModels()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        with(binding.spinnerDifficulty) {
-            ArrayAdapter.createFromResource(
-                context,
-                R.array.difficulty,
-                android.R.layout.simple_spinner_item
-            ).also { adapter ->
-                // Specify the layout to use when the list of choices appears.
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                // Apply the adapter to the spinner.
-                this.adapter = adapter
-            }
-            onItemSelectedListener = this@SinglePlayMainFragment
-        }
-
-        with(binding.btnStart) {
-            setOnClickListener { startSinglePlay() }
-        }
-
         with(binding.recyclerViewMatrixList) {
-            layoutManager = GridLayoutManager(context, 2)
+            this.layoutManager = GridLayoutManager(context, 3)
             addVerticalDivider(thickness = 20.dp)
-            itemAnimator?.removeDuration = 0
-            itemAnimator?.addDuration = 500L
-            itemAnimator?.changeDuration = 500L
-            adapter = MatrixListItemAdapter()
+            adapter = MatrixListItemAdapter { it.startSinglePlay() }
         }
-    }
 
-    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-        when (context?.resources?.getStringArray(R.array.difficulty)?.get(p2)) {
-            getString(R.string.beginner_matrix_size) -> setBeginnerMatrixView()
-            getString(R.string.intermediate_matrix_size) -> setIntermediateMatrixView()
-            getString(R.string.advanced_matrix_size) -> setAdvancedMatrixView()
-            else -> {}
-        }
-    }
+        viewModel.matrixList.observe(viewLifecycleOwner) { list -> updateUIMatrixList(list) }
+        viewModel.error.observe(viewLifecycleOwner) { showSnackBar(it.message.toString()) }
+        viewModel.isRunningProgress.observe(viewLifecycleOwner) { isShowProgressIndicator = it }
 
-    private fun setBeginnerMatrixView() {
         viewLifecycleOwner.lifecycleScope.launch {
-            val repository = BeginnerMatrixRepository()
-            val list = withContext(Dispatchers.IO) { repository.getList() }
-            (binding.recyclerViewMatrixList.adapter as MatrixListItemAdapter).submitList(list)
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                isTest.takeIf { !it }?.run { viewModel.requestAllMatrix() }
+            }
         }
     }
 
-    private fun setIntermediateMatrixView() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val repository = IntermediateMatrixRepository()
-            val list = withContext(Dispatchers.IO) { repository.getList() }
-            (binding.recyclerViewMatrixList.adapter as MatrixListItemAdapter).submitList(list)
+    fun updateUIMatrixList(list: List<IntMatrix>) {
+        val headerForBeginner = getString(R.string.beginner_matrix_size)
+        val headerForInter = getString(R.string.intermediate_matrix_size)
+        val headerForAdvanced = getString(R.string.advanced_matrix_size)
+
+        val adapterList = list.map { MatrixListItem.MatrixItem(it) }.toMutableList<MatrixListItem>()
+            .apply {
+                add(0, MatrixListItem.TitleItem(getString(R.string.caption_single_play)))
+
+                indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is BeginnerMatrix }
+                    .takeIf { it >= 0 }
+                    ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForBeginner)) }
+
+                indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is IntermediateMatrix }
+                    .takeIf { it >= 0 }
+                    ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForInter)) }
+
+                indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is AdvancedMatrix }
+                    .takeIf { it >= 0 }
+                    ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForAdvanced)) }
+            }
+        with(binding.recyclerViewMatrixList.layoutManager as GridLayoutManager) {
+            spanSizeLookup = object : SpanSizeLookup() {
+                override fun getSpanSize(position: Int) =
+                    when (adapterList[position]) {
+                        is MatrixListItem.HeaderItem -> spanCount
+                        is MatrixListItem.MatrixItem -> 1
+                        is MatrixListItem.TitleItem -> spanCount
+                    }
+            }
+        }
+
+        with(binding.recyclerViewMatrixList.adapter as MatrixListItemAdapter) {
+            submitList(adapterList)
         }
     }
 
-    private fun setAdvancedMatrixView() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val repository = AdvancedMatrixRepository()
-            val list = withContext(Dispatchers.IO) { repository.getList() }
-            (binding.recyclerViewMatrixList.adapter as MatrixListItemAdapter).submitList(list.toList())
-        }
+    private fun IntMatrix.startSinglePlay() = viewLifecycleOwner.lifecycleScope.launch {
+        activity.startPlayActivity(this@startSinglePlay)
     }
-
-
-    override fun onNothingSelected(p0: AdapterView<*>?) {}
-
-    private fun startSinglePlay() = viewLifecycleOwner.lifecycleScope.launch { }
-
-
 }

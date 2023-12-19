@@ -17,6 +17,16 @@ object ActivityExtension {
     //----------------------------------------- Progress Indicator ------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
 
+    var Activity.isShowProgressIndicator: Boolean
+        get() = isShowingProgressIndicator()
+        set(value) {
+            if (value) {
+                showProgressIndicator()
+            } else {
+                dismissProgressIndicator()
+            }
+        }
+
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/05

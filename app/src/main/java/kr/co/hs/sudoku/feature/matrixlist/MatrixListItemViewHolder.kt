@@ -8,9 +8,8 @@ class MatrixListItemViewHolder(
     val binding: LayoutMatrixListItemBinding
 ) : ViewHolder(binding.root) {
 
-    fun onBind(item: IntMatrix) {
-        binding.matrix.matrix = item
-        binding.matrix.invalidate()
+    fun onBind(item: IntMatrix) = with(binding.matrix) {
+        matrix = item
+        invalidate()
     }
-
 }

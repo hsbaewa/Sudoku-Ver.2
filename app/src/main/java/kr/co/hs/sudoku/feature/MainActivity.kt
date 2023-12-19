@@ -23,11 +23,11 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.replaceFragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.feature.level.DifficultyFragment
 import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.feature.battle.BattleLobbyFragment
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
+import kr.co.hs.sudoku.feature.single.SinglePlayMainFragment
 import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
 import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
@@ -57,10 +57,11 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         binding.lifecycleOwner = this
 
         // 하단에 있는 BottomNavigationView 와 상단에 내용이 표시될 Layout과 상호 작용
-        replaceTabFragment(DifficultyFragment.new())
+//        replaceTabFragment(DifficultyFragment.new())
 
         // BottomNavigationView 아이템 선택 리스너 등록
         bottomNavigationBar.setOnItemSelectedListener(this)
+        bottomNavigationBar.selectedItemId = R.id.selectStage
 
         // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
         lifecycleScope.launch(coroutineExceptionHandler) {
@@ -85,7 +86,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
-            R.id.selectStage -> replaceTabFragment(DifficultyFragment.new())
+            R.id.selectStage -> replaceTabFragment(SinglePlayMainFragment.newInstance())
             R.id.battle -> replaceTabFragment(BattleLobbyFragment.newInstance())
             R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.newInstance())
             R.id.settings -> replaceTabFragment(SettingsFragment.new())

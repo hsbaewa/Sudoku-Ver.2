@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
@@ -13,6 +14,13 @@ object FragmentExtension {
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- ProgressIndicator -------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
+
+    var Fragment.isShowProgressIndicator: Boolean
+        get() = requireActivity().isShowProgressIndicator
+        set(value) {
+            requireActivity().isShowProgressIndicator = value
+        }
+
     /**
      * @author hsbaewa@gmail.com
      * @since 2023/04/05
