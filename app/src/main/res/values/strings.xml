@@ -93,4 +93,6 @@
     <string name="exit_confirm_for_single">Are you sure you want to quit the game?</string>
 
     <string name="title_single_play">Single Play</string>
+
+    <string name="select_matrix_title">Select Sudoku</string>
 </resources>

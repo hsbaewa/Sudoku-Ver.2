@@ -9,8 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
@@ -20,11 +18,9 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndica
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListItem
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListItemAdapter
+import kr.co.hs.sudoku.feature.matrixlist.MatrixListLayoutManager
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
-import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
-import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
 
 
 class SinglePlayListFragment : Fragment() {
@@ -72,7 +68,7 @@ class SinglePlayListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         with(binding.recyclerViewMatrixList) {
-            this.layoutManager = GridLayoutManager(context, 3)
+            this.layoutManager = MatrixListLayoutManager(context, 3)
             addVerticalDivider(thickness = 20.dp)
             adapter = MatrixListItemAdapter { it.startSinglePlay() }
         }
@@ -89,39 +85,11 @@ class SinglePlayListFragment : Fragment() {
     }
 
     fun updateUIMatrixList(list: List<IntMatrix>) {
-        val headerForBeginner = getString(R.string.beginner_matrix_size)
-        val headerForInter = getString(R.string.intermediate_matrix_size)
-        val headerForAdvanced = getString(R.string.advanced_matrix_size)
-
-        val adapterList = list.map { MatrixListItem.MatrixItem(it) }.toMutableList<MatrixListItem>()
-            .apply {
-                add(0, MatrixListItem.TitleItem(getString(R.string.title_single_play)))
-
-                indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is BeginnerMatrix }
-                    .takeIf { it >= 0 }
-                    ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForBeginner)) }
-
-                indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is IntermediateMatrix }
-                    .takeIf { it >= 0 }
-                    ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForInter)) }
-
-                indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is AdvancedMatrix }
-                    .takeIf { it >= 0 }
-                    ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForAdvanced)) }
-            }
-        with(binding.recyclerViewMatrixList.layoutManager as GridLayoutManager) {
-            spanSizeLookup = object : SpanSizeLookup() {
-                override fun getSpanSize(position: Int) =
-                    when (adapterList[position]) {
-                        is MatrixListItem.HeaderItem -> spanCount
-                        is MatrixListItem.MatrixItem -> 1
-                        is MatrixListItem.TitleItem -> spanCount
-                    }
-            }
-        }
-
         with(binding.recyclerViewMatrixList.adapter as MatrixListItemAdapter) {
-            submitList(adapterList)
+            submitHeaderList(
+                getString(R.string.title_single_play),
+                list.map { MatrixListItem.MatrixItem(it) }.toMutableList()
+            )
         }
     }
 

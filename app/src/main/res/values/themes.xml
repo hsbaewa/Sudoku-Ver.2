@@ -14,7 +14,7 @@
         <!-- Customize your theme here. -->
         <item name="android:windowLightStatusBar">true</item>
 
-        <item name="bottomSheetDialogTheme">@style/Theme.HSSudoku2.BottomSheetDialog</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.HSSudoku2.BottomSheetDialogTheme</item>
 
         <!-- 툴바 스타일 -->
         <item name="toolbarStyle">@style/Theme.HSSudoku2.Toolbar</item>
@@ -44,15 +44,6 @@
 
     <style name="Theme.HSSudoku2.BottomNavigation.TextAppearance" parent="TextAppearance.AppCompat">
         <item name="android:textSize">15sp</item>
-    </style>
-
-    <style name="Theme.HSSudoku2.BottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/Theme.HSSudoku2.BottomSheet</item>
-        <item name="android:colorBackground">@color/white</item>
-    </style>
-
-    <style name="Theme.HSSudoku2.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
-        <item name="backgroundTint">@android:color/transparent</item>
     </style>
 
     <style name="Theme.HSSudoku2.Spinner">
@@ -97,6 +88,16 @@
     <style name="Appearance.HSSudoku2.Toolbar.Title" parent="">
         <item name="android:textSize">16sp</item>
         <item name="fontFamily">@font/goreyong_ddalgi</item>
+    </style>
+
+    <!-- Bottom Sheet Dialog 스타일 -->
+    <style name="Theme.HSSudoku2.BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Theme.HSSudoku2.AppModalStyle</item>
+        <item name="theme">@style/Theme.HSSudoku2</item>
+    </style>
+
+    <style name="Theme.HSSudoku2.AppModalStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bg_bottom_sheet_dialog</item>
     </style>
 
 
