@@ -3,7 +3,12 @@ package kr.co.hs.sudoku.feature.matrixlist
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
+import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
+import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
 
 class MatrixListItemAdapter(
     private val onItemClick: (IntMatrix) -> Unit
@@ -58,5 +63,39 @@ class MatrixListItemAdapter(
         is MatrixListItem.HeaderItem -> VT_HEADER
         is MatrixListItem.MatrixItem -> VT_ITEM
         is MatrixListItem.TitleItem -> VT_TITLE
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        val ctx = recyclerView.context
+        headerForBeginner = ctx.getString(R.string.beginner_matrix_size)
+        headerForInter = ctx.getString(R.string.intermediate_matrix_size)
+        headerForAdvanced = ctx.getString(R.string.advanced_matrix_size)
+
+        (recyclerView.layoutManager as? MatrixListLayoutManager)?.setAdapter(this)
+    }
+
+    private lateinit var headerForBeginner: String
+    private lateinit var headerForInter: String
+    private lateinit var headerForAdvanced: String
+
+    fun submitHeaderList(title: String? = null, list: MutableList<MatrixListItem>? = null) {
+        val resultList = list?.apply {
+            title?.run { add(0, MatrixListItem.TitleItem(this)) }
+
+            indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is BeginnerMatrix }
+                .takeIf { it >= 0 }
+                ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForBeginner)) }
+
+            indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is IntermediateMatrix }
+                .takeIf { it >= 0 }
+                ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForInter)) }
+
+            indexOfFirst { it is MatrixListItem.MatrixItem && it.matrix is AdvancedMatrix }
+                .takeIf { it >= 0 }
+                ?.let { idx -> add(idx, MatrixListItem.HeaderItem(headerForAdvanced)) }
+        }
+
+        this.submitList(resultList)
     }
 }

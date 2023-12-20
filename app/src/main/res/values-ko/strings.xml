@@ -85,4 +85,5 @@
     <string name="exit_confirm_for_single">정말로 게임을 종료 하시겠습니까?</string>
 
     <string name="navigation_tab_single">싱글</string>
+    <string name="select_matrix_title">스도쿠 선택</string>
 </resources>

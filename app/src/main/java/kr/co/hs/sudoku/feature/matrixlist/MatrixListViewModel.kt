@@ -16,6 +16,9 @@ class MatrixListViewModel : ViewModel() {
     private val _matrixList = MutableLiveData<List<IntMatrix>>()
     val matrixList: LiveData<List<IntMatrix>> by this::_matrixList
 
+    private val _selection = MutableLiveData<IntMatrix>()
+    val selection: LiveData<IntMatrix> by this::_selection
+
     fun requestAllMatrix() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
         val resultList = buildList {
@@ -25,7 +28,44 @@ class MatrixListViewModel : ViewModel() {
                 AdvancedMatrixRepository().getList().also { addAll(it) }
             }
         }
-        _matrixList.value = resultList
+        _matrixList.value = resultList.sortedBy { it.boxCount }
+        setProgress(false)
+    }
+
+    fun select(matrix: IntMatrix) {
+        _selection.value = matrix
+    }
+
+    fun requestBeginnerMatrix() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val resultList = buildList {
+            withContext(Dispatchers.IO) {
+                BeginnerMatrixRepository().getList().also { addAll(it) }
+            }
+        }
+        _matrixList.value = resultList.sortedBy { it.boxCount }
+        setProgress(false)
+    }
+
+    fun requestIntermediateMatrix() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val resultList = buildList {
+            withContext(Dispatchers.IO) {
+                IntermediateMatrixRepository().getList().also { addAll(it) }
+            }
+        }
+        _matrixList.value = resultList.sortedBy { it.boxCount }
+        setProgress(false)
+    }
+
+    fun requestAdvancedMatrix() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val resultList = buildList {
+            withContext(Dispatchers.IO) {
+                AdvancedMatrixRepository().getList().also { addAll(it) }
+            }
+        }
+        _matrixList.value = resultList.sortedBy { it.boxCount }
         setProgress(false)
     }
 }
