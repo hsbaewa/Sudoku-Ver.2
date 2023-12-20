@@ -20,7 +20,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:listitem="@layout/layout_matrix_list_item" />
+            tools:listitem="@layout/layout_list_item_matrix" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
