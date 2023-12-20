@@ -59,7 +59,14 @@ abstract class StageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         with(board) {
             initFixCell()
-            cellTouchDownListener = { row, column -> onCellTouchDown(row, column) }
+            cellTouchDownListener = { row, column ->
+                val cell = stage.getCell(row, column)
+                if (cell.isImmutable()) {
+                    false
+                } else {
+                    onCellTouchDown(row, column)
+                }
+            }
             cellValueChangedListener =
                 { row, column, value -> onCellValueChangedListener(row, column, value) }
         }
