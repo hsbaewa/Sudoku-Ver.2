@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
-import kr.co.hs.sudoku.databinding.LayoutSinglePlayMainBinding
+import kr.co.hs.sudoku.databinding.LayoutListSinglePlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
@@ -55,14 +55,14 @@ class SinglePlayListFragment : Fragment() {
     private val isDebug: Boolean
         get() = arguments?.getBoolean(EXTRA_IS_DEBUG, false) ?: false
 
-    private lateinit var binding: LayoutSinglePlayMainBinding
+    private lateinit var binding: LayoutListSinglePlayBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = LayoutSinglePlayMainBinding.inflate(inflater, container, false)
+        binding = LayoutListSinglePlayBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
         return binding.root
     }
