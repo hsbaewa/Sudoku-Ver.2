@@ -55,9 +55,9 @@ class MatrixItemView : View {
     var matrix: List<List<Int>>? = null
     private val rectF = RectF()
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas?.apply {
+        with(canvas) {
             this@MatrixItemView.matrix?.forEachIndexed { row, list ->
                 list.forEachIndexed { column, value ->
                     drawCell(row, column, value == 0)
