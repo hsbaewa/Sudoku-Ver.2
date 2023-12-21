@@ -164,6 +164,9 @@ dependencies {
     debugImplementation "androidx.fragment:fragment-testing:$fragment_version"
 
     implementation 'androidx.core:core-splashscreen:1.0.0-alpha01'
+
+    def paging_version = "3.2.1"
+    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
 }
 
 

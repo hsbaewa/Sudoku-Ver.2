@@ -68,4 +68,13 @@ class MatrixListViewModel : ViewModel() {
         _matrixList.value = resultList.sortedBy { it.boxCount }
         setProgress(false)
     }
+
+    fun selectAny() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val item = withContext(Dispatchers.IO) {
+            BeginnerMatrixRepository().getList().firstOrNull()
+        }
+        item?.run { select(this) }
+        setProgress(false)
+    }
 }

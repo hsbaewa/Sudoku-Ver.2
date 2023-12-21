@@ -4,11 +4,14 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.last
 import kr.co.hs.sudoku.App
+import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
@@ -121,4 +124,27 @@ abstract class Activity : AppCompatActivity() {
                 .onFailure { finish() }
 
     protected open fun onNavigateUpToParent(bundle: Bundle) {}
+
+    inline fun showAlert(
+        titleResId: Int? = null,
+        msgResId: Int,
+        crossinline onClosed: () -> Unit
+    ): AlertDialog = with(MaterialAlertDialogBuilder(this)) {
+        titleResId?.run { setTitle(this) }
+        setMessage(msgResId)
+        setPositiveButton(R.string.confirm) { _, _ -> onClosed() }
+        setOnDismissListener { onClosed() }
+    }.show()
+
+    inline fun showConfirm(
+        titleResId: Int? = null,
+        msgResId: Int,
+        crossinline onConfirm: (Boolean) -> Unit
+    ): AlertDialog = with(MaterialAlertDialogBuilder(this)) {
+        titleResId?.run { setTitle(this) }
+        setMessage(msgResId)
+        setPositiveButton(R.string.confirm) { _, _ -> onConfirm(true) }
+        setNegativeButton(R.string.cancel) { _, _ -> onConfirm(false) }
+        setOnDismissListener { onConfirm(false) }
+    }.show()
 }

@@ -36,8 +36,8 @@ class MultiPlayListViewModel(
         }
     }
 
-    private val _currentMultiPlay = MutableLiveData<BattleEntity>()
-    val currentMultiPlay: LiveData<BattleEntity> by this::_currentMultiPlay
+    private val _currentMultiPlay = MutableLiveData<BattleEntity?>()
+    val currentMultiPlay: LiveData<BattleEntity?> by this::_currentMultiPlay
 
     val multiPlayPagingData: LiveData<PagingData<BattleEntity>>
         get() = Pager(
@@ -79,5 +79,14 @@ class MultiPlayListViewModel(
         onStatus(OnStart())
         val stat = withContext(Dispatchers.IO) { battleRepository.getStatistics(entity.id) }
         onStatus(OnFinish(stat))
+    }
+
+    fun checkCurrentMultiPlay() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val entity = withContext(Dispatchers.IO) {
+            battleRepository.runCatching { getParticipating() }.getOrNull()
+        }
+        _currentMultiPlay.value = entity
+        setProgress(false)
     }
 }

@@ -40,6 +40,12 @@ class MatrixSelectBottomSheetFragment : BottomSheetDialogFragment() {
         fun showAll(fragmentManager: FragmentManager) = MatrixSelectBottomSheetFragment()
             .apply { arguments = bundleOf(EXTRA_LEVEL to LEVEL_ALL) }
             .show(fragmentManager, MatrixSelectBottomSheetFragment::class.java.name)
+
+        fun dismiss(fragmentManager: FragmentManager) {
+            val fragment =
+                fragmentManager.findFragmentByTag(MatrixSelectBottomSheetFragment::class.java.name) as? MatrixSelectBottomSheetFragment
+            fragment?.run { dismiss() }
+        }
     }
 
     private lateinit var binding: LayoutListMatrixBinding

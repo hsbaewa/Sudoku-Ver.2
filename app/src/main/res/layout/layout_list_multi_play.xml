@@ -7,20 +7,44 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <kr.co.hs.sudoku.views.RecyclerView
-            android:id="@+id/recycler_view_multi_play_list"
-            android:layout_width="0dp"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <kr.co.hs.sudoku.views.RecyclerView
+                android:id="@+id/recycler_view_multi_play_list"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="100dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0"
+                tools:listitem="@layout/layout_list_item_multi_play" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <TextView
+            android:id="@+id/tv_empty_message"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            android:paddingHorizontal="10dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="100dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="18dp"
+            android:text="@string/multi_list_empty_message"
+            android:textSize="20sp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
-            tools:listitem="@layout/layout_list_item_multi_play" />
+            app:layout_constraintVertical_bias="0.5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -25,6 +25,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicato
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
 import kr.co.hs.sudoku.feature.multi.MultiPlayListFragment
 import kr.co.hs.sudoku.feature.multi.MultiPlayListViewModel
@@ -61,6 +62,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         battleLobbyViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         challengeViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         multiPlayListViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
+        multiPlayListViewModel.isRunningProgress.observe(this) { isShowProgressIndicator = it }
         binding.lifecycleOwner = this
 
         // 하단에 있는 BottomNavigationView 와 상단에 내용이 표시될 Layout과 상호 작용

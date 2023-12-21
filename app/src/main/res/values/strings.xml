@@ -102,4 +102,15 @@
 
     <string name="title_multi_play">Multi Play</string>
     <string name="multi_play_add">+ New Game</string>
+
+    <string name="multi_create_title">Create Multi Play</string>
+    <string name="multi_create_label_select_matrix">Select sudoku</string>
+    <string name="multi_create_label_select_participants">Select participants count</string>
+    <string name="multi_create_label_participants_2">2</string>
+    <string name="multi_create_label_participants_3">3</string>
+    <string name="multi_create_label_participants_4">4</string>
+    <string name="multi_create_label_do_create">Do create!!</string>
+
+    <string name="multi_list_join_confirm">Would you like to join this game?</string>
+    <string name="multi_list_empty_message">There are no games available to participate.</string>
 </resources>

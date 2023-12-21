@@ -90,4 +90,17 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
         @Suppress("DEPRECATION")
         arguments?.getParcelable(EXTRA_MATRIX)
     }?.matrix?.run { CustomMatrix(this) }
+
+
+    inline fun showAlert(
+        titleResId: Int? = null,
+        msgResId: Int,
+        crossinline onClosed: () -> Unit
+    ) = (requireActivity() as Activity).showAlert(titleResId, msgResId, onClosed)
+
+    inline fun showConfirm(
+        titleResId: Int? = null,
+        msgResId: Int,
+        crossinline onConfirm: (Boolean) -> Unit
+    ) = (requireActivity() as Activity).showConfirm(titleResId, msgResId, onConfirm)
 }

@@ -19,7 +19,8 @@
 
         <activity
             android:name=".feature.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
                 <action android:name="android.intent.action.MAIN" />
@@ -47,6 +48,17 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".feature.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".feature.multi.MultiPlayCreateActivity"
+            android:label=""
+            android:launchMode="singleTop">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+
         </activity>
 
     </application>

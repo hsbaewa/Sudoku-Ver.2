@@ -60,8 +60,14 @@ sealed class MultiPlayListItemViewHolder<T : MultiPlayListItem>(
                             ?.let { owner ->
                                 ivProfileIcon.load(owner.iconUrl) { crossfade(true) }
                                 tvDisplayName.text = owner.displayName
-                                tvMessage.text = owner.message
-                                tvMessage.isVisible = true
+                                owner.message
+                                    ?.takeIf { it.isNotEmpty() }
+                                    ?.run {
+                                        tvMessage.text = this
+                                        tvMessage.isVisible = true
+                                    }
+                                    ?: run { tvMessage.isVisible = false }
+
                             }
                     }
                 }
