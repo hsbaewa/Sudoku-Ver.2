@@ -25,8 +25,9 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicato
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
-import kr.co.hs.sudoku.feature.battle.BattleLobbyFragment
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
+import kr.co.hs.sudoku.feature.multi.MultiPlayListFragment
+import kr.co.hs.sudoku.feature.multi.MultiPlayListViewModel
 import kr.co.hs.sudoku.feature.single.SinglePlayListFragment
 import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
 import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
@@ -49,11 +50,17 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     private val challengeViewModel: ChallengeViewModel by viewModels()
 
+    private val multiPlayListViewModel: MultiPlayListViewModel by viewModels {
+        val app = applicationContext as App
+        MultiPlayListViewModel.ProviderFactory(app.getBattleRepository2())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         battlePlayViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         battleLobbyViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         challengeViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
+        multiPlayListViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         binding.lifecycleOwner = this
 
         // 하단에 있는 BottomNavigationView 와 상단에 내용이 표시될 Layout과 상호 작용
@@ -87,7 +94,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
             R.id.menu_single -> replaceTabFragment(SinglePlayListFragment.newInstance())
-            R.id.battle -> replaceTabFragment(BattleLobbyFragment.newInstance())
+            R.id.menu_multi -> replaceTabFragment(MultiPlayListFragment.newInstance())
             R.id.challenge -> replaceTabFragment(ChallengeLeaderboardFragment.newInstance())
             R.id.settings -> replaceTabFragment(SettingsFragment.new())
         }

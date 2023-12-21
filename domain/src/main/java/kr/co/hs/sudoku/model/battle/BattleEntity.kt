@@ -13,7 +13,7 @@ sealed interface BattleEntity : Cloneable {
     val participants: Set<ParticipantEntity>
     fun init(participants: Set<ParticipantEntity>)
 
-    object Invalid : BattleEntity {
+    open class Invalid : BattleEntity {
         override val id: String
             get() = ""
         override val host: String
@@ -137,7 +137,7 @@ sealed interface BattleEntity : Cloneable {
 
     public override fun clone(): BattleEntity = when (this) {
         is Closed -> clone()
-        Invalid -> Invalid
+        is Invalid -> Invalid()
         is Opened -> clone()
         is Pending -> clone()
         is Playing -> clone()

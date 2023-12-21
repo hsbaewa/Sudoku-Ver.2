@@ -124,7 +124,7 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
                 }
             }
 
-            BattleEntity.Invalid -> finish()
+            is BattleEntity.Invalid -> finish()
 
             else -> {}
         }

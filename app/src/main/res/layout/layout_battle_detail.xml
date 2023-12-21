@@ -18,7 +18,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:fontFamily="@font/goreyong_ddalgi"
-                android:text="@string/navigation_tab_battle"
+                android:text="@string/navigation_tab_multi"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toTopOf="@id/sudokuBoard"
                 app:layout_constraintEnd_toEndOf="parent"

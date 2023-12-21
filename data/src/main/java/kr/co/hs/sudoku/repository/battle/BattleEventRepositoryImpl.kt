@@ -127,7 +127,7 @@ class BattleEventRepositoryImpl(
             onBufferOverflow = BufferOverflow.DROP_OLDEST
         )
 
-        fun snapshot() = flow.replayCache.lastOrNull() ?: BattleEntity.Invalid
+        fun snapshot() = flow.replayCache.lastOrNull() ?: BattleEntity.Invalid()
 
         suspend fun update(battleEntity: BattleEntity) = flow.emit(battleEntity.clone())
 
@@ -250,7 +250,7 @@ class BattleEventRepositoryImpl(
 
                     // battle entity 종료시?
                     currentBattle is BattleEntity.Invalid -> {
-                        battleEntityFlow.update(BattleEntity.Invalid)
+                        battleEntityFlow.update(BattleEntity.Invalid())
                     }
 
                     else -> {
@@ -298,7 +298,7 @@ class BattleEventRepositoryImpl(
         stopMonitoringBattle()
 
         coroutineScope.launch {
-            playMutex.withLock { battleEntityFlow.update(BattleEntity.Invalid) }
+            playMutex.withLock { battleEntityFlow.update(BattleEntity.Invalid()) }
         }
     }
 

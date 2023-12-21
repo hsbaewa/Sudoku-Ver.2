@@ -7,9 +7,9 @@
         android:title="@string/navigation_tab_single" />
 
     <item
-        android:id="@+id/battle"
+        android:id="@+id/menu_multi"
         android:icon="@drawable/ic_group"
-        android:title="@string/navigation_tab_battle" />
+        android:title="@string/navigation_tab_multi" />
 
     <item
         android:id="@+id/challenge"

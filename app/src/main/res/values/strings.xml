@@ -10,7 +10,7 @@
     <string name="navigation_tab_single">Single</string>
     <string name="navigation_tab_challenge">Challenge</string>
     <string name="navigation_tab_settings">Settings</string>
-    <string name="navigation_tab_battle">Battle</string>
+    <string name="navigation_tab_multi">Multi</string>
 
     <string name="preferences_category_auth">Auth</string>
     <string name="preferences_category_account">Account</string>
@@ -93,6 +93,13 @@
     <string name="exit_confirm_for_single">Are you sure you want to quit the game?</string>
 
     <string name="title_single_play">Single Play</string>
-
     <string name="select_matrix_title">Select Sudoku</string>
+
+    <string name="loading_statistics">loading statistics…</string>
+    <string name="loading_participants">loading participants…</string>
+    <string name="error_statistics">statistics load failed</string>
+    <string name="error_participants">participants load failed</string>
+
+    <string name="title_multi_play">Multi Play</string>
+    <string name="multi_play_add">+ New Game</string>
 </resources>

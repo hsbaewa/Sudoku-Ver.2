@@ -19,4 +19,9 @@ abstract class ViewModel : ViewModel() {
         _isRunningProgress.value = false
         _error.value = throwable
     }
+
+    sealed interface RequestStatus<out D>
+    class OnStart<D> : RequestStatus<D>
+    data class OnFinish<D>(val d: D) : RequestStatus<D>
+    data class OnError<D>(val t: Throwable) : RequestStatus<D>
 }

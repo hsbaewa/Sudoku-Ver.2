@@ -77,7 +77,7 @@ object BattleMapper {
                 participantSize = participantSize
             )
         }
-    }.getOrElse { BattleEntity.Invalid }
+    }.getOrElse { BattleEntity.Invalid() }
 
     fun BattleParticipantModel.toDomain2(battle: BattleEntity): ParticipantEntity {
         val matrix = this.matrix?.run {
@@ -174,7 +174,7 @@ object BattleMapper {
                     matrix = matrix
                 )
 
-            BattleEntity.Invalid -> ParticipantEntity.Guest(
+            is BattleEntity.Invalid -> ParticipantEntity.Guest(
                 uid = uid,
                 displayName = name,
                 message = message,

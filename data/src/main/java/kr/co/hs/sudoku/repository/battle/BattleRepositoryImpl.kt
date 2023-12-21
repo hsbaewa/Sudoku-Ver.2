@@ -181,7 +181,7 @@ class BattleRepositoryImpl(
                     is BattleEntity.Pending, is BattleEntity.Playing ->
                         throw Exception("이미 진행 중인 게임($battleId)입니다.")
 
-                    BattleEntity.Invalid ->
+                    is BattleEntity.Invalid ->
                         throw Exception("유효 하지 않은 게임($battleId)입니다.(mapping error)")
                 }
 
