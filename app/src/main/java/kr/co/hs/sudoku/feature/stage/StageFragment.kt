@@ -2,12 +2,14 @@ package kr.co.hs.sudoku.feature.stage
 
 import android.os.Bundle
 import android.view.View
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
+import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
@@ -21,6 +23,7 @@ import kr.co.hs.sudoku.model.stage.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.views.SudokuBoardView
+import kotlin.math.min
 import kotlin.math.sqrt
 
 abstract class StageFragment : Fragment() {
@@ -72,6 +75,15 @@ abstract class StageFragment : Fragment() {
         }
 
         valueChangedListener?.run { stage.addValueChangedListener(this) }
+
+        board.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                board.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                val size = min(board.measuredHeight, board.measuredWidth)
+                board.layoutParams.width = size
+                board.layoutParams.height = size - 1.dp.toInt()
+            }
+        })
     }
 
 

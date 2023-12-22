@@ -28,7 +28,7 @@ import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
-import kr.co.hs.sudoku.feature.battle.BattlePlayActivity
+import kr.co.hs.sudoku.feature.multiplay.MultiGameActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import kr.co.hs.sudoku.views.RecyclerView
@@ -166,6 +166,6 @@ class MultiPlayListFragment : Fragment() {
     private fun startMultiPlay(battleEntity: BattleEntity?) = battleEntity
         ?.run {
             viewLifecycleOwner.lifecycleScope
-                .launch { startActivity(BattlePlayActivity.newIntent(requireContext(), id)) }
+                .launch { startActivity(MultiGameActivity.newIntent(requireContext(), id)) }
         }
 }
