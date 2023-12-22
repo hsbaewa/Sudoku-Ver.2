@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/layout_enemy"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/tool_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_enemy"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/shape_outlined_multi_enemy_bg_top"
+            app:layout_constraintBottom_toTopOf="@id/layout_enemy_info"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/app_bar_layout"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="spread" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_enemy_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_outlined_multi_enemy_bg_bottom"
+            app:layout_constraintBottom_toBottomOf="@id/layout_user_info"
+            app:layout_constraintEnd_toEndOf="@id/layout_enemy"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@id/tv_versus"
+            app:layout_constraintTop_toBottomOf="@id/layout_enemy">
+
+            <ImageView
+                android:id="@+id/iv_enemy_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginVertical="12dp"
+                android:layout_marginStart="8dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_vibration"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toBottomOf="@id/tv_enemy_display_name"
+                app:layout_constraintEnd_toStartOf="@id/tv_enemy_display_name"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_enemy_display_name" />
+
+            <TextView
+                android:id="@+id/tv_enemy_display_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/goreyong_ddalgi"
+                android:lines="1"
+                android:textSize="12dp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toTopOf="@id/tv_enemy_message"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/iv_enemy_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="SpUsage" />
+
+            <TextView
+                android:id="@+id/tv_enemy_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="12dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/goreyong_ddalgi"
+                android:maxLines="2"
+                android:textSize="10dp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_enemy_display_name"
+                tools:ignore="SpUsage" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/layout_enemy"
+            app:layout_constraintEnd_toEndOf="@id/layout_enemy_info"
+            app:layout_constraintStart_toStartOf="@id/layout_enemy_info"
+            app:layout_constraintTop_toTopOf="@id/layout_enemy"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/layout_enemy_info"
+            app:layout_constraintEnd_toEndOf="@id/layout_enemy_info"
+            app:layout_constraintStart_toStartOf="@id/layout_enemy_info"
+            app:layout_constraintTop_toTopOf="@id/layout_enemy_info"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/tv_versus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:text="@string/versus"
+            android:textSize="20dp"
+            app:layout_constraintBottom_toTopOf="@id/layout_user"
+            app:layout_constraintEnd_toStartOf="@id/layout_enemy_info"
+            app:layout_constraintStart_toEndOf="@id/layout_user_info"
+            app:layout_constraintTop_toBottomOf="@id/layout_enemy"
+            tools:ignore="SpUsage" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_user_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/shape_outlined_multi_user_bg_top"
+            app:layout_constraintBottom_toTopOf="@id/layout_user"
+            app:layout_constraintEnd_toStartOf="@id/tv_versus"
+            app:layout_constraintStart_toStartOf="@id/layout_user"
+            app:layout_constraintTop_toTopOf="@id/layout_enemy_info"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <ImageView
+                android:id="@+id/iv_user_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginVertical="12dp"
+                android:layout_marginStart="8dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_vibration"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toBottomOf="@id/tv_user_display_name"
+                app:layout_constraintEnd_toStartOf="@id/tv_user_display_name"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_user_display_name" />
+
+            <TextView
+                android:id="@+id/tv_user_display_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/goreyong_ddalgi"
+                android:lines="1"
+                android:textSize="12dp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toTopOf="@id/tv_user_message"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/iv_user_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="SpUsage" />
+
+            <TextView
+                android:id="@+id/tv_user_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="12dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/goreyong_ddalgi"
+                android:maxLines="2"
+                android:textSize="10dp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_user_display_name"
+                tools:ignore="SpUsage" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/tv_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:gravity="bottom|center_horizontal"
+            android:textSize="14dp"
+            app:layout_constraintBottom_toTopOf="@id/layout_user"
+            app:layout_constraintEnd_toEndOf="@id/layout_enemy_info"
+            app:layout_constraintStart_toStartOf="@id/layout_enemy_info"
+            app:layout_constraintTop_toBottomOf="@id/layout_enemy_info"
+            tools:ignore="SpUsage" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_user"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/shape_outlined_multi_user_bg_bottom"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_user_info">
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/layout_user_info"
+            app:layout_constraintEnd_toEndOf="@id/layout_user_info"
+            app:layout_constraintStart_toStartOf="@id/layout_user_info"
+            app:layout_constraintTop_toTopOf="@id/layout_user_info"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/layout_user"
+            app:layout_constraintEnd_toEndOf="@id/layout_user_info"
+            app:layout_constraintStart_toStartOf="@id/layout_user_info"
+            app:layout_constraintTop_toTopOf="@id/layout_user"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
+import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
@@ -71,13 +72,13 @@ class MultiPlayListViewModel(
     }
 
     inline fun requestStatistics(
-        entity: BattleEntity,
+        entity: ParticipantEntity,
         crossinline onStatus: (RequestStatus<BattleStatisticsEntity>) -> Unit
     ) = viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
         onStatus(OnError(throwable))
     }) {
         onStatus(OnStart())
-        val stat = withContext(Dispatchers.IO) { battleRepository.getStatistics(entity.id) }
+        val stat = withContext(Dispatchers.IO) { battleRepository.getStatistics(entity.uid) }
         onStatus(OnFinish(stat))
     }
 

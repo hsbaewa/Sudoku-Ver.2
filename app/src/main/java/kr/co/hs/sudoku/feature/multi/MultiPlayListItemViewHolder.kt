@@ -34,8 +34,7 @@ sealed class MultiPlayListItemViewHolder<T : MultiPlayListItem>(
 
             requestParticipantJob =
                 viewModel.requestParticipant(item.battleEntity, onResultParticipant)
-            requestStatisticsJob =
-                viewModel.requestStatistics(item.battleEntity, onResultStatistics)
+
         }
 
         private var requestParticipantJob: Job? = null
@@ -68,6 +67,8 @@ sealed class MultiPlayListItemViewHolder<T : MultiPlayListItem>(
                                     }
                                     ?: run { tvMessage.isVisible = false }
 
+                                requestStatisticsJob =
+                                    viewModel.requestStatistics(owner, onResultStatistics)
                             }
                     }
                 }

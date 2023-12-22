@@ -385,7 +385,7 @@ open class BattleRepositoryTest {
         launch {
             eventRepository.battleFlow.collect {
                 when (it) {
-                    BattleEntity.Invalid -> cancel()
+                    is BattleEntity.Invalid -> cancel()
                     else -> assertEquals(battleId, it.id)
                 }
                 println(it)
@@ -403,7 +403,7 @@ open class BattleRepositoryTest {
         launch {
             eventRepository.battleFlow.collect {
                 when (it) {
-                    BattleEntity.Invalid -> cancel()
+                    is BattleEntity.Invalid -> cancel()
                     else -> {
                         assertEquals(battle.id, it.id)
 
