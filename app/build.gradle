@@ -39,6 +39,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseAppDistribution {
+                appId="1:616519348076:android:7e79f73996ffc659234d49"
                 artifactType="APK"
                 releaseNotesFile="app-distribution-release-note.txt"
                 testersFile="app-distribution-testers.txt"
