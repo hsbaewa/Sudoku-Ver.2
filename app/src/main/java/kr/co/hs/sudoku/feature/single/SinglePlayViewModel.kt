@@ -9,12 +9,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
-import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
-import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
 class SinglePlayViewModel(

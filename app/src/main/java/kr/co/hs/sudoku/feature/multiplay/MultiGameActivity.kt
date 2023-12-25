@@ -100,7 +100,7 @@ class MultiGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                 override fun onGlobalLayout() {
                     binding.layoutUser.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     val w = binding.layoutUser.measuredWidth
-                    binding.layoutUser.layoutParams.height = w + 70.dp.toInt()
+                    binding.layoutUser.layoutParams.height = w + 130.dp.toInt()
                 }
             }
         )
@@ -194,17 +194,18 @@ class MultiGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     }
 
 
-    fun controlBoard(on: (MultiPlayControlStageFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = MultiPlayControlStageFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? MultiPlayControlStageFragment }
-            ?.also(on)
-            ?: with(beginTransaction()) {
-                val fragment =
-                    StageFragment.newInstance<MultiPlayControlStageFragment>(startingMatrix)
-                fragment.setValueChangedListener(this@MultiGameActivity)
-                replace(R.id.layout_user, fragment, tag).runOnCommit { on(fragment) }
-            }.commit()
-    }
+    private fun controlBoard(on: (MultiPlayControlStageFragment) -> Unit) =
+        with(supportFragmentManager) {
+            val tag = MultiPlayControlStageFragment::class.java.simpleName
+            findFragmentByTag(tag)?.run { this as? MultiPlayControlStageFragment }
+                ?.also(on)
+                ?: with(beginTransaction()) {
+                    val fragment =
+                        StageFragment.newInstance<MultiPlayControlStageFragment>(startingMatrix)
+                    fragment.setValueChangedListener(this@MultiGameActivity)
+                    replace(R.id.layout_user, fragment, tag).runOnCommit { on(fragment) }
+                }.commit()
+        }
 
 
     private fun releaseControlBoard() = with(supportFragmentManager) {
@@ -213,23 +214,24 @@ class MultiGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     }
 
 
-    fun viewerBoard(on: (MultiPlayViewerStageFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = MultiPlayViewerStageFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? MultiPlayViewerStageFragment }
-            ?.also(on)
-            ?: with(beginTransaction()) {
-                val fragment =
-                    StageFragment.newInstance<MultiPlayViewerStageFragment>(startingMatrix)
-                replace(R.id.layout_enemy, fragment, tag).runOnCommit { on(fragment) }
-            }.commit()
-    }
+    private fun viewerBoard(on: (MultiPlayViewerStageFragment) -> Unit) =
+        with(supportFragmentManager) {
+            val tag = MultiPlayViewerStageFragment::class.java.simpleName
+            findFragmentByTag(tag)?.run { this as? MultiPlayViewerStageFragment }
+                ?.also(on)
+                ?: with(beginTransaction()) {
+                    val fragment =
+                        StageFragment.newInstance<MultiPlayViewerStageFragment>(startingMatrix)
+                    replace(R.id.layout_enemy, fragment, tag).runOnCommit { on(fragment) }
+                }.commit()
+        }
 
     private fun releaseViewerBoard() = with(supportFragmentManager) {
         findFragmentByTag(MultiPlayViewerStageFragment::class.java.simpleName)
             ?.also { with(beginTransaction()) { remove(it) }.commit() }
     }
 
-    fun startTimer(playingBattleEntity: BattleEntity.Playing?) {
+    private fun startTimer(playingBattleEntity: BattleEntity.Playing?) {
         lifecycleScope.launch {
 
             playingBattleEntity?.playedAt?.let { date ->
@@ -249,9 +251,7 @@ class MultiGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         }
     }
 
-    fun stopTimer() {
-        recordViewModel.stop()
-    }
+    private fun stopTimer() = recordViewModel.stop()
 
     override fun onChanged(cell: IntCoordinateCellEntity) {
         controlBoard {
@@ -267,7 +267,7 @@ class MultiGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     }
 
 
-    var startingMatrix: IntMatrix = EmptyMatrix()
+    private var startingMatrix: IntMatrix = EmptyMatrix()
         get() {
             return if (field is EmptyMatrix)
                 battleViewModel.battleEntity.value?.startingMatrix ?: EmptyMatrix()
@@ -280,7 +280,7 @@ class MultiGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         }
 
 
-    fun setUserProfile(profile: ProfileEntity?) = if (profile != null) {
+    private fun setUserProfile(profile: ProfileEntity?) = if (profile != null) {
         profile.takeIf { it != lastKnownUserProfile }
             ?.run {
                 profile.run {
@@ -304,8 +304,7 @@ class MultiGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         lastKnownUserProfile = null
     }
 
-
-    fun setOpponentProfile(profile: ProfileEntity?) = if (profile != null) {
+    private fun setOpponentProfile(profile: ProfileEntity?) = if (profile != null) {
         profile
             .takeIf { it != lastKnownOpponentProfile }
             ?.run {
