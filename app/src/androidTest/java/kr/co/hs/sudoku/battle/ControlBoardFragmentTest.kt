@@ -13,7 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.feature.stage.StageFragment
-import kr.co.hs.sudoku.feature.battle.MultiPlayControlStageFragment
+import kr.co.hs.sudoku.feature.multiplay.MultiPlayControlStageFragment
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.not

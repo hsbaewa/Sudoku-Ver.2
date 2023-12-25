@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.single
+package kr.co.hs.sudoku.feature.singleplay
 
 import android.content.Context
 import android.content.Intent

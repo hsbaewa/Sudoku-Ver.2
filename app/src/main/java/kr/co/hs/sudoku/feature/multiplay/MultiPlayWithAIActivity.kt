@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.aiplay
+package kr.co.hs.sudoku.feature.multiplay
 
 import android.app.Dialog
 import android.content.Context
@@ -16,6 +16,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.last
@@ -31,9 +32,8 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
-import kr.co.hs.sudoku.feature.battle.MultiPlayViewerStageFragment
-import kr.co.hs.sudoku.feature.single.SinglePlayControlStageFragment
-import kr.co.hs.sudoku.feature.single.SinglePlayViewModel
+import kr.co.hs.sudoku.feature.singleplay.SinglePlayControlStageFragment
+import kr.co.hs.sudoku.feature.singleplay.SinglePlayViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
@@ -47,11 +47,11 @@ import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 
-class AIGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
+class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
         private const val EXTRA_MATRIX = "EXTRA_MATRIX"
         fun newIntent(context: Context, matrix: IntMatrix) =
-            Intent(context, AIGameActivity::class.java)
+            Intent(context, MultiPlayWithAIActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .putExtra(EXTRA_MATRIX, MatrixParcelModel(matrix))
@@ -93,14 +93,22 @@ class AIGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener 
                 override fun onGlobalLayout() {
                     binding.layoutUser.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     val w = binding.layoutUser.measuredWidth
-                    binding.layoutUser.layoutParams.height = w + 130.dp.toInt()
+                    binding.layoutUser.layoutParams.height = w + 80.dp.toInt()
                 }
             }
         )
 
-        lifecycleScope.launch {
-            val userProfile = withContext(Dispatchers.IO) { getProfile(currentUserUid) }
-            setUserProfile(userProfile)
+        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable -> showSnackBar(throwable.message.toString()) }) {
+            runCatching {
+                val userProfile = withContext(Dispatchers.IO) { getProfile(currentUserUid) }
+                setUserProfile(userProfile)
+            }.getOrElse {
+                with(binding) {
+                    ivUserIcon.load(getDrawableCompat(R.drawable.ic_person))
+                    tvUserDisplayName.text = getString(R.string.me)
+                    tvUserMessage.isVisible = false
+                }
+            }
 
             with(binding) {
                 ivEnemyIcon.load(getDrawableCompat(R.drawable.ic_computer))
@@ -119,9 +127,9 @@ class AIGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener 
 
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
         with(singlePlayViewModel) {
-            error.observe(this@AIGameActivity) { showSnackBar(it.message.toString()) }
-            isRunningProgress.observe(this@AIGameActivity) { isShowProgressIndicator = it }
-            command.observe(this@AIGameActivity) {
+            error.observe(this@MultiPlayWithAIActivity) { showSnackBar(it.message.toString()) }
+            isRunningProgress.observe(this@MultiPlayWithAIActivity) { isShowProgressIndicator = it }
+            command.observe(this@MultiPlayWithAIActivity) {
                 when (it) {
                     is SinglePlayViewModel.Started -> {
                         with(recordViewModel) {
@@ -141,12 +149,12 @@ class AIGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener 
 
     private val playerFragment: SinglePlayControlStageFragment by lazy {
         StageFragment.newInstance<SinglePlayControlStageFragment>(startingMatrix)
-            .apply { setValueChangedListener(this@AIGameActivity) }
+            .apply { setValueChangedListener(this@MultiPlayWithAIActivity) }
     }
 
     private val aiFragment: MultiPlayViewerStageFragment by lazy {
         StageFragment.newInstance<MultiPlayViewerStageFragment>(startingMatrix)
-            .apply { setValueChangedListener(this@AIGameActivity) }
+            .apply { setValueChangedListener(this@MultiPlayWithAIActivity) }
     }
 
     override fun onChanged(cell: IntCoordinateCellEntity) {
@@ -194,22 +202,7 @@ class AIGameActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener 
         playAIJob?.cancel()
     }
 
-    fun viewerBoard(on: (MultiPlayViewerStageFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = MultiPlayViewerStageFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? MultiPlayViewerStageFragment }
-            ?.also(on)
-            ?: with(beginTransaction()) {
-                val fragment =
-                    StageFragment.newInstance<MultiPlayViewerStageFragment>(startingMatrix)
-                replace(R.id.layout_enemy, fragment, tag).runOnCommit { on(fragment) }
-            }.commit()
-    }
-
-    private fun releaseViewerBoard() = with(supportFragmentManager) {
-        findFragmentByTag(MultiPlayViewerStageFragment::class.java.simpleName)
-            ?.also { with(beginTransaction()) { remove(it) }.commit() }
-    }
-
+    @Suppress("unused")
     fun stopTimer() = recordViewModel.stop()
 
     private fun setUserProfile(profile: ProfileEntity?) = if (profile != null) {

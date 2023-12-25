@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multi
+package kr.co.hs.sudoku.feature.multilist
 
 import android.content.Context
 import android.content.Intent
@@ -14,17 +14,15 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutCreateMultiPlayBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.feature.aiplay.AIGameActivity
+import kr.co.hs.sudoku.feature.multiplay.MultiPlayWithAIActivity
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
 import kr.co.hs.sudoku.feature.matrixlist.MatrixSelectBottomSheetFragment
-import kr.co.hs.sudoku.feature.multiplay.MultiGameActivity
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
+import kr.co.hs.sudoku.feature.multiplay.MultiPlayActivity
+import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
 
 class MultiPlayCreateActivity : Activity() {
     companion object {
-        const val EXTRA_BATTLE_ID = "EXTRA_BATTLE_ID"
-
-        fun newIntent(context: Context) =
+        private fun newIntent(context: Context) =
             Intent(context, MultiPlayCreateActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
 
@@ -35,9 +33,9 @@ class MultiPlayCreateActivity : Activity() {
         DataBindingUtil.setContentView(this, R.layout.layout_create_multi_play)
     }
     private val matrixListViewModel: MatrixListViewModel by viewModels()
-    private val battlePlayViewModel: BattlePlayViewModel by viewModels {
+    private val multiPlayViewModel: MultiPlayViewModel by viewModels {
         val app = applicationContext as App
-        BattlePlayViewModel.ProviderFactory(app.getBattleRepository2())
+        MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,27 +66,19 @@ class MultiPlayCreateActivity : Activity() {
                 matrixListViewModel.selection.value
                     ?.run {
                         if (binding.checkboxWithAi.isChecked) {
-                            setResult(
-                                RESULT_OK,
-                                Intent().apply { putExtra(EXTRA_BATTLE_ID, it.id) }
-                            )
-//                            navigateUpToParent()
                             startWithAI()
                         } else {
-                            battlePlayViewModel.create(this)
+                            multiPlayViewModel.create(this)
                         }
                     }
                     ?: showSnackBar(getString(R.string.require_select_stage))
             }
         }
 
-        with(battlePlayViewModel) {
+        with(multiPlayViewModel) {
             isRunningProgress.observe(this@MultiPlayCreateActivity) { isShowProgressIndicator = it }
             battleEntity.observe(this@MultiPlayCreateActivity) {
                 if (it != null) {
-
-//                    setResult(RESULT_OK, Intent().apply { putExtra(EXTRA_BATTLE_ID, it.id) })
-//                    navigateUpToParent()
                     startMultiPlay(it.id)
                 }
             }
@@ -110,12 +100,12 @@ class MultiPlayCreateActivity : Activity() {
 
     private fun startMultiPlay(battleId: String?) = battleId?.let {
         lifecycleScope
-            .launch { startActivity(MultiGameActivity.newIntent(this@MultiPlayCreateActivity, it)) }
+            .launch { startActivity(MultiPlayActivity.newIntent(this@MultiPlayCreateActivity, it)) }
     }
 
     private fun startWithAI() = lifecycleScope.launch {
         matrixListViewModel.selection.value?.let { matrix ->
-            startActivity(AIGameActivity.newIntent(this@MultiPlayCreateActivity, matrix))
+            startActivity(MultiPlayWithAIActivity.newIntent(this@MultiPlayCreateActivity, matrix))
         }
 
     }

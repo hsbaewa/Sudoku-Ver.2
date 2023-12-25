@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.single
+package kr.co.hs.sudoku.feature.singleplay
 
 import android.os.Bundle
 import android.view.View

@@ -1,11 +1,16 @@
-package kr.co.hs.sudoku.feature.battle
+package kr.co.hs.sudoku.feature.multiplay
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import androidx.activity.addCallback
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -16,9 +21,10 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
-import kr.co.hs.sudoku.databinding.ActivityPlayBattleBinding
+import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
-import kr.co.hs.sudoku.databinding.LayoutItemUserBinding
+import kr.co.hs.sudoku.extension.CoilExt.load
+import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
@@ -31,15 +37,14 @@ import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.timer.BattleTimer
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import org.jetbrains.annotations.TestOnly
 
-class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
+class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
         private const val EXTRA_BATTLE_ID = "kr.co.hs.sudoku.EXTRA_BATTLE_ID"
         fun newIntent(context: Context, battleId: String) =
-            Intent(context, BattlePlayActivity::class.java)
+            Intent(context, MultiPlayActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .putExtra(EXTRA_BATTLE_ID, battleId)
@@ -48,11 +53,11 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
             context.startActivity(newIntent(context, battleId))
     }
 
-
-    lateinit var binding: ActivityPlayBattleBinding
-    private val battleViewModel: BattlePlayViewModel by viewModels {
+    private val binding: ActivityPlayMultiBinding
+            by lazy { DataBindingUtil.setContentView(this, R.layout.activity_play_multi) }
+    private val battleViewModel: MultiPlayViewModel by viewModels {
         val app = applicationContext as App
-        BattlePlayViewModel.ProviderFactory(app.getBattleRepository2())
+        MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
     private val recordViewModel: RecordViewModel by viewModels()
     private val realServerTimer by lazy { BattleTimer() }
@@ -65,29 +70,55 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
     private var lastKnownOpponentProfile: ProfileEntity? = null
 
     private var isAlreadyPending = false
-
     private var isExitAfterCleared = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_play_battle)
         binding.lifecycleOwner = this
-
-        binding.btnEject.setOnClickListener { showExitDialog() }
+        setSupportActionBar(binding.toolBar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        onBackPressedDispatcher.addCallback { showExitDialog() }
 
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
-
         with(battleViewModel) {
-            isRunningProgress.observe(this@BattlePlayActivity) {
+            isRunningProgress.observe(this@MultiPlayActivity) {
                 it.takeIf { it }
                     ?.run { showProgressIndicator() }
                     ?: dismissProgressIndicator()
             }
 
-            battleEntity.observe(this@BattlePlayActivity) { onBattleEntity(it) }
+            battleEntity.observe(this@MultiPlayActivity) { onBattleEntity(it) }
             startEventMonitoring(intent.getStringExtra(EXTRA_BATTLE_ID) ?: "")
         }
+
+
+        binding.layoutUser.viewTreeObserver.addOnGlobalLayoutListener(
+            object : OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    binding.layoutUser.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    val w = binding.layoutUser.measuredWidth
+                    binding.layoutUser.layoutParams.height = w + 80.dp.toInt()
+                }
+            }
+        )
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.play_multi, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_exit, android.R.id.home -> {
+                showExitDialog()
+                true
+            }
+
+            else -> false
+        }
+    }
+
 
     private fun onBattleEntity(battleEntity: BattleEntity) {
         Log.d("hsbaewa", "onBattleEntity($battleEntity)")
@@ -160,17 +191,18 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
     }
 
 
-    fun controlBoard(on: (MultiPlayControlStageFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = MultiPlayControlStageFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? MultiPlayControlStageFragment }
-            ?.also(on)
-            ?: with(beginTransaction()) {
-                val fragment =
-                    StageFragment.newInstance<MultiPlayControlStageFragment>(startingMatrix)
-                fragment.setValueChangedListener(this@BattlePlayActivity)
-                replace(R.id.userBoardLayout, fragment, tag).runOnCommit { on(fragment) }
-            }.commit()
-    }
+    fun controlBoard(on: (MultiPlayControlStageFragment) -> Unit) =
+        with(supportFragmentManager) {
+            val tag = MultiPlayControlStageFragment::class.java.simpleName
+            findFragmentByTag(tag)?.run { this as? MultiPlayControlStageFragment }
+                ?.also(on)
+                ?: with(beginTransaction()) {
+                    val fragment =
+                        StageFragment.newInstance<MultiPlayControlStageFragment>(startingMatrix)
+                    fragment.setValueChangedListener(this@MultiPlayActivity)
+                    replace(R.id.layout_user, fragment, tag).runOnCommit { on(fragment) }
+                }.commit()
+        }
 
 
     private fun releaseControlBoard() = with(supportFragmentManager) {
@@ -179,16 +211,17 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
     }
 
 
-    fun viewerBoard(on: (MultiPlayViewerStageFragment) -> Unit) = with(supportFragmentManager) {
-        val tag = MultiPlayViewerStageFragment::class.java.simpleName
-        findFragmentByTag(tag)?.run { this as? MultiPlayViewerStageFragment }
-            ?.also(on)
-            ?: with(beginTransaction()) {
-                val fragment =
-                    StageFragment.newInstance<MultiPlayViewerStageFragment>(startingMatrix)
-                replace(R.id.targetBoardLayout, fragment, tag).runOnCommit { on(fragment) }
-            }.commit()
-    }
+    fun viewerBoard(on: (MultiPlayViewerStageFragment) -> Unit) =
+        with(supportFragmentManager) {
+            val tag = MultiPlayViewerStageFragment::class.java.simpleName
+            findFragmentByTag(tag)?.run { this as? MultiPlayViewerStageFragment }
+                ?.also(on)
+                ?: with(beginTransaction()) {
+                    val fragment =
+                        StageFragment.newInstance<MultiPlayViewerStageFragment>(startingMatrix)
+                    replace(R.id.layout_enemy, fragment, tag).runOnCommit { on(fragment) }
+                }.commit()
+        }
 
     private fun releaseViewerBoard() = with(supportFragmentManager) {
         findFragmentByTag(MultiPlayViewerStageFragment::class.java.simpleName)
@@ -215,9 +248,7 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
         }
     }
 
-    fun stopTimer() {
-        recordViewModel.stop()
-    }
+    fun stopTimer() = recordViewModel.stop()
 
     override fun onChanged(cell: IntCoordinateCellEntity) {
         controlBoard {
@@ -249,41 +280,52 @@ class BattlePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListe
     fun setUserProfile(profile: ProfileEntity?) = if (profile != null) {
         profile.takeIf { it != lastKnownUserProfile }
             ?.run {
-                binding.currentUserLayout.setupUIProfile(this)
+                profile.run {
+                    binding.ivUserIcon.load(
+                        iconUrl,
+                        errorIcon = getDrawableCompat(R.drawable.ic_person)
+                    )
+                    binding.tvUserDisplayName.text = displayName
+                    binding.tvUserMessage.isVisible = message?.isNotEmpty() == true
+                    binding.tvUserMessage.text = message
+                }
                 lastKnownUserProfile = this
             }
     } else {
-        binding.currentUserLayout.clearProfile()
+        with(binding) {
+            ivUserIcon.setImageDrawable(null)
+            tvUserDisplayName.text = null
+            tvUserMessage.text = null
+        }
+
         lastKnownUserProfile = null
-    }
-
-
-    private fun LayoutItemUserBinding.clearProfile() {
-        ivPhoto.setImageDrawable(null)
-        tvDisplayName.text = null
-        tvStatusMessage.text = null
     }
 
     fun setOpponentProfile(profile: ProfileEntity?) = if (profile != null) {
         profile
             .takeIf { it != lastKnownOpponentProfile }
             ?.run {
-                binding.targetUserLayout.setupUIProfile(this)
+                profile.run {
+                    binding.ivEnemyIcon.load(
+                        iconUrl,
+                        errorIcon = getDrawableCompat(R.drawable.ic_person)
+                    )
+                    binding.tvEnemyDisplayName.text = displayName
+                    binding.tvEnemyMessage.text = message
+                    binding.tvEnemyMessage.isVisible = message?.isNotEmpty() == true
+                }
+
                 lastKnownOpponentProfile = this
             }
     } else {
-        binding.targetUserLayout.clearProfile()
+        with(binding) {
+            ivEnemyIcon.setImageDrawable(null)
+            tvEnemyDisplayName.text = null
+            tvEnemyMessage.text = null
+        }
+
         lastKnownOpponentProfile = null
     }
-
-
-    private fun LayoutItemUserBinding.setupUIProfile(profile: ProfileEntity?) = profile
-        ?.run {
-            ivPhoto.load(iconUrl, errorIcon = getDrawableCompat(R.drawable.ic_person))
-            tvDisplayName.text = displayName
-            tvStatusMessage.text = message
-        }
-        ?: clearProfile()
 
 
     private fun showCompleteRecordDialog(clearRecord: Long) {

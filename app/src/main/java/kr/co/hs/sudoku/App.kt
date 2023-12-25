@@ -34,9 +34,9 @@ class App : Application() {
         profileRepositoryRef?.get()
             ?: ProfileRepositoryImpl().apply { profileRepositoryRef = SoftReference(this) }
 
-    private var battleRepository2Ref: SoftReference<BattleRepository>? = null
-    fun getBattleRepository2(): BattleRepository =
-        battleRepository2Ref?.get()
+    private var battleRepositoryRef: SoftReference<BattleRepository>? = null
+    fun getBattleRepository(): BattleRepository =
+        battleRepositoryRef?.get()
             ?: BattleRepositoryImpl()
-                .apply { battleRepository2Ref = SoftReference(this) }
+                .apply { battleRepositoryRef = SoftReference(this) }
 }

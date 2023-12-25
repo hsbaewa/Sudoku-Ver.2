@@ -29,10 +29,8 @@
 
         <activity android:name=".feature.challenge.ChallengePlayActivity" />
 
-        <activity android:name=".feature.play.WithCPUPlayActivity" />
-
         <activity
-            android:name=".feature.single.SinglePlayActivity"
+            android:name=".feature.singleplay.SinglePlayActivity"
             android:label="@string/title_single_play"
             android:launchMode="singleTop">
             <meta-data
@@ -40,18 +38,8 @@
                 android:value=".feature.MainActivity" />
         </activity>
 
-        <activity android:name=".feature.battle.BattleCreateActivity" />
-
         <activity
-            android:name=".feature.battle.BattlePlayActivity"
-            android:launchMode="singleTop">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".feature.MainActivity" />
-        </activity>
-
-        <activity
-            android:name=".feature.multi.MultiPlayCreateActivity"
+            android:name=".feature.multilist.MultiPlayCreateActivity"
             android:label=""
             android:launchMode="singleTop">
 
@@ -62,7 +50,7 @@
         </activity>
 
         <activity
-            android:name=".feature.multiplay.MultiGameActivity"
+            android:name=".feature.multiplay.MultiPlayActivity"
             android:label="@string/title_multi_play"
             android:launchMode="singleTop">
             <meta-data
@@ -70,7 +58,7 @@
                 android:value=".feature.MainActivity" />
         </activity>
 
-        <activity android:name=".feature.aiplay.AIGameActivity"
+        <activity android:name=".feature.multiplay.MultiPlayWithAIActivity"
             android:label="@string/title_multi_play"
             android:launchMode="singleTop">
             <meta-data

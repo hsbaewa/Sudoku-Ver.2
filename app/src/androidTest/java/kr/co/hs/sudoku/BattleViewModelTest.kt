@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
+import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException
 @RunWith(AndroidJUnit4::class)
 class BattleViewModelTest : BattleRepositoryTest() {
 
-    private val viewModel = ArrayList<BattlePlayViewModel>()
+    private val viewModel = ArrayList<MultiPlayViewModel>()
 
     val testStartingMatrix = listOf(
         listOf(1, 0, 0, 1),
@@ -48,7 +48,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
     private fun initViewModel() {
         userProfile.indices.forEach {
-            viewModel.add(BattlePlayViewModel(userBattleRepository[it]))
+            viewModel.add(MultiPlayViewModel(userBattleRepository[it]))
         }
     }
 

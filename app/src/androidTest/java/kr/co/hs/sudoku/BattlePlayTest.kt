@@ -13,7 +13,7 @@ import androidx.test.espresso.util.HumanReadables
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kr.co.hs.sudoku.feature.battle.BattlePlayActivity
+import kr.co.hs.sudoku.feature.multiplay.MultiPlayActivity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.any
@@ -32,7 +32,7 @@ class BattlePlayTest {
     fun 화면_시작() {
         val matrix = testStartingMatrix
 
-        val scenario = launch(BattlePlayActivity::class.java)
+        val scenario = launch(MultiPlayActivity::class.java)
         scenario.onActivity {
             it.startingMatrix = CustomMatrix(matrix)
         }
