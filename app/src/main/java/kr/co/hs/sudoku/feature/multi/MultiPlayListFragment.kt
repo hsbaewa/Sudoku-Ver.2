@@ -1,9 +1,11 @@
 package kr.co.hs.sudoku.feature.multi
 
+import android.app.Activity.RESULT_OK
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -58,7 +60,7 @@ class MultiPlayListFragment : Fragment() {
         binding.recyclerViewMultiPlayList.onCreatedRecyclerViewMultiPlay()
         submitMultiPlayListData()
 
-        viewModel.currentMultiPlay.observe(viewLifecycleOwner) { startMultiPlay(it) }
+        viewModel.currentMultiPlay.observe(viewLifecycleOwner) { startMultiPlay(it?.id) }
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.checkCurrentMultiPlay()
@@ -136,8 +138,18 @@ class MultiPlayListFragment : Fragment() {
 
     object NewCreateEntity : BattleEntity.Invalid()
 
+    private val launcherForMultiPlayCreate =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                it.data?.getStringExtra(MultiPlayCreateActivity.EXTRA_BATTLE_ID)
+                    ?.run { startMultiPlay(this) }
+                    ?: run { startWithAI() }
+            }
+        }
+
     private fun startCreateMulti() = viewLifecycleOwner.lifecycleScope.launch {
         MultiPlayCreateActivity.start(requireContext())
+//        launcherForMultiPlayCreate.launch(MultiPlayCreateActivity.newIntent(requireContext()))
     }
 
     private fun showConfirmJoinMultiPlay(battleEntity: BattleEntity) =
@@ -160,12 +172,15 @@ class MultiPlayListFragment : Fragment() {
             showProgressIndicator()
             withContext(Dispatchers.IO) { battleViewModel.doJoin(battleEntity.id) }
             dismissProgressIndicator()
-            startMultiPlay(battleEntity)
+            startMultiPlay(battleEntity.id)
         }
 
-    private fun startMultiPlay(battleEntity: BattleEntity?) = battleEntity
-        ?.run {
-            viewLifecycleOwner.lifecycleScope
-                .launch { startActivity(MultiGameActivity.newIntent(requireContext(), id)) }
-        }
+    private fun startMultiPlay(battleId: String?) = battleId?.let {
+        viewLifecycleOwner.lifecycleScope
+            .launch { startActivity(MultiGameActivity.newIntent(requireContext(), it)) }
+    }
+
+    private fun startWithAI() = viewLifecycleOwner.lifecycleScope.launch {
+
+    }
 }

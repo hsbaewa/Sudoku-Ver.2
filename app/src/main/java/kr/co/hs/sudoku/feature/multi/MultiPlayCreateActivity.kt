@@ -6,20 +6,27 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutCreateMultiPlayBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
+import kr.co.hs.sudoku.feature.aiplay.AIGameActivity
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
 import kr.co.hs.sudoku.feature.matrixlist.MatrixSelectBottomSheetFragment
+import kr.co.hs.sudoku.feature.multiplay.MultiGameActivity
 import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 
 class MultiPlayCreateActivity : Activity() {
     companion object {
-        private fun newIntent(context: Context) =
+        const val EXTRA_BATTLE_ID = "EXTRA_BATTLE_ID"
+
+        fun newIntent(context: Context) =
             Intent(context, MultiPlayCreateActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
 
         fun start(context: Context) = context.startActivity(newIntent(context))
     }
@@ -59,7 +66,18 @@ class MultiPlayCreateActivity : Activity() {
         with(binding.btnCreate) {
             setOnClickListener {
                 matrixListViewModel.selection.value
-                    ?.run { battlePlayViewModel.create(this) }
+                    ?.run {
+                        if (binding.checkboxWithAi.isChecked) {
+                            setResult(
+                                RESULT_OK,
+                                Intent().apply { putExtra(EXTRA_BATTLE_ID, it.id) }
+                            )
+//                            navigateUpToParent()
+                            startWithAI()
+                        } else {
+                            battlePlayViewModel.create(this)
+                        }
+                    }
                     ?: showSnackBar(getString(R.string.require_select_stage))
             }
         }
@@ -68,11 +86,13 @@ class MultiPlayCreateActivity : Activity() {
             isRunningProgress.observe(this@MultiPlayCreateActivity) { isShowProgressIndicator = it }
             battleEntity.observe(this@MultiPlayCreateActivity) {
                 if (it != null) {
-                    navigateUpToParent()
+
+//                    setResult(RESULT_OK, Intent().apply { putExtra(EXTRA_BATTLE_ID, it.id) })
+//                    navigateUpToParent()
+                    startMultiPlay(it.id)
                 }
             }
         }
-
 
 
     }
@@ -86,5 +106,17 @@ class MultiPlayCreateActivity : Activity() {
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun startMultiPlay(battleId: String?) = battleId?.let {
+        lifecycleScope
+            .launch { startActivity(MultiGameActivity.newIntent(this@MultiPlayCreateActivity, it)) }
+    }
+
+    private fun startWithAI() = lifecycleScope.launch {
+        matrixListViewModel.selection.value?.let { matrix ->
+            startActivity(AIGameActivity.newIntent(this@MultiPlayCreateActivity, matrix))
+        }
+
     }
 }

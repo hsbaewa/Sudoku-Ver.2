@@ -5,11 +5,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
+import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
+import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
 class SinglePlayViewModel(
@@ -60,4 +65,26 @@ class SinglePlayViewModel(
     data class Created(val stage: List<List<Int>>) : Command
     data class Started(val stage: List<List<Int>>) : Command
     object StartReplay : Command
+
+
+//    var autoSudoku: Stage? = null
+    private var playAutoJob: Job? = null
+//    fun playAuto() {
+//        playAutoJob = viewModelScope.launch {
+//            val mat = CustomMatrix(matrix)
+//            val st = BuildSudokuUseCaseImpl(mat).invoke().last()
+////            autoSudoku = st
+//            val playUseCase = PlaySudokuUseCaseImpl(stage = st, 2000)
+//            playUseCase().collect {
+//                if (!sudoku.getCell(it.row, it.column).isImmutable())
+//                    sudoku[it.row, it.column] = try {
+//                        it.getValue()
+//                    } catch (e: NotImplementedError) {
+//                        0
+//                    }
+//
+//            }
+//
+//        }
+//    }
 }
