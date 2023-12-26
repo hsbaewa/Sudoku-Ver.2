@@ -27,11 +27,10 @@ import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.challenge.ChallengeLeaderboardFragment
-import kr.co.hs.sudoku.feature.multi.MultiPlayListFragment
-import kr.co.hs.sudoku.feature.multi.MultiPlayListViewModel
-import kr.co.hs.sudoku.feature.single.SinglePlayListFragment
-import kr.co.hs.sudoku.viewmodel.BattleLobbyViewModel
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
+import kr.co.hs.sudoku.feature.multilist.MultiPlayListFragment
+import kr.co.hs.sudoku.feature.multilist.MultiPlayListViewModel
+import kr.co.hs.sudoku.feature.singleplay.SinglePlayListFragment
+import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
 import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
@@ -39,27 +38,21 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val binding: ActivityMainBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_main) }
 
-    private val battlePlayViewModel: BattlePlayViewModel by viewModels {
+    private val multiPlayViewModel: MultiPlayViewModel by viewModels {
         val app = applicationContext as App
-        BattlePlayViewModel.ProviderFactory(app.getBattleRepository2())
-    }
-
-    private val battleLobbyViewModel: BattleLobbyViewModel by viewModels {
-        val app = applicationContext as App
-        BattleLobbyViewModel.ProviderFactory(app.getBattleRepository2())
+        MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
 
     private val challengeViewModel: ChallengeViewModel by viewModels()
 
     private val multiPlayListViewModel: MultiPlayListViewModel by viewModels {
         val app = applicationContext as App
-        MultiPlayListViewModel.ProviderFactory(app.getBattleRepository2())
+        MultiPlayListViewModel.ProviderFactory(app.getBattleRepository())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        battlePlayViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
-        battleLobbyViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
+        multiPlayViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         challengeViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         multiPlayListViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         multiPlayListViewModel.isRunningProgress.observe(this) { isShowProgressIndicator = it }

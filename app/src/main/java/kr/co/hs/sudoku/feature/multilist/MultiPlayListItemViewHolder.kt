@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multi
+package kr.co.hs.sudoku.feature.multilist
 
 import android.view.View
 import androidx.core.view.isVisible

@@ -103,4 +103,5 @@
     <string name="multi_create_label_do_create">시작!!</string>
     <string name="multi_list_join_confirm">이 게임에 참여 하시겠습니까?</string>
     <string name="multi_list_empty_message">참여 가능한 게임이 없습니다.</string>
+    <string name="multi_create_label_ai">인긍지능과 대결</string>
 </resources>

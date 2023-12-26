@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.battle
+package kr.co.hs.sudoku.feature.multiplay
 
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -7,11 +7,10 @@ import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.feature.stage.ControlStageFragment
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
-import kr.co.hs.sudoku.viewmodel.BattlePlayViewModel
 
 class MultiPlayControlStageFragment : ControlStageFragment(), MultiPlayStage {
 
-    private val viewModel: BattlePlayViewModel by activityViewModels()
+    private val viewModel: MultiPlayViewModel by activityViewModels()
 
     override fun onCellValueChangedListener(row: Int, column: Int, value: Int?): Boolean {
         setValue(row, column, value ?: 0)

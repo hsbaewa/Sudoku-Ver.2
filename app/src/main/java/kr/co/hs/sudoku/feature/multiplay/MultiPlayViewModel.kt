@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.viewmodel
+package kr.co.hs.sudoku.feature.multiplay
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,8 +14,9 @@ import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.battle.BattleEventRepository
 import kr.co.hs.sudoku.repository.battle.BattleEventRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
+import kr.co.hs.sudoku.viewmodel.ViewModel
 
-class BattlePlayViewModel(
+class MultiPlayViewModel(
     private val battleRepository: BattleRepository
 ) : ViewModel() {
     class ProviderFactory(
@@ -23,9 +24,9 @@ class BattlePlayViewModel(
     ) : ViewModelProvider.Factory {
 
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(BattlePlayViewModel::class.java)) {
+            return if (modelClass.isAssignableFrom(MultiPlayViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                BattlePlayViewModel(battleRepository) as T
+                MultiPlayViewModel(battleRepository) as T
             } else {
                 throw IllegalArgumentException()
             }

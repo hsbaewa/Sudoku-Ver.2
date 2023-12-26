@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multi
+package kr.co.hs.sudoku.feature.multilist
 
 import kr.co.hs.sudoku.model.battle.BattleEntity
 
