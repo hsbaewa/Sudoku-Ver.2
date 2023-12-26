@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.model.stage.history.impl
 
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
+import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.model.stage.history.HistoryItem
@@ -92,6 +93,24 @@ class CachedHistoryQueue(outputStream: OutputStream) : HistoryQueue {
 
     fun createHeader(stage: Stage) {
         val origin = CustomMatrix(stage.toValueTable())
+        outputStreamWriter.appendLine(origin.boxSize.toString())
+        outputStreamWriter.appendLine(origin.boxCount.toString())
+        outputStreamWriter.appendLine(origin.rowCount.toString())
+        outputStreamWriter.appendLine(origin.columnCount.toString())
+        origin.forEach {
+            val line = buildString {
+                it.forEachIndexed { index, i ->
+                    if (index > 0)
+                        append(",")
+                    append(i)
+                }
+            }
+            outputStreamWriter.appendLine(line)
+        }
+        outputStreamWriter.flush()
+    }
+
+    fun createHeader(origin: IntMatrix) {
         outputStreamWriter.appendLine(origin.boxSize.toString())
         outputStreamWriter.appendLine(origin.boxCount.toString())
         outputStreamWriter.appendLine(origin.rowCount.toString())

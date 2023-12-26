@@ -18,7 +18,6 @@ import kr.co.hs.sudoku.databinding.LayoutListChallengeRankBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
-import kr.co.hs.sudoku.feature.challenge.ChallengePlayActivity.Companion.startChallengePlayActivity
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
 class ChallengeDashboardFragment : Fragment() {
@@ -93,6 +92,6 @@ class ChallengeDashboardFragment : Fragment() {
         }) {
             if (challengeEntity.isComplete)
                 throw Exception(getString(R.string.error_challenge_already_record))
-            activity.startChallengePlayActivity(challengeEntity.challengeId, currentUserUid)
+            ChallengePlayActivity.start(requireContext(), challengeEntity.challengeId)
         }
 }
