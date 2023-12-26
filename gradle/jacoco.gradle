@@ -22,6 +22,7 @@ def dependsOnTask = [
 
 def fileFilter = [
 // data binding
+'**/databinding/*',
 'android/databinding/**/*.class',
 '**/android/databinding/*Binding.class',
 '**/android/databinding/*',
