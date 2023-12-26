@@ -59,9 +59,13 @@ class ChallengeDashboardViewModel(
         if (dashboardList.find { it is ChallengeDashboardListItem.RankItem && it.rankEntity.uid == currentUserUid } == null) {
 
             val myRecord = withContext(Dispatchers.IO) {
-                currentUserUid?.let { uid -> repository.getRecord(uid) }
+                currentUserUid?.let { uid ->
+                    repository.runCatching { getRecord(uid) }.getOrNull()
+                }
             }
-            myRecord?.run { dashboardList.add(ChallengeDashboardListItem.MyRankItem(this)) }
+            myRecord
+                ?.takeIf { it.clearTime >= 0 }
+                ?.run { dashboardList.add(ChallengeDashboardListItem.MyRankItem(this)) }
         }
 
         dashboardList.add(ChallengeDashboardListItem.ChallengeStartItem(challenge))
