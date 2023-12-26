@@ -115,4 +115,9 @@
     <string name="multi_list_empty_message">There are no games available to participate.</string>
 
     <string name="multi_create_label_ai">Play with A.I</string>
+
+    <string name="title_challenge">Challenge</string>
+    <string name="challenge_dashboard_header_matrix">Today\'s challenge</string>
+    <string name="challenge_dashboard_header_rank">Ranking</string>
+    <string name="challenge_divider_for_my_rank" translatable="false">.\n.\n.</string>
 </resources>

@@ -6,4 +6,6 @@ import androidx.recyclerview.widget.RecyclerView
 
 abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun getDrawableCompat(resId: Int) = ContextCompat.getDrawable(itemView.context, resId)
+    fun getColorCompat(resId: Int) = ContextCompat.getColor(itemView.context, resId)
+    fun getString(resId: Int) = itemView.context.getString(resId)
 }
