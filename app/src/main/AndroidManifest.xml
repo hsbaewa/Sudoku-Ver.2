@@ -58,8 +58,18 @@
                 android:value=".feature.MainActivity" />
         </activity>
 
-        <activity android:name=".feature.multiplay.MultiPlayWithAIActivity"
+        <activity
+            android:name=".feature.multiplay.MultiPlayWithAIActivity"
             android:label="@string/title_multi_play"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".feature.challenge2.ChallengePlayActivity"
+            android:label="@string/title_challenge"
             android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

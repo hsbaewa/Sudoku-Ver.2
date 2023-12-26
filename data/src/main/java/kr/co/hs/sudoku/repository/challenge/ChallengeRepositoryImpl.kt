@@ -22,13 +22,15 @@ class ChallengeRepositoryImpl(
 
     private val cachedMap = HashMap<String, ChallengeEntity>()
 
+    private val currentUserUid: String
+        get() = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw Exception("사용자 인증 정보가 없습니다. 게임 진행을 위해서는 먼저 사용자 인증이 필요합니다.")
+
     override suspend fun setPlaying(challengeId: String): Boolean {
-        FirebaseAuth.getInstance().currentUser?.run {
-            val reserveModel = ReserveRecordModel(uid, "", null, null, null)
-            recordRemoteSource.setRecord(id = challengeId, reserveModel)
-                .takeIf { it }
-                ?.run { cachedMap.remove(challengeId) }
-        }
+        val reserveModel = ReserveRecordModel(currentUserUid, "", null, null, null)
+        recordRemoteSource.setRecord(id = challengeId, reserveModel)
+            .takeIf { it }
+            ?.run { cachedMap.remove(challengeId) }
         return true
     }
 
