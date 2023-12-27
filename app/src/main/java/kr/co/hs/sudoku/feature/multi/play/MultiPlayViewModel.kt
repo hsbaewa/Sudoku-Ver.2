@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multiplay
+package kr.co.hs.sudoku.feature.multi.play
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

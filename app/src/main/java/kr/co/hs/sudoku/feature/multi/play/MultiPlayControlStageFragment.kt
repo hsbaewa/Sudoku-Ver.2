@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multiplay
+package kr.co.hs.sudoku.feature.multi.play
 
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope

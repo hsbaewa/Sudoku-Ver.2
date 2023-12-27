@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multilist
+package kr.co.hs.sudoku.feature.multi.dashboard
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -21,16 +21,16 @@ import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
-class MultiPlayListViewModel(
+class MultiDashboardViewModel(
     val battleRepository: BattleRepository
 ) : ViewModel() {
     class ProviderFactory(
         private val battleRepository: BattleRepository
     ) : ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(MultiPlayListViewModel::class.java)) {
+            return if (modelClass.isAssignableFrom(MultiDashboardViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                MultiPlayListViewModel(battleRepository) as T
+                MultiDashboardViewModel(battleRepository) as T
             } else {
                 throw IllegalArgumentException()
             }

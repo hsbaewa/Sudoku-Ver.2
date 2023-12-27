@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multilist
+package kr.co.hs.sudoku.feature.multi.dashboard
 
 import android.view.View
 import androidx.core.view.isVisible
@@ -13,7 +13,7 @@ import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
-sealed class MultiPlayListItemViewHolder<T : MultiPlayListItem>(
+sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
     itemView: View
 ) : ViewHolder(itemView) {
 
@@ -23,10 +23,10 @@ sealed class MultiPlayListItemViewHolder<T : MultiPlayListItem>(
 
     class MultiPlay(
         val binding: LayoutListItemMultiPlayBinding,
-        val viewModel: MultiPlayListViewModel
-    ) : MultiPlayListItemViewHolder<MultiPlayListItem.MultiPlayItem>(binding.root) {
+        val viewModel: MultiDashboardViewModel
+    ) : MultiDashboardListItemViewHolder<MultiDashboardListItem.MultiPlayItem>(binding.root) {
         override val clickableView: View by lazy { binding.cardView }
-        override fun onBind(item: MultiPlayListItem.MultiPlayItem) {
+        override fun onBind(item: MultiDashboardListItem.MultiPlayItem) {
             with(binding.matrix) {
                 matrix = item.battleEntity.startingMatrix
                 invalidate()
@@ -105,16 +105,16 @@ sealed class MultiPlayListItemViewHolder<T : MultiPlayListItem>(
     }
 
     class Title(private val binding: LayoutListItemMultiPlayTitleBinding) :
-        MultiPlayListItemViewHolder<MultiPlayListItem.TitleItem>(binding.root) {
+        MultiDashboardListItemViewHolder<MultiDashboardListItem.TitleItem>(binding.root) {
         override val clickableView: View by lazy { binding.tvTitle }
-        override fun onBind(item: MultiPlayListItem.TitleItem) = with(binding.tvTitle) {
+        override fun onBind(item: MultiDashboardListItem.TitleItem) = with(binding.tvTitle) {
             text = item.title
         }
     }
 
     class CreateNew(private val binding: LayoutListItemMultiPlayAddFunctionBinding) :
-        MultiPlayListItemViewHolder<MultiPlayListItem.CreateNewItem>(binding.root) {
+        MultiDashboardListItemViewHolder<MultiDashboardListItem.CreateNewItem>(binding.root) {
         override val clickableView: View by lazy { binding.cardView }
-        override fun onBind(item: MultiPlayListItem.CreateNewItem) {}
+        override fun onBind(item: MultiDashboardListItem.CreateNewItem) {}
     }
 }

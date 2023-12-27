@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multilist
+package kr.co.hs.sudoku.feature.multi.dashboard
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -28,18 +28,19 @@ import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
-import kr.co.hs.sudoku.feature.multiplay.MultiPlayActivity
+import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
+import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
-import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
+import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.views.RecyclerView
 
-class MultiPlayListFragment : Fragment() {
+class MultiDashboardFragment : Fragment() {
     companion object {
-        fun newInstance() = MultiPlayListFragment()
+        fun newInstance() = MultiDashboardFragment()
     }
 
     private lateinit var binding: LayoutListMultiPlayBinding
-    private val viewModel: MultiPlayListViewModel by activityViewModels()
+    private val viewModel: MultiDashboardViewModel by activityViewModels()
     private val battleViewModel: MultiPlayViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -74,7 +75,7 @@ class MultiPlayListFragment : Fragment() {
     private fun RecyclerView.onCreatedRecyclerViewMultiPlay() {
         layoutManager = LinearLayoutManager(context)
         addVerticalDivider(thickness = 10.dp)
-        val pagingDataAdapter = MultiPlayListItemAdapter(
+        val pagingDataAdapter = MultiDashboardListItemAdapter(
             onItemClick = { showConfirmJoinMultiPlay(it) },
             onCreateNew = { startCreateMulti() }
         )
@@ -96,7 +97,7 @@ class MultiPlayListFragment : Fragment() {
 
                     with(binding.tvEmptyMessage) {
                         isVisible = snapshot()
-                            .filterIsInstance<MultiPlayListItem.MultiPlayItem>()
+                            .filterIsInstance<MultiDashboardListItem.MultiPlayItem>()
                             .isEmpty()
                     }
                 }
@@ -115,9 +116,9 @@ class MultiPlayListFragment : Fragment() {
                         .insertHeaderItem(TerminalSeparatorType.FULLY_COMPLETE, TitleEntity)
                         .map { entity ->
                             when (entity) {
-                                TitleEntity -> MultiPlayListItem.TitleItem(getString(R.string.title_multi_play))
-                                NewCreateEntity -> MultiPlayListItem.CreateNewItem
-                                else -> MultiPlayListItem.MultiPlayItem(entity)
+                                TitleEntity -> MultiDashboardListItem.TitleItem(getString(R.string.title_multi_play))
+                                NewCreateEntity -> MultiDashboardListItem.CreateNewItem
+                                else -> MultiDashboardListItem.MultiPlayItem(entity)
                             }
                         }
                 )
@@ -126,7 +127,7 @@ class MultiPlayListFragment : Fragment() {
     }
 
     private fun getMultiPlayListItemAdapter() =
-        (binding.recyclerViewMultiPlayList.adapter as ConcatAdapter).adapters.find { it is MultiPlayListItemAdapter } as MultiPlayListItemAdapter
+        (binding.recyclerViewMultiPlayList.adapter as ConcatAdapter).adapters.find { it is MultiDashboardListItemAdapter } as MultiDashboardListItemAdapter
 
     private fun refreshMultiPlayListData() {
         getMultiPlayListItemAdapter().refresh()
