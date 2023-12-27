@@ -5,9 +5,11 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import kotlinx.coroutines.launch
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
@@ -19,6 +21,8 @@ import kr.co.hs.sudoku.model.stage.impl.IntCellEntityImpl
 import kr.co.hs.sudoku.model.stage.impl.IntCoordinate
 import kr.co.hs.sudoku.model.stage.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
+import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
+import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.views.SudokuBoardView
 import kotlin.math.sqrt
@@ -55,6 +59,10 @@ abstract class StageFragment : Fragment() {
     abstract val board: SudokuBoardView
     abstract val silhouette: View
 
+    private val gameSettingsViewModel: GameSettingsViewModel by viewModels {
+        GameSettingsViewModel.Factory(GameSettingsRepositoryImpl(dataStore))
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         with(board) {
@@ -72,6 +80,9 @@ abstract class StageFragment : Fragment() {
         }
 
         valueChangedListener?.run { stage.addValueChangedListener(this) }
+        gameSettingsViewModel.gameSettings.observe(viewLifecycleOwner) {
+            board.enabledHapticFeedback = it.enabledHapticFeedback
+        }
     }
 
 
