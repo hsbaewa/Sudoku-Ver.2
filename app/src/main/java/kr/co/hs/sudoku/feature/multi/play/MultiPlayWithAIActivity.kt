@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multiplay
+package kr.co.hs.sudoku.feature.multi.play
 
 import android.app.Dialog
 import android.content.Context
@@ -32,8 +32,8 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
-import kr.co.hs.sudoku.feature.singleplay.SinglePlayControlStageFragment
-import kr.co.hs.sudoku.feature.singleplay.SinglePlayViewModel
+import kr.co.hs.sudoku.feature.single.play.SinglePlayControlStageFragment
+import kr.co.hs.sudoku.feature.single.play.SinglePlayViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix

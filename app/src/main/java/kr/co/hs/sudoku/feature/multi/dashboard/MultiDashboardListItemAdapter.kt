@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multilist
+package kr.co.hs.sudoku.feature.multi.dashboard
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,11 +11,11 @@ import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
 import kr.co.hs.sudoku.model.battle.BattleEntity
 
-class MultiPlayListItemAdapter(
+class MultiDashboardListItemAdapter(
     private val onItemClick: (BattleEntity) -> Unit,
     private val onCreateNew: () -> Unit
-) : PagingDataAdapter<MultiPlayListItem, MultiPlayListItemViewHolder<out MultiPlayListItem>>(
-    MultiPlayListItemDiffCallback()
+) : PagingDataAdapter<MultiDashboardListItem, MultiDashboardListItemViewHolder<out MultiDashboardListItem>>(
+    MultiDashboardListItemDiffCallback()
 ) {
     companion object {
         const val VT_ITEM = 1020
@@ -23,36 +23,36 @@ class MultiPlayListItemAdapter(
         const val VT_ADD = 1040
     }
 
-    private lateinit var viewModel: MultiPlayListViewModel
+    private lateinit var viewModel: MultiDashboardViewModel
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         viewModel =
-            ViewModelProvider(recyclerView.context as ViewModelStoreOwner)[MultiPlayListViewModel::class.java]
+            ViewModelProvider(recyclerView.context as ViewModelStoreOwner)[MultiDashboardViewModel::class.java]
     }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): MultiPlayListItemViewHolder<out MultiPlayListItem> {
+    ): MultiDashboardListItemViewHolder<out MultiDashboardListItem> {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            VT_TITLE -> MultiPlayListItemViewHolder.Title(
+            VT_TITLE -> MultiDashboardListItemViewHolder.Title(
                 LayoutListItemMultiPlayTitleBinding.inflate(inflater, parent, false)
             )
 
-            VT_ITEM -> MultiPlayListItemViewHolder.MultiPlay(
+            VT_ITEM -> MultiDashboardListItemViewHolder.MultiPlay(
                 LayoutListItemMultiPlayBinding.inflate(inflater, parent, false),
                 viewModel
             ).apply {
                 setOnClickListener {
-                    (getItem(bindingAdapterPosition) as? MultiPlayListItem.MultiPlayItem)
+                    (getItem(bindingAdapterPosition) as? MultiDashboardListItem.MultiPlayItem)
                         ?.battleEntity
                         ?.let(onItemClick)
                 }
             }
 
-            VT_ADD -> MultiPlayListItemViewHolder.CreateNew(
+            VT_ADD -> MultiDashboardListItemViewHolder.CreateNew(
                 LayoutListItemMultiPlayAddFunctionBinding.inflate(inflater, parent, false)
             ).apply {
                 setOnClickListener { onCreateNew() }
@@ -63,18 +63,18 @@ class MultiPlayListItemAdapter(
     }
 
     override fun onBindViewHolder(
-        holder: MultiPlayListItemViewHolder<out MultiPlayListItem>,
+        holder: MultiDashboardListItemViewHolder<out MultiDashboardListItem>,
         position: Int
     ) {
         when (val item = getItem(position)) {
-            is MultiPlayListItem.MultiPlayItem ->
-                (holder as MultiPlayListItemViewHolder.MultiPlay).onBind(item)
+            is MultiDashboardListItem.MultiPlayItem ->
+                (holder as MultiDashboardListItemViewHolder.MultiPlay).onBind(item)
 
-            is MultiPlayListItem.TitleItem ->
-                (holder as MultiPlayListItemViewHolder.Title).onBind(item)
+            is MultiDashboardListItem.TitleItem ->
+                (holder as MultiDashboardListItemViewHolder.Title).onBind(item)
 
-            is MultiPlayListItem.CreateNewItem ->
-                (holder as MultiPlayListItemViewHolder.CreateNew).onBind(item)
+            is MultiDashboardListItem.CreateNewItem ->
+                (holder as MultiDashboardListItemViewHolder.CreateNew).onBind(item)
 
             null -> {}
         }
@@ -82,17 +82,17 @@ class MultiPlayListItemAdapter(
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
-            is MultiPlayListItem.MultiPlayItem -> VT_ITEM
-            is MultiPlayListItem.TitleItem -> VT_TITLE
-            MultiPlayListItem.CreateNewItem -> VT_ADD
+            is MultiDashboardListItem.MultiPlayItem -> VT_ITEM
+            is MultiDashboardListItem.TitleItem -> VT_TITLE
+            MultiDashboardListItem.CreateNewItem -> VT_ADD
             null -> -1
         }
     }
 
-    override fun onViewRecycled(holder: MultiPlayListItemViewHolder<out MultiPlayListItem>) {
+    override fun onViewRecycled(holder: MultiDashboardListItemViewHolder<out MultiDashboardListItem>) {
         super.onViewRecycled(holder)
         when (holder) {
-            is MultiPlayListItemViewHolder.MultiPlay -> holder.onRecycled()
+            is MultiDashboardListItemViewHolder.MultiPlay -> holder.onRecycled()
             else -> {}
         }
     }

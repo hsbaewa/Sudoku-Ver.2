@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
-import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
+import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
