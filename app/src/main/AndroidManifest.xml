@@ -27,8 +27,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".feature.challenge.ChallengePlayActivity" />
-
         <activity
             android:name=".feature.singleplay.SinglePlayActivity"
             android:label="@string/title_single_play"
@@ -68,7 +66,7 @@
         </activity>
 
         <activity
-            android:name=".feature.challenge2.ChallengePlayActivity"
+            android:name=".feature.challenge.play.ChallengePlayActivity"
             android:label="@string/title_challenge"
             android:launchMode="singleTop">
             <meta-data

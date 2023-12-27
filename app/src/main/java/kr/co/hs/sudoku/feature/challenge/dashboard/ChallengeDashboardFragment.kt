@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.challenge2
+package kr.co.hs.sudoku.feature.challenge.dashboard
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,6 +18,7 @@ import kr.co.hs.sudoku.databinding.LayoutListChallengeRankBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
+import kr.co.hs.sudoku.feature.challenge.play.ChallengePlayActivity
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
 class ChallengeDashboardFragment : Fragment() {

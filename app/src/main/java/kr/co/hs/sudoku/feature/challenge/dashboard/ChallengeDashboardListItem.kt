@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.challenge2
+package kr.co.hs.sudoku.feature.challenge.dashboard
 
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix

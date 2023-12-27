@@ -26,13 +26,12 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.feature.settings.SettingsFragment
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
-import kr.co.hs.sudoku.feature.challenge2.ChallengeDashboardFragment
-import kr.co.hs.sudoku.feature.challenge2.ChallengeDashboardViewModel
+import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardFragment
+import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardViewModel
 import kr.co.hs.sudoku.feature.multilist.MultiPlayListFragment
 import kr.co.hs.sudoku.feature.multilist.MultiPlayListViewModel
 import kr.co.hs.sudoku.feature.singleplay.SinglePlayListFragment
 import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
-import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
@@ -43,8 +42,6 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         val app = applicationContext as App
         MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
-
-    private val challengeViewModel: ChallengeViewModel by viewModels()
 
     private val multiPlayListViewModel: MultiPlayListViewModel by viewModels {
         val app = applicationContext as App
@@ -58,7 +55,6 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         multiPlayViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
-        challengeViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         multiPlayListViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
         multiPlayListViewModel.isRunningProgress.observe(this) { isShowProgressIndicator = it }
         challengeDashboardViewMode.error.observe(this) { showSnackBar(it.message.toString()) }
