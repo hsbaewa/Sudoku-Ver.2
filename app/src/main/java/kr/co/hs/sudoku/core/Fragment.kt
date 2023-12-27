@@ -10,7 +10,6 @@ import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
-import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
@@ -44,11 +43,6 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
 
     protected fun recordViewModels(): RecordViewModel {
         val viewModel: RecordViewModel by activityViewModels()
-        return viewModel
-    }
-
-    protected fun challengeLeaderboardViewModels(): ChallengeViewModel {
-        val viewModel: ChallengeViewModel by activityViewModels()
         return viewModel
     }
 

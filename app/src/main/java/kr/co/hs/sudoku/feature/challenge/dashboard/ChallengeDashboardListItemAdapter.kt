@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.challenge2
+package kr.co.hs.sudoku.feature.challenge.dashboard
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

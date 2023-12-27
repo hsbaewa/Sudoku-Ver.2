@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.challenge2
+package kr.co.hs.sudoku.feature.challenge.play
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

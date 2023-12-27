@@ -16,7 +16,6 @@ import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
 import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
-import kr.co.hs.sudoku.viewmodel.ChallengeViewModel
 import kr.co.hs.sudoku.viewmodel.GamePlayViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.SinglePlayDifficultyViewModel
@@ -41,11 +40,6 @@ abstract class Activity : AppCompatActivity() {
 
     protected fun singlePlayDifficultyViewModels(): SinglePlayDifficultyViewModel {
         val viewModel: SinglePlayDifficultyViewModel by viewModels()
-        return viewModel
-    }
-
-    protected fun challengeRankingViewModels(): ChallengeViewModel {
-        val viewModel: ChallengeViewModel by viewModels()
         return viewModel
     }
 
