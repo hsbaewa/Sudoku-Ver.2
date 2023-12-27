@@ -1,5 +1,5 @@
 name: Signed Apk 배포
-run-name: Signed Apk 배포(VersionCode = ${{ github.run_number }})
+run-name: ${{ inputs.versionName }} 배포(VersionCode = ${{ github.run_number }})
 
 on:
   workflow_dispatch:
