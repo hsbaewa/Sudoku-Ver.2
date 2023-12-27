@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multilist
+package kr.co.hs.sudoku.feature.multi
 
 import android.content.Context
 import android.content.Intent
@@ -14,11 +14,11 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutCreateMultiPlayBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.feature.multiplay.MultiPlayWithAIActivity
+import kr.co.hs.sudoku.feature.multi.play.MultiPlayWithAIActivity
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
 import kr.co.hs.sudoku.feature.matrixlist.MatrixSelectBottomSheetFragment
-import kr.co.hs.sudoku.feature.multiplay.MultiPlayActivity
-import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
+import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
+import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 
 class MultiPlayCreateActivity : Activity() {
     companion object {

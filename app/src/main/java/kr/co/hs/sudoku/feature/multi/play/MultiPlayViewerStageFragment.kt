@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multiplay
+package kr.co.hs.sudoku.feature.multi.play
 
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.feature.stage.ViewerStageFragment

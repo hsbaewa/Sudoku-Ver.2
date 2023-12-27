@@ -28,7 +28,7 @@
         </activity>
 
         <activity
-            android:name=".feature.singleplay.SinglePlayActivity"
+            android:name=".feature.single.play.SinglePlayActivity"
             android:label="@string/title_single_play"
             android:launchMode="singleTop">
             <meta-data
@@ -37,7 +37,7 @@
         </activity>
 
         <activity
-            android:name=".feature.multilist.MultiPlayCreateActivity"
+            android:name=".feature.multi.MultiPlayCreateActivity"
             android:label=""
             android:launchMode="singleTop">
 
@@ -48,7 +48,7 @@
         </activity>
 
         <activity
-            android:name=".feature.multiplay.MultiPlayActivity"
+            android:name=".feature.multi.play.MultiPlayActivity"
             android:label="@string/title_multi_play"
             android:launchMode="singleTop">
             <meta-data
@@ -57,7 +57,7 @@
         </activity>
 
         <activity
-            android:name=".feature.multiplay.MultiPlayWithAIActivity"
+            android:name=".feature.multi.play.MultiPlayWithAIActivity"
             android:label="@string/title_multi_play"
             android:launchMode="singleTop">
             <meta-data

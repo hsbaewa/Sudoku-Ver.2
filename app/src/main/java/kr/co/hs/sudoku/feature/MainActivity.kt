@@ -28,10 +28,10 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardFragment
 import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardViewModel
-import kr.co.hs.sudoku.feature.multilist.MultiPlayListFragment
-import kr.co.hs.sudoku.feature.multilist.MultiPlayListViewModel
-import kr.co.hs.sudoku.feature.singleplay.SinglePlayListFragment
-import kr.co.hs.sudoku.feature.multiplay.MultiPlayViewModel
+import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardFragment
+import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
+import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
+import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
@@ -43,9 +43,9 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
 
-    private val multiPlayListViewModel: MultiPlayListViewModel by viewModels {
+    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
         val app = applicationContext as App
-        MultiPlayListViewModel.ProviderFactory(app.getBattleRepository())
+        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
     }
     private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels {
         val app = applicationContext as App
@@ -55,8 +55,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         multiPlayViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
-        multiPlayListViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
-        multiPlayListViewModel.isRunningProgress.observe(this) { isShowProgressIndicator = it }
+        multiDashboardViewModel.error.observe(this) { showSnackBar(it.message.toString()) }
+        multiDashboardViewModel.isRunningProgress.observe(this) { isShowProgressIndicator = it }
         challengeDashboardViewMode.error.observe(this) { showSnackBar(it.message.toString()) }
         challengeDashboardViewMode.isRunningProgress.observe(this) { isShowProgressIndicator = it }
         binding.lifecycleOwner = this
@@ -91,8 +91,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
-            R.id.menu_single -> replaceTabFragment(SinglePlayListFragment.newInstance())
-            R.id.menu_multi -> replaceTabFragment(MultiPlayListFragment.newInstance())
+            R.id.menu_single -> replaceTabFragment(SingleDashboardFragment.newInstance())
+            R.id.menu_multi -> replaceTabFragment(MultiDashboardFragment.newInstance())
             R.id.challenge -> replaceTabFragment(ChallengeDashboardFragment.newInstance())
             R.id.settings -> replaceTabFragment(SettingsFragment.new())
         }

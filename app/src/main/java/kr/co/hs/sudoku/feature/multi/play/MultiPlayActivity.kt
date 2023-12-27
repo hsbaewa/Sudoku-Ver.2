@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multiplay
+package kr.co.hs.sudoku.feature.multi.play
 
 import android.content.Context
 import android.content.Intent

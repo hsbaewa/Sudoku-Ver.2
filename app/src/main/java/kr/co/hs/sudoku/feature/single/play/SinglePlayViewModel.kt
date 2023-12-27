@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.singleplay
+package kr.co.hs.sudoku.feature.single.play
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

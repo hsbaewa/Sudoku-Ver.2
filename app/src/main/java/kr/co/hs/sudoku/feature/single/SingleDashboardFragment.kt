@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.singleplay
+package kr.co.hs.sudoku.feature.single
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,10 +20,11 @@ import kr.co.hs.sudoku.feature.matrixlist.MatrixListItem
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListItemAdapter
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListLayoutManager
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
+import kr.co.hs.sudoku.feature.single.play.SinglePlayActivity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 
 
-class SinglePlayListFragment : Fragment() {
+class SingleDashboardFragment : Fragment() {
     companion object {
         private const val EXTRA_IS_TEST = "EXTRA_IS_TEST"
         private const val EXTRA_IS_DEBUG = "EXTRA_IS_DEBUG"
@@ -34,10 +35,10 @@ class SinglePlayListFragment : Fragment() {
             EXTRA_IS_DEBUG to true
         )
 
-        fun newInstance() = SinglePlayListFragment()
+        fun newInstance() = SingleDashboardFragment()
 
         @Suppress("unused")
-        fun newDebugInstance() = SinglePlayListFragment().apply {
+        fun newDebugInstance() = SingleDashboardFragment().apply {
             arguments = bundleOf(
                 EXTRA_IS_DEBUG to true
             )

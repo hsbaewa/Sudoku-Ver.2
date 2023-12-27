@@ -10,7 +10,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.feature.singleplay.SinglePlayListFragment
+import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,7 +28,7 @@ class MatrixListUITest {
                 repository.getList()
             }
 
-            val fragmentScenario = launchFragmentInContainer<SinglePlayListFragment>(
+            val fragmentScenario = launchFragmentInContainer<SingleDashboardFragment>(
                 themeResId = R.style.Theme_HSSudoku2,
                 initialState = Lifecycle.State.RESUMED
             )
