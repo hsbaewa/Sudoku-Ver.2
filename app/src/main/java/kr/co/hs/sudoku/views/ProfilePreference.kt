@@ -3,14 +3,16 @@ package kr.co.hs.sudoku.views
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
-import com.google.android.material.progressindicator.CircularProgressIndicator
+import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
+import kr.co.hs.sudoku.extension.Number.dp
 import java.net.URL
 
 class ProfilePreference : Preference {
@@ -59,43 +61,23 @@ class ProfilePreference : Preference {
         )
 
     private val onStartLoadIcon = { _: Drawable? ->
-        icon = null
-        showIconProgressIndicator()
+        val drawable = object : CircularProgressDrawable(context) {
+            override fun getIntrinsicWidth() = 30.dp.toInt()
+            override fun getIntrinsicHeight() = 30.dp.toInt()
+        }
+        with(drawable) {
+            strokeWidth = 2.dp
+            setColorSchemeColors(ContextCompat.getColor(context, R.color.gray_500))
+            start()
+        }
+        icon = drawable
     }
 
     private val onSuccessLoadIcon: (Drawable) -> Unit = { icon ->
         this.icon = icon
-        dismissIconProgressIndicator()
     }
 
     private val onErrorLoadIcon: (Drawable?) -> Unit = { error ->
         icon = error
-        dismissIconProgressIndicator()
     }
-
-    private fun showIconProgressIndicator() =
-        with(iconImageView.parent as ViewGroup) {
-            if (findProgressIndicator() == null) {
-                createProgressIndicator()
-            }
-        }
-
-    private fun ViewGroup.findProgressIndicator() =
-        findViewWithTag<CircularProgressIndicator>(TAG_ICON_PROGRESS_INDICATOR)
-
-    private fun ViewGroup.createProgressIndicator() =
-        CircularProgressIndicator(context).apply {
-            isIndeterminate = true
-            tag = TAG_ICON_PROGRESS_INDICATOR
-        }.also {
-            addView(it)
-        }
-
-    private fun dismissIconProgressIndicator() =
-        with(iconImageView.parent as ViewGroup) { removeProgressIndicator() }
-
-    private fun ViewGroup.removeProgressIndicator() =
-        findProgressIndicator()
-            .takeIf { it != null }
-            ?.let { removeView(it) }
 }

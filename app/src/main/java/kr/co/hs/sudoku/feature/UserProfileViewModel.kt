@@ -10,8 +10,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.PlayGamesAuthProvider
 import com.google.firebase.auth.ktx.userProfileChangeRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
@@ -101,8 +104,13 @@ class UserProfileViewModel(
     }
 
     private suspend fun migrationUserProfileGamesWithFirebase(): ProfileEntity {
-        val authCode = gamesSignInClient.getPlayGamesServerAuthCode()
-            ?: throw AuthenticationException.UnauthenticatedException("서버 인증 코드 요청에 실패 하였습니다. Games 로그인 여부를 확인해주세요.")
+        var authCode = gamesSignInClient.getPlayGamesServerAuthCode()
+//            ?: throw AuthenticationException.UnauthenticatedException("서버 인증 코드 요청에 실패 하였습니다. Games 로그인 여부를 확인해주세요.")
+        if (authCode == null) {
+            delay(3000)
+            authCode = gamesSignInClient.getPlayGamesServerAuthCode()
+                ?: throw AuthenticationException.UnauthenticatedException("서버 인증 코드 요청에 실패 하였습니다. Games 로그인 여부를 확인해주세요.")
+        }
 
         val authResult = firebaseAuth.signInFirebaseAuth(authCode)
             ?: throw AuthenticationException.UnauthenticatedException("failed signed in firebase")
@@ -135,6 +143,24 @@ class UserProfileViewModel(
         if (result?.isAuthenticated == true) {
             _profile.value = migrationUserProfileGamesWithFirebase()
         }
+        setProgress(false)
+    }
+
+    fun updateUserInfo(profileEntity: ProfileEntity) =
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            val user = firebaseAuth.currentUser
+                ?: throw AuthenticationException.UnknownUserException("알수 없는 사용자 입니다.")
+
+            user.updateFirebaseUser(profileEntity)
+            profileRepository.setProfile(profileEntity)
+        }
+
+    fun requestLastUserProfile() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val profile = withContext(Dispatchers.IO) {
+            firebaseAuth.currentUser?.uid?.let { uid -> profileRepository.getProfile(uid) }
+        }
+        _profile.value = profile
         setProgress(false)
     }
 }
