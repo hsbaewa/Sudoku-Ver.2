@@ -6,21 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.flow.last
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
-import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 
 abstract class Activity : AppCompatActivity() {
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- conv -------------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-
-    protected val app: App by lazy { applicationContext as App }
-
-    protected suspend fun getProfile(uid: String) =
-        GetProfileUseCase(app.getProfileRepository()).invoke(uid).last()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,4 +50,11 @@ abstract class Activity : AppCompatActivity() {
         setNegativeButton(R.string.cancel) { _, _ -> onConfirm(false) }
         setOnDismissListener { onConfirm(false) }
     }.show()
+
+    protected fun Throwable.showErrorAlert(): AlertDialog =
+        with(MaterialAlertDialogBuilder(this@Activity)) {
+            setMessage(this@showErrorAlert.message.toString())
+            setPositiveButton(R.string.confirm) { _, _ -> }
+            setOnDismissListener { }
+        }.show()
 }

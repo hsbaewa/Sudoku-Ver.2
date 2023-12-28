@@ -7,9 +7,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.fragment.app.Fragment
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
@@ -180,42 +178,6 @@ object ActivityExtension {
     private fun ViewGroup.findCoordinatorLayoutForSnackBar() =
         findViewWithTag<CoordinatorLayout>(TAG_COORDINATOR_LAYOUT_FOR_SNACK_BAR)
 
-
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- FragmentTransaction ------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-
-    /**
-     * @author hsbaewa@gmail.com
-     * @since 2023/04/06
-     * @comment FragmentTransaction을 이용하여 특정 container에 Fragment를 대체
-     * @param
-     * @return
-     **/
-    fun AppCompatActivity.replaceFragment(containerViewId: Int, fragment: Fragment) =
-        with(supportFragmentManager.beginTransaction()) {
-            replace(containerViewId, fragment, fragment::class.java.simpleName)
-            commit()
-        }
-
-    inline fun <reified T : Fragment> AppCompatActivity.removeFragment(c: Class<T>) =
-        with(supportFragmentManager) {
-            findFragmentByTag(c.simpleName)?.let { fragment ->
-                val transaction = beginTransaction()
-                transaction.remove(fragment)
-                transaction.commit()
-            }
-        }
-
-    inline fun <reified T : Fragment> AppCompatActivity.hasFragment(c: Class<T>) =
-        runCatching { findFragment(c) }.getOrNull() != null
-
-    inline fun <reified T : Fragment> AppCompatActivity.findFragment(c: Class<T>): T {
-        return with(supportFragmentManager) {
-            val name = c.simpleName
-            (findFragmentByTag(name) as? T) ?: throw Exception("not found $name")
-        }
-    }
 
     @Suppress("DEPRECATION")
     val Activity.screenWidth: Int

@@ -14,9 +14,8 @@ import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.games.PlayGames
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.last
@@ -32,6 +31,7 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
+import kr.co.hs.sudoku.feature.UserProfileViewModel
 import kr.co.hs.sudoku.feature.single.play.SinglePlayControlStageFragment
 import kr.co.hs.sudoku.feature.single.play.SinglePlayViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment
@@ -77,9 +77,12 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         SinglePlayViewModel.ProviderFactory(startingMatrix)
     }
     private var lastKnownUserProfile: ProfileEntity? = null
-    private val currentUserUid: String
-        get() = FirebaseAuth.getInstance().currentUser?.uid
-            ?: throw Exception("사용자 인증 정보가 없습니다. 게임 진행을 위해서는 먼저 사용자 인증이 필요합니다.")
+    private val userProfileViewModel: UserProfileViewModel by viewModels {
+        UserProfileViewModel.ProviderFactory(
+            PlayGames.getGamesSignInClient(this),
+            getString(R.string.default_web_client_id)
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,25 +101,13 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             }
         )
 
-        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable -> showSnackBar(throwable.message.toString()) }) {
-            runCatching {
-                val userProfile = withContext(Dispatchers.IO) { getProfile(currentUserUid) }
-                setUserProfile(userProfile)
-            }.getOrElse {
-                with(binding) {
-                    ivUserIcon.load(getDrawableCompat(R.drawable.ic_person))
-                    tvUserDisplayName.text = getString(R.string.me)
-                    tvUserMessage.isVisible = false
-                }
-            }
+        recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
 
-            with(binding) {
-                ivEnemyIcon.load(getDrawableCompat(R.drawable.ic_computer))
-                tvEnemyDisplayName.text = getString(R.string.caption_cpu)
-                tvEnemyMessage.isVisible = false
-            }
+        with(binding) {
+            ivEnemyIcon.load(getDrawableCompat(R.drawable.ic_computer))
+            tvEnemyDisplayName.text = getString(R.string.caption_cpu)
+            tvEnemyMessage.isVisible = false
         }
-
 
         with(supportFragmentManager.beginTransaction()) {
             replace(R.id.layout_user, playerFragment)
@@ -124,8 +115,24 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             commit()
         }
 
+        with(userProfileViewModel) {
+            error.observe(this@MultiPlayWithAIActivity) { it.showErrorAlert() }
+            isRunningProgress.observe(this@MultiPlayWithAIActivity) { isShowProgressIndicator = it }
+            profile.observe(this@MultiPlayWithAIActivity) { profile ->
+                profile
+                    ?.run { setUserProfile(this) }
+                    ?: run {
+                        with(binding) {
+                            ivUserIcon.load(getDrawableCompat(R.drawable.ic_person))
+                            tvUserDisplayName.text = getString(R.string.me)
+                            tvUserMessage.isVisible = false
+                        }
+                    }
+            }
 
-        recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
+            requestLastUserProfile()
+        }
+
         with(singlePlayViewModel) {
             error.observe(this@MultiPlayWithAIActivity) { showSnackBar(it.message.toString()) }
             isRunningProgress.observe(this@MultiPlayWithAIActivity) { isShowProgressIndicator = it }

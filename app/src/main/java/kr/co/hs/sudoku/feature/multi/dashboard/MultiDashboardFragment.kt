@@ -40,8 +40,8 @@ class MultiDashboardFragment : Fragment() {
     }
 
     private lateinit var binding: LayoutListMultiPlayBinding
-    private val viewModel: MultiDashboardViewModel by activityViewModels()
-    private val battleViewModel: MultiPlayViewModel by activityViewModels()
+    private val dashboardViewModel: MultiDashboardViewModel by activityViewModels()
+    private val playViewModel: MultiPlayViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,10 +59,10 @@ class MultiDashboardFragment : Fragment() {
         binding.recyclerViewMultiPlayList.onCreatedRecyclerViewMultiPlay()
         submitMultiPlayListData()
 
-        viewModel.currentMultiPlay.observe(viewLifecycleOwner) { startMultiPlay(it?.id) }
+        dashboardViewModel.currentMultiPlay.observe(viewLifecycleOwner) { startMultiPlay(it?.id) }
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.checkCurrentMultiPlay()
+                dashboardViewModel.checkCurrentMultiPlay()
             }
         }
 
@@ -109,7 +109,7 @@ class MultiDashboardFragment : Fragment() {
 
     private fun submitMultiPlayListData() = viewLifecycleOwner.lifecycleScope.launch {
         repeatOnLifecycle(Lifecycle.State.STARTED) {
-            viewModel.multiPlayPagingData.observe(viewLifecycleOwner) {
+            dashboardViewModel.multiPlayPagingData.observe(viewLifecycleOwner) {
                 getMultiPlayListItemAdapter().submitData(
                     lifecycle,
                     it.insertHeaderItem(TerminalSeparatorType.FULLY_COMPLETE, NewCreateEntity)
@@ -159,7 +159,7 @@ class MultiDashboardFragment : Fragment() {
             showSnackBar(throwable.message.toString())
         }) {
             showProgressIndicator()
-            withContext(Dispatchers.IO) { battleViewModel.doJoin(battleEntity.id) }
+            withContext(Dispatchers.IO) { playViewModel.doJoin(battleEntity.id) }
             dismissProgressIndicator()
             startMultiPlay(battleEntity.id)
         }
