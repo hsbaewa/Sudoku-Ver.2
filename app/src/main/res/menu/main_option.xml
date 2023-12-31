@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/common">
+        <item
+            android:id="@+id/sign_in"
+            android:title="@string/sign_in" />
+
+        <item
+            android:id="@+id/edit_profile"
+            android:title="@string/update_user_profile" />
+
+        <item
+            android:id="@+id/enabled_cell_haptic"
+            android:checkable="true"
+            android:title="@string/settings_cell_haptic" />
+    </group>
+
+    <group android:id="@+id/info">
+        <item
+            android:id="@+id/version_info"
+            android:title="" />
+    </group>
+
+
+</menu>
