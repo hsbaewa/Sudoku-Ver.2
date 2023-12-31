@@ -168,6 +168,8 @@ dependencies {
 
     def paging_version = "3.2.1"
     implementation "androidx.paging:paging-runtime-ktx:$paging_version"
+
+    implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
 }
 
 

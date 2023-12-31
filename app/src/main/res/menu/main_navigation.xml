@@ -16,8 +16,4 @@
         android:icon="@drawable/ic_trophy"
         android:title="@string/navigation_tab_challenge" />
 
-    <item
-        android:id="@+id/settings"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/navigation_tab_settings" />
 </menu>
