@@ -49,6 +49,10 @@ import java.net.URL
 
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
+    companion object {
+        const val EXTRA_CURRENT_TAB_ITEM_ID = "EXTRA_CURRENT_TAB_ITEM_ID"
+    }
+
     private val binding: ActivityMainBinding by lazy {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
@@ -81,35 +85,30 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         multiDashboardViewModel.error.observe(this) { it.showErrorAlert() }
         challengeDashboardViewMode.error.observe(this) { it.showErrorAlert() }
         with(userProfileViewModel) {
-            error.observe(this@MainActivity) {
-                it.showErrorAlert()
-            }
+            error.observe(this@MainActivity) { it.showErrorAlert() }
             isRunningProgress.observe(this@MainActivity) {
-                if (it) {
-                    supportActionBar?.setUIProfileLoading()
-                }
+                it.takeIf { it }?.run { supportActionBar?.setUIProfileLoading() }
             }
+            profile.observe(this@MainActivity) {
+                supportActionBar?.setUIProfile(it)
+                invalidateOptionsMenu()
+            }
+            // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
+            lifecycleScope.launch { withStarted { requestLastUserProfile() } }
         }
+
+        with(gameSettingsViewModel) {
+            error.observe(this@MainActivity) { it.showErrorAlert() }
+            gameSettings.observe(this@MainActivity) { invalidateOptionsMenu() }
+        }
+
 
         // BottomNavigationView 아이템 선택 리스너 등록
         with(binding.bottomNavigationView) {
             setOnItemSelectedListener(this@MainActivity)
-            selectedItemId = R.id.menu_single
+            selectedItemId =
+                savedInstanceState?.getInt(EXTRA_CURRENT_TAB_ITEM_ID) ?: R.id.menu_single
         }
-
-        // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
-        lifecycleScope.launch {
-            withStarted { userProfileViewModel.requestCurrentUserProfile() }
-        }
-
-
-        userProfileViewModel.profile.observe(this) {
-            supportActionBar?.setUIProfile(it)
-            invalidateOptionsMenu()
-        }
-        userProfileViewModel.requestLastUserProfile()
-
-        gameSettingsViewModel.gameSettings.observe(this) { invalidateOptionsMenu() }
     }
 
     /**
@@ -261,5 +260,10 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(EXTRA_CURRENT_TAB_ITEM_ID, binding.bottomNavigationView.selectedItemId)
     }
 }
