@@ -74,6 +74,17 @@
                 android:value=".feature.MainActivity" />
         </activity>
 
+        <activity
+            android:name=".feature.profile.ProfileUpdateActivity"
+            android:label="@string/profile_update_title"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+
+        </activity>
+
     </application>
 
 </manifest>

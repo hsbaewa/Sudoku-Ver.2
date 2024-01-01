@@ -30,8 +30,16 @@
     <string name="retry_message">are you sure retry this game?</string>
     <string name="cancel">Cancel</string>
 
-    <string name="profile_display_name">Display Name</string>
-    <string name="profile_status_message">Status Message</string>
+    <string name="profile_update_title">Profile update</string>
+    <string name="profile_display_name">Display name</string>
+    <string name="profile_input_display_name">input display name</string>
+    <string name="profile_status_message">Status message</string>
+    <string name="profile_input_status_message">input status message</string>
+    <string name="profile_update">Update</string>
+    <string name="profile_image_update_title">Profile image</string>
+    <string name="profile_image_update_message">Please enter the URL to use as the profile image.</string>
+    <string name="profile_image_input_hint">input your profile image</string>
+    <string name="profile_image_url_invalid">url is invalid</string>
 
     <string name="challenge_title">today\'s Challenge</string>
     <string name="challenge_title_leaderboard">Leaderboard</string>
