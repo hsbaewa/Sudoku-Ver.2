@@ -8,6 +8,7 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.ViewHolder
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
+import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
@@ -23,7 +24,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
 
     class MultiPlay(
         val binding: LayoutListItemMultiPlayBinding,
-        val viewModel: MultiDashboardViewModel
+        private val viewModel: MultiDashboardViewModel
     ) : MultiDashboardListItemViewHolder<MultiDashboardListItem.MultiPlayItem>(binding.root) {
         override val clickableView: View by lazy { binding.cardView }
         override fun onBind(item: MultiDashboardListItem.MultiPlayItem) {
@@ -108,7 +109,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
         MultiDashboardListItemViewHolder<MultiDashboardListItem.TitleItem>(binding.root) {
         override val clickableView: View by lazy { binding.tvTitle }
         override fun onBind(item: MultiDashboardListItem.TitleItem) = with(binding.tvTitle) {
-            text = item.title
+            text = context.getString(R.string.title_multi_play)
         }
     }
 
@@ -116,5 +117,22 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
         MultiDashboardListItemViewHolder<MultiDashboardListItem.CreateNewItem>(binding.root) {
         override val clickableView: View by lazy { binding.cardView }
         override fun onBind(item: MultiDashboardListItem.CreateNewItem) {}
+    }
+
+    class HeaderUsers(private val binding: LayoutListItemMultiPlayHeaderBinding) :
+        MultiDashboardListItemViewHolder<MultiDashboardListItem.HeaderUsersItem>(binding.root) {
+        override val clickableView: View by lazy { binding.tvHeader }
+        override fun onBind(item: MultiDashboardListItem.HeaderUsersItem) = with(binding.tvHeader) {
+            text = context.getString(R.string.multi_play_header_users)
+        }
+    }
+
+    class HeaderOthers(private val binding: LayoutListItemMultiPlayHeaderBinding) :
+        MultiDashboardListItemViewHolder<MultiDashboardListItem.HeaderOthersItem>(binding.root) {
+        override val clickableView: View by lazy { binding.tvHeader }
+        override fun onBind(item: MultiDashboardListItem.HeaderOthersItem) =
+            with(binding.tvHeader) {
+                text = context.getString(R.string.multi_play_header_others)
+            }
     }
 }

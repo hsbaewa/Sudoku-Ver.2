@@ -100,6 +100,8 @@
 
     <string name="title_multi_play">Multi Play</string>
     <string name="multi_play_add">+ New Game</string>
+    <string name="multi_play_header_users">For users</string>
+    <string name="multi_play_header_others">For participate</string>
 
     <string name="multi_create_title">Create Multi Play</string>
     <string name="multi_create_label_select_matrix">Select sudoku</string>

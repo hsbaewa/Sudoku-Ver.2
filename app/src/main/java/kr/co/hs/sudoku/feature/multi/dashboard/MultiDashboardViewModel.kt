@@ -40,7 +40,7 @@ class MultiDashboardViewModel(
     private val _currentMultiPlay = MutableLiveData<BattleEntity?>()
     val currentMultiPlay: LiveData<BattleEntity?> by this::_currentMultiPlay
 
-    val multiPlayPagingData: LiveData<PagingData<BattleEntity>>
+    val multiPlayPagingData: LiveData<PagingData<MultiDashboardListItem>>
         get() = Pager(
             config = PagingConfig(pageSize = 1),
             pagingSourceFactory = {
@@ -50,10 +50,24 @@ class MultiDashboardViewModel(
 
     private class BattleListPagingSource(
         private val battleRepository: BattleRepository
-    ) : PagingSource<Long, BattleEntity>() {
-        override fun getRefreshKey(state: PagingState<Long, BattleEntity>) = null
+    ) : PagingSource<Long, MultiDashboardListItem>() {
+        override fun getRefreshKey(state: PagingState<Long, MultiDashboardListItem>) = null
         override suspend fun load(params: LoadParams<Long>) = runCatching {
-            val list = withContext(Dispatchers.IO) { battleRepository.list() }
+            val list = buildList {
+                add(MultiDashboardListItem.TitleItem(""))
+                add(MultiDashboardListItem.HeaderUsersItem)
+                val participating = withContext(Dispatchers.IO) {
+                    battleRepository.runCatching { getParticipating() }.getOrNull()
+                }
+                if (participating == null) {
+                    add(MultiDashboardListItem.CreateNewItem)
+                } else {
+                    add(MultiDashboardListItem.MultiPlayItem(participating))
+                }
+                add(MultiDashboardListItem.HeaderOthersItem)
+                val remain = withContext(Dispatchers.IO) { battleRepository.list() }
+                addAll(remain.map { MultiDashboardListItem.MultiPlayItem(it) })
+            }
             val nextKey: Long? = null
             LoadResult.Page(list, null, nextKey)
         }.getOrElse { LoadResult.Error(it) }

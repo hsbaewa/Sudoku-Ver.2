@@ -92,6 +92,9 @@
 
     <string name="title_multi_play">멀티 플레이</string>
     <string name="multi_play_add">+ 새로 만들기</string>
+    <string name="multi_play_header_users">생성한 게임</string>
+    <string name="multi_play_header_others">게임 참여</string>
+
     <string name="multi_create_title">게임 생성</string>
     <string name="multi_create_label_select_matrix">스도쿠 선택</string>
     <string name="multi_create_label_select_participants">인원수 선택</string>

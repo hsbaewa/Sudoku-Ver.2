@@ -8,6 +8,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
+import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
 import kr.co.hs.sudoku.model.battle.BattleEntity
 
@@ -21,6 +22,8 @@ class MultiDashboardListItemAdapter(
         const val VT_ITEM = 1020
         const val VT_TITLE = 1030
         const val VT_ADD = 1040
+        const val VT_HEADER_USERS = 1050
+        const val VT_HEADER_OTHERS = 1060
     }
 
     private lateinit var viewModel: MultiDashboardViewModel
@@ -58,6 +61,14 @@ class MultiDashboardListItemAdapter(
                 setOnClickListener { onCreateNew() }
             }
 
+            VT_HEADER_USERS -> MultiDashboardListItemViewHolder.HeaderUsers(
+                LayoutListItemMultiPlayHeaderBinding.inflate(inflater, parent, false)
+            )
+
+            VT_HEADER_OTHERS -> MultiDashboardListItemViewHolder.HeaderOthers(
+                LayoutListItemMultiPlayHeaderBinding.inflate(inflater, parent, false)
+            )
+
             else -> throw Exception("invalid type")
         }
     }
@@ -76,6 +87,12 @@ class MultiDashboardListItemAdapter(
             is MultiDashboardListItem.CreateNewItem ->
                 (holder as MultiDashboardListItemViewHolder.CreateNew).onBind(item)
 
+            is MultiDashboardListItem.HeaderOthersItem ->
+                (holder as MultiDashboardListItemViewHolder.HeaderOthers).onBind(item)
+
+            is MultiDashboardListItem.HeaderUsersItem ->
+                (holder as MultiDashboardListItemViewHolder.HeaderUsers).onBind(item)
+
             null -> {}
         }
     }
@@ -85,6 +102,8 @@ class MultiDashboardListItemAdapter(
             is MultiDashboardListItem.MultiPlayItem -> VT_ITEM
             is MultiDashboardListItem.TitleItem -> VT_TITLE
             MultiDashboardListItem.CreateNewItem -> VT_ADD
+            MultiDashboardListItem.HeaderOthersItem -> VT_HEADER_OTHERS
+            MultiDashboardListItem.HeaderUsersItem -> VT_HEADER_USERS
             null -> -1
         }
     }

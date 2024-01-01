@@ -10,9 +10,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
-import androidx.paging.TerminalSeparatorType
-import androidx.paging.insertHeaderItem
-import androidx.paging.map
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -110,18 +107,7 @@ class MultiDashboardFragment : Fragment() {
     private fun submitMultiPlayListData() = viewLifecycleOwner.lifecycleScope.launch {
         repeatOnLifecycle(Lifecycle.State.STARTED) {
             dashboardViewModel.multiPlayPagingData.observe(viewLifecycleOwner) {
-                getMultiPlayListItemAdapter().submitData(
-                    lifecycle,
-                    it.insertHeaderItem(TerminalSeparatorType.FULLY_COMPLETE, NewCreateEntity)
-                        .insertHeaderItem(TerminalSeparatorType.FULLY_COMPLETE, TitleEntity)
-                        .map { entity ->
-                            when (entity) {
-                                TitleEntity -> MultiDashboardListItem.TitleItem(getString(R.string.title_multi_play))
-                                NewCreateEntity -> MultiDashboardListItem.CreateNewItem
-                                else -> MultiDashboardListItem.MultiPlayItem(entity)
-                            }
-                        }
-                )
+                getMultiPlayListItemAdapter().submitData(lifecycle, it)
             }
         }
     }
