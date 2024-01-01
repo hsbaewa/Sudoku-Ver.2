@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.PlayGamesAuthProvider
 import com.google.firebase.auth.ktx.userProfileChangeRequest
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -18,35 +19,34 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
-import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Locale
 
 class UserProfileViewModel(
+    private val profileRepository: ProfileRepository,
     private val gamesSignInClient: GamesSignInClient,
     private val defaultWebClientId: String
 ) : ViewModel() {
     class ProviderFactory(
+        private val profileRepository: ProfileRepository,
         private val gamesSignInClient: GamesSignInClient,
         private val defaultWebClientId: String
     ) : ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
             return if (modelClass.isAssignableFrom(UserProfileViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                UserProfileViewModel(gamesSignInClient, defaultWebClientId) as T
+                UserProfileViewModel(profileRepository, gamesSignInClient, defaultWebClientId) as T
             } else {
                 throw IllegalArgumentException()
             }
         }
     }
 
-    private val profileRepository: ProfileRepository by lazy { ProfileRepositoryImpl() }
     private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     private val _profile = MutableLiveData<ProfileEntity?>()
     val profile: LiveData<ProfileEntity?> by this::_profile
-
 
     /**
      * Google Games
@@ -72,12 +72,14 @@ class UserProfileViewModel(
         }.getOrNull()
 
     private suspend fun FirebaseUser.updateFirebaseUser(profileEntity: ProfileEntity) =
-        updateProfile(
-            userProfileChangeRequest {
-                this.displayName = profileEntity.displayName
-                this.photoUri = profileEntity.iconUrl?.toUri()
-            }
-        ).await()
+        withContext(Dispatchers.IO) {
+            updateProfile(
+                userProfileChangeRequest {
+                    this.displayName = profileEntity.displayName
+                    this.photoUri = profileEntity.iconUrl?.toUri()
+                }
+            ).await()
+        }
 
     /**
      * Profile
@@ -146,13 +148,21 @@ class UserProfileViewModel(
         setProgress(false)
     }
 
-    fun updateUserInfo(profileEntity: ProfileEntity) =
-        viewModelScope.launch(viewModelScopeExceptionHandler) {
+    fun updateUserInfo(onComplete: (Boolean) -> Unit) =
+        viewModelScope.launch(CoroutineExceptionHandler { coroutineContext, throwable ->
+            viewModelScopeExceptionHandler.handleException(coroutineContext, throwable)
+            onComplete(false)
+        }) {
+            setProgress(true)
             val user = firebaseAuth.currentUser
                 ?: throw AuthenticationException.UnknownUserException("알수 없는 사용자 입니다.")
 
-            user.updateFirebaseUser(profileEntity)
-            profileRepository.setProfile(profileEntity)
+            profile.value?.run {
+                user.updateFirebaseUser(this)
+                withContext(Dispatchers.IO) { profileRepository.setProfile(this@run) }
+            }
+            setProgress(false)
+            onComplete(true)
         }
 
     fun requestLastUserProfile() = viewModelScope.launch(viewModelScopeExceptionHandler) {
@@ -162,5 +172,17 @@ class UserProfileViewModel(
         }
         _profile.value = profile
         setProgress(false)
+    }
+
+    fun setDisplayName(displayName: String) {
+        _profile.value?.displayName = displayName
+    }
+
+    fun setMessage(message: String) {
+        _profile.value?.message = message
+    }
+
+    fun setIconUrl(iconUrl: String) {
+        _profile.value?.iconUrl = iconUrl
     }
 }

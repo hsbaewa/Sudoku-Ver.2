@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/card_view_profile_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/tool_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_view_profile_icon"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:layout_marginHorizontal="22dp"
+            android:layout_marginTop="30dp"
+            app:cardBackgroundColor="@color/gray_050"
+            app:cardCornerRadius="100dp"
+            app:cardElevation="8dp"
+            app:layout_constraintBottom_toTopOf="@id/tv_label_display_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/app_bar_layout"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:strokeColor="@color/gray_500"
+            app:strokeWidth="3dp">
+
+            <ImageView
+                android:id="@+id/iv_profile_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no" />
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <TextView
+            android:id="@+id/tv_label_display_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="28dp"
+            android:layout_marginTop="14dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:text="@string/profile_display_name"
+            app:layout_constraintBottom_toTopOf="@id/input_display_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/card_view_profile_icon" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_display_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="22dp"
+            android:layout_marginTop="8dp"
+            app:hintEnabled="false"
+            app:layout_constraintBottom_toTopOf="@id/tv_label_status_message"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_label_display_name"
+            app:layout_constraintWidth_default="spread">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_display_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/profile_input_display_name"
+                android:imeOptions="actionNext"
+                android:inputType="text"
+                android:nextFocusDown="@id/edit_status_message"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/tv_label_status_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="28dp"
+            android:layout_marginTop="14dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:text="@string/profile_status_message"
+            app:layout_constraintBottom_toTopOf="@id/input_status_message"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/input_display_name" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_status_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="22dp"
+            android:layout_marginTop="8dp"
+            app:hintEnabled="false"
+            app:layout_constraintBottom_toTopOf="@id/btn_update"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_label_status_message"
+            app:layout_constraintWidth_default="spread">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_status_message"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/profile_input_status_message"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_update"
+            style="@style/Theme.HSSudoku2.OutlineButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="22dp"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="50dp"
+            android:minHeight="70dp"
+            android:text="@string/profile_update"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/input_status_message" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

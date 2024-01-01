@@ -10,6 +10,7 @@ import android.graphics.drawable.DrawableWrapper
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
 import androidx.core.content.ContextCompat
@@ -38,7 +39,7 @@ import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardFragment
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
-import kr.co.hs.sudoku.feature.profile.ProfileDialog
+import kr.co.hs.sudoku.feature.profile.ProfileUpdateActivity
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.model.settings.GameSettingsEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
@@ -68,6 +69,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     }
     private val userProfileViewModel: UserProfileViewModel by viewModels {
         UserProfileViewModel.ProviderFactory(
+            app.getProfileRepository(),
             PlayGames.getGamesSignInClient(this),
             getString(R.string.default_web_client_id)
         )
@@ -75,6 +77,12 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val gameSettingsViewModel: GameSettingsViewModel by viewModels {
         GameSettingsViewModel.Factory(GameSettingsRepositoryImpl(dataStore))
     }
+    private val launcherForProfileUpdate =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                userProfileViewModel.requestCurrentUserProfile()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -239,15 +247,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             }
 
             R.id.edit_profile -> {
-                with(userProfileViewModel) {
-                    profile.value
-                        ?.run {
-                            ProfileDialog(this@MainActivity, this, true) {
-                                updateUserInfo(it)
-                            }
-                        }
-                        ?.show()
-                }
+                launcherForProfileUpdate.launch(ProfileUpdateActivity.newIntent(this))
                 true
             }
 

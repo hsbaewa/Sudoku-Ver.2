@@ -20,6 +20,8 @@
         <item name="toolbarStyle">@style/Theme.HSSudoku2.Toolbar</item>
         <!-- 앱바 스타일 -->
         <item name="appBarLayoutStyle">@style/Theme.HSSudoku2.AppBarLayout</item>
+
+        <item name="textInputStyle">@style/Theme.HSSudoku2.TextInputLayout.OutlinedBox</item>
     </style>
 
     <style name="Theme.HSSudoku2.BottomNavigation" parent="Theme.HSSudoku2">
@@ -99,6 +101,8 @@
     <style name="Theme.HSSudoku2.AppModalStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@drawable/bg_bottom_sheet_dialog</item>
     </style>
+
+    <style name="Theme.HSSudoku2.TextInputLayout.OutlinedBox" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox" />
 
 
 </resources>

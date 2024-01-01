@@ -21,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
@@ -77,8 +78,10 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         SinglePlayViewModel.ProviderFactory(startingMatrix)
     }
     private var lastKnownUserProfile: ProfileEntity? = null
+    private val app: App by lazy { applicationContext as App }
     private val userProfileViewModel: UserProfileViewModel by viewModels {
         UserProfileViewModel.ProviderFactory(
+            app.getProfileRepository(),
             PlayGames.getGamesSignInClient(this),
             getString(R.string.default_web_client_id)
         )

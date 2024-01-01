@@ -42,4 +42,35 @@ object CoilExt {
         )
 
     }
+
+    fun ImageView.load(
+        data: Any?,
+        placeHolder: Drawable? = null,
+        errorIcon: Drawable? = null,
+        onComplete: (Throwable?) -> Unit
+    ): Disposable {
+        val loading = placeHolder ?: CircularProgressDrawable(context).apply {
+            strokeWidth = 4f
+            centerRadius = 10f
+            setColorSchemeColors(context.getColorCompat(R.color.gray_500))
+            start()
+        }
+        return context.appImageLoader.enqueue(
+            ImageRequest.Builder(context)
+                .data(data)
+                .placeholder(loading)
+                .error(errorIcon)
+                .listener(
+                    onStart = { request -> setImageDrawable(request.placeholder) },
+                    onSuccess = { _, result ->
+                        setImageDrawable(result.drawable)
+                        onComplete(null)
+                    },
+                    onError = { _, result -> onComplete(result.throwable) }
+                )
+                .crossfade(true)
+                .transformations(CircleCropTransformation())
+                .build()
+        )
+    }
 }
