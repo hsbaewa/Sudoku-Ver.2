@@ -58,7 +58,7 @@ sealed class MatrixListItemViewHolder<T : MatrixListItem>(itemView: View) : View
     class Header(private val binding: LayoutListItemMatrixHeaderBinding) :
         MatrixListItemViewHolder<MatrixListItem.HeaderItem>(binding.root) {
 
-        override val clickableView: View by lazy { binding.cardView }
+        override val clickableView: View by lazy { binding.tvHeader }
         override fun onBind(item: MatrixListItem.HeaderItem) = with(binding.tvHeader) {
             text = item.header
         }

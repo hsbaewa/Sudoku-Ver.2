@@ -18,4 +18,14 @@ sealed class MultiDashboardListItem {
     object CreateNewItem : MultiDashboardListItem() {
         override val id: String = "create new"
     }
+
+    object HeaderUsersItem : MultiDashboardListItem() {
+        override val id: String
+            get() = "HeaderUsersItem"
+    }
+
+    object HeaderOthersItem : MultiDashboardListItem() {
+        override val id: String
+            get() = "HeaderOthersItem"
+    }
 }
