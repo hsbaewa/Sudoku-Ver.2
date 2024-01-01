@@ -21,7 +21,6 @@ import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
-import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
@@ -58,13 +57,10 @@ class MultiDashboardFragment : Fragment() {
 
         dashboardViewModel.currentMultiPlay.observe(viewLifecycleOwner) { startMultiPlay(it?.id) }
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                dashboardViewModel.checkCurrentMultiPlay()
-            }
+            repeatOnLifecycle(Lifecycle.State.STARTED) { dashboardViewModel.checkCurrentMultiPlay() }
         }
 
         with(binding.swipeRefreshLayout) {
-            setColorSchemeColors(context.getColorCompat(R.color.gray_500))
             setOnRefreshListener { refreshMultiPlayListData() }
         }
     }
@@ -80,17 +76,22 @@ class MultiDashboardFragment : Fragment() {
         pagingDataAdapter.apply {
             addLoadStateListener { loadState ->
                 when (loadState.refresh) {
-                    is LoadState.NotLoading -> dismissProgressIndicator()
-                    LoadState.Loading -> showProgressIndicator()
-                    is LoadState.Error -> dismissProgressIndicator()
+                    is LoadState.NotLoading, is LoadState.Error -> {
+                        dismissRefreshing()
+                        dismissProgressIndicator()
+                    }
+
+                    LoadState.Loading -> {
+                        if (!isRefreshing()) {
+                            showProgressIndicator()
+                        }
+                    }
+
                 }
 
                 if (loadState.refresh is LoadState.NotLoading && loadState.append is LoadState.NotLoading) {
                     // 페이지 로드 완료 후 동작
-                    with(binding.swipeRefreshLayout) {
-                        isRefreshing = false
-                    }
-
+                    dismissRefreshing()
 
                     with(binding.tvEmptyMessage) {
                         isVisible = snapshot()
@@ -118,10 +119,6 @@ class MultiDashboardFragment : Fragment() {
     private fun refreshMultiPlayListData() {
         getMultiPlayListItemAdapter().refresh()
     }
-
-    object TitleEntity : BattleEntity.Invalid()
-
-    object NewCreateEntity : BattleEntity.Invalid()
 
     private fun startCreateMulti() = viewLifecycleOwner.lifecycleScope.launch {
         MultiPlayCreateActivity.start(requireContext())
@@ -153,5 +150,10 @@ class MultiDashboardFragment : Fragment() {
     private fun startMultiPlay(battleId: String?) = battleId?.let {
         viewLifecycleOwner.lifecycleScope
             .launch { startActivity(MultiPlayActivity.newIntent(requireContext(), it)) }
+    }
+
+    private fun isRefreshing() = binding.swipeRefreshLayout.isRefreshing
+    private fun dismissRefreshing() {
+        binding.swipeRefreshLayout.isRefreshing = false
     }
 }

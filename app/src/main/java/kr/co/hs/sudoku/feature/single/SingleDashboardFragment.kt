@@ -76,7 +76,19 @@ class SingleDashboardFragment : Fragment() {
 
         viewModel.matrixList.observe(viewLifecycleOwner) { list -> updateUIMatrixList(list) }
         viewModel.error.observe(viewLifecycleOwner) { showSnackBar(it.message.toString()) }
-        viewModel.isRunningProgress.observe(viewLifecycleOwner) { isShowProgressIndicator = it }
+
+        with(binding.swipeRefreshLayout) {
+            setOnRefreshListener { viewModel.requestAllMatrix() }
+            viewModel.isRunningProgress.observe(viewLifecycleOwner) {
+                if (isRefreshing) {
+                    if (!it) {
+                        binding.swipeRefreshLayout.isRefreshing = it
+                    }
+                } else {
+                    isShowProgressIndicator = it
+                }
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
