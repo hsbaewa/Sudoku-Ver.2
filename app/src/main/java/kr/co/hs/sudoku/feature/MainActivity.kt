@@ -102,7 +102,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 invalidateOptionsMenu()
             }
             // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
-            lifecycleScope.launch { withStarted { requestLastUserProfile() } }
+            lifecycleScope.launch { withStarted { requestCurrentUserProfile() } }
         }
 
         with(gameSettingsViewModel) {

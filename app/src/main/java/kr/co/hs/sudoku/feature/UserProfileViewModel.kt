@@ -52,10 +52,16 @@ class UserProfileViewModel(
      * Google Games
      */
     private suspend fun GamesSignInClient.isAuthenticatedGames() =
-        runCatching { isAuthenticated.await().isAuthenticated }.getOrDefault(false)
+        runCatching {
+            withContext(Dispatchers.IO) { isAuthenticated.await().isAuthenticated }
+        }.getOrDefault(false)
 
     private suspend fun GamesSignInClient.getPlayGamesServerAuthCode() =
-        runCatching { requestServerSideAccess(defaultWebClientId, false).await() }.getOrNull()
+        runCatching {
+            withContext(Dispatchers.IO) {
+                requestServerSideAccess(defaultWebClientId, false).await()
+            }
+        }.getOrNull()
 
     private suspend fun GamesSignInClient.signInGames() =
         runCatching { signIn().await() }.getOrNull()
@@ -66,9 +72,11 @@ class UserProfileViewModel(
      */
     private suspend fun FirebaseAuth.signInFirebaseAuth(gamesServerAuthCode: String) =
         runCatching {
-            PlayGamesAuthProvider.getCredential(gamesServerAuthCode)
-                .run { signInWithCredential(this) }
-                .await()
+            withContext(Dispatchers.IO) {
+                PlayGamesAuthProvider.getCredential(gamesServerAuthCode)
+                    .run { signInWithCredential(this) }
+                    .await()
+            }
         }.getOrNull()
 
     private suspend fun FirebaseUser.updateFirebaseUser(profileEntity: ProfileEntity) =
@@ -97,17 +105,22 @@ class UserProfileViewModel(
 
     fun requestCurrentUserProfile() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
-        if (gamesSignInClient.isAuthenticatedGames()) {
-            _profile.value = migrationUserProfileGamesWithFirebase()
-        } else {
-            _profile.value = null
-        }
+
+        _profile.value = firebaseAuth.currentUser?.uid
+            ?.let { uid -> withContext(Dispatchers.IO) { profileRepository.getProfile(uid) } }
+            ?: run {
+                if (gamesSignInClient.isAuthenticatedGames()) {
+                    migrationUserProfileGamesWithFirebase()
+                } else {
+                    null
+                }
+            }
+
         setProgress(false)
     }
 
     private suspend fun migrationUserProfileGamesWithFirebase(): ProfileEntity {
         var authCode = gamesSignInClient.getPlayGamesServerAuthCode()
-//            ?: throw AuthenticationException.UnauthenticatedException("서버 인증 코드 요청에 실패 하였습니다. Games 로그인 여부를 확인해주세요.")
         if (authCode == null) {
             delay(3000)
             authCode = gamesSignInClient.getPlayGamesServerAuthCode()
@@ -121,10 +134,13 @@ class UserProfileViewModel(
             ?: throw AuthenticationException.UnknownUserException("알수 없는 사용자 입니다.")
 
         return with(profileRepository) {
-            runCatching { getProfile(user.uid) }
+            runCatching { withContext(Dispatchers.IO) { getProfile(user.uid) } }
                 .getOrElse {
                     when (it) {
-                        is NullPointerException -> user.toProfile().apply { setProfile(this) }
+                        is NullPointerException -> user.toProfile().apply {
+                            withContext(Dispatchers.IO) { setProfile(this@apply) }
+                        }
+
                         else -> throw AuthenticationException.InvalidRepositoryException(it.message)
                     }
                 }
