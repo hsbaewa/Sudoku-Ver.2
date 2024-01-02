@@ -16,7 +16,9 @@ import androidx.appcompat.app.ActionBar
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import coil.request.ImageRequest
@@ -41,6 +43,7 @@ import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.feature.profile.ProfileUpdateActivity
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
+import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.settings.GameSettingsEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
@@ -90,7 +93,21 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         setSupportActionBar(binding.toolBar)
 
         multiPlayViewModel.error.observe(this) { it.showErrorAlert() }
-        multiDashboardViewModel.error.observe(this) { it.showErrorAlert() }
+        with(multiDashboardViewModel) {
+            error.observe(this@MainActivity) { it.showErrorAlert() }
+            currentMultiPlay.observe(this@MainActivity) {
+                supportActionBar?.subtitle = when (it) {
+                    is BattleEntity.Opened,
+                    is BattleEntity.Pending -> getString(R.string.multi_noti_waiting)
+
+                    is BattleEntity.Playing -> getString(R.string.multi_noti_playing)
+                    else -> null
+                }
+            }
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) { checkCurrentMultiPlay() }
+            }
+        }
         challengeDashboardViewMode.error.observe(this) { it.showErrorAlert() }
         with(userProfileViewModel) {
             error.observe(this@MainActivity) { it.showErrorAlert() }

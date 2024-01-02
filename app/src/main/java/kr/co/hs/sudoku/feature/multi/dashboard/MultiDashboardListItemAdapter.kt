@@ -10,10 +10,9 @@ import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
-import kr.co.hs.sudoku.model.battle.BattleEntity
 
 class MultiDashboardListItemAdapter(
-    private val onItemClick: (BattleEntity) -> Unit,
+    private val onItemClick: (MultiDashboardListItem.MultiPlayItem) -> Unit,
     private val onCreateNew: () -> Unit
 ) : PagingDataAdapter<MultiDashboardListItem, MultiDashboardListItemViewHolder<out MultiDashboardListItem>>(
     MultiDashboardListItemDiffCallback()
@@ -50,7 +49,6 @@ class MultiDashboardListItemAdapter(
             ).apply {
                 setOnClickListener {
                     (getItem(bindingAdapterPosition) as? MultiDashboardListItem.MultiPlayItem)
-                        ?.battleEntity
                         ?.let(onItemClick)
                 }
             }

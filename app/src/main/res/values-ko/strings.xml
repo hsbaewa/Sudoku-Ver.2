@@ -106,6 +106,9 @@
     <string name="multi_list_empty_message">참여 가능한 게임이 없습니다.</string>
     <string name="multi_create_label_ai">인긍지능과 대결</string>
 
+    <string name="multi_noti_waiting">스도쿠 멀티 플레이 기다리는 중…</string>
+    <string name="multi_noti_playing">스도쿠 멀티 플레이 진행 중…</string>
+
     <string name="title_challenge">도전</string>
     <string name="challenge_dashboard_header_matrix">오늘의 도전 과제</string>
     <string name="challenge_dashboard_header_rank">랭킹</string>

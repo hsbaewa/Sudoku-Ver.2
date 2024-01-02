@@ -5,7 +5,10 @@ import kr.co.hs.sudoku.model.battle.BattleEntity
 sealed class MultiDashboardListItem {
     abstract val id: String
 
-    data class MultiPlayItem(val battleEntity: BattleEntity) : MultiDashboardListItem() {
+    data class MultiPlayItem(
+        val battleEntity: BattleEntity,
+        val isParticipating: Boolean
+    ) : MultiDashboardListItem() {
         override val id: String
             get() = battleEntity.id
     }

@@ -62,11 +62,16 @@ class MultiDashboardViewModel(
                 if (participating == null) {
                     add(MultiDashboardListItem.CreateNewItem)
                 } else {
-                    add(MultiDashboardListItem.MultiPlayItem(participating))
+                    add(MultiDashboardListItem.MultiPlayItem(participating, true))
                 }
                 add(MultiDashboardListItem.HeaderOthersItem)
                 val remain = withContext(Dispatchers.IO) { battleRepository.list() }
-                addAll(remain.map { MultiDashboardListItem.MultiPlayItem(it) })
+                addAll(
+                    remain.mapNotNull { item ->
+                        item.takeIf { it != participating }
+                            ?.run { MultiDashboardListItem.MultiPlayItem(this, false) }
+                    }
+                )
             }
             val nextKey: Long? = null
             LoadResult.Page(list, null, nextKey)

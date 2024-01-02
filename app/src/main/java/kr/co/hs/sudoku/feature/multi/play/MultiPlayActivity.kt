@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
@@ -77,7 +76,6 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         binding.lifecycleOwner = this
         setSupportActionBar(binding.toolBar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        onBackPressedDispatcher.addCallback { showExitDialog() }
 
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
         with(battleViewModel) {
@@ -110,8 +108,13 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_exit, android.R.id.home -> {
+            R.id.menu_exit -> {
                 showExitDialog()
+                true
+            }
+
+            android.R.id.home -> {
+                navigateUpToParent()
                 true
             }
 

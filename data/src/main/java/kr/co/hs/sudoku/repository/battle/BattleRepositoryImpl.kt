@@ -166,7 +166,7 @@ class BattleRepositoryImpl(
                     ?.battleId
                     ?.also {
                         if (it == battle.id) {
-                            throw Exception("참여 하려는 게임(${it})에 이미 참가 중 입니다.")
+                            throw AlreadyJoinedException("참여 하려는 게임(${it})에 이미 참가 중 입니다.")
                         } else {
 //                            throw Exception("다른 게임(${it})에 참가 중 입니다. 참가 중인 게임을 종료 후 다시 시도 해 주세요.")
                         }
@@ -198,6 +198,8 @@ class BattleRepositoryImpl(
             }
         }.await()
     }
+
+    class AlreadyJoinedException(message: String?) : Exception(message)
 
 
     /**

@@ -111,6 +111,9 @@
     <string name="multi_create_label_participants_4">4</string>
     <string name="multi_create_label_do_create">Do create!!</string>
 
+    <string name="multi_noti_waiting">Multi play sudoku in waiting…</string>
+    <string name="multi_noti_playing">Multi play sudoku in playing…</string>
+
     <string name="multi_list_join_confirm">Would you like to join this game?</string>
     <string name="multi_list_empty_message">There are no games available to participate.</string>
 
