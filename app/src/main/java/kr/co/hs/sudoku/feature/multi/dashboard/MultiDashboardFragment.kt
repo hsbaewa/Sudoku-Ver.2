@@ -55,9 +55,8 @@ class MultiDashboardFragment : Fragment() {
         binding.recyclerViewMultiPlayList.onCreatedRecyclerViewMultiPlay()
         submitMultiPlayListData()
 
-        dashboardViewModel.currentMultiPlay.observe(viewLifecycleOwner) { startMultiPlay(it?.id) }
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { dashboardViewModel.checkCurrentMultiPlay() }
+        dashboardViewModel.currentMultiPlay.observe(viewLifecycleOwner) {
+            it?.takeIf { it is BattleEntity.Playing }?.run { startMultiPlay(id) }
         }
 
         with(binding.swipeRefreshLayout) {
@@ -69,7 +68,11 @@ class MultiDashboardFragment : Fragment() {
         layoutManager = LinearLayoutManager(context)
         addVerticalDivider(thickness = 10.dp)
         val pagingDataAdapter = MultiDashboardListItemAdapter(
-            onItemClick = { showConfirmJoinMultiPlay(it) },
+            onItemClick = { item ->
+                item.takeIf { it.isParticipating }
+                    ?.run { startMultiPlay(id) }
+                    ?: run { showConfirmJoinMultiPlay(item.battleEntity) }
+            },
             onCreateNew = { startCreateMulti() }
         )
 
@@ -95,8 +98,7 @@ class MultiDashboardFragment : Fragment() {
 
                     with(binding.tvEmptyMessage) {
                         isVisible = snapshot()
-                            .filterIsInstance<MultiDashboardListItem.MultiPlayItem>()
-                            .isEmpty()
+                            .none { it is MultiDashboardListItem.MultiPlayItem && !it.isParticipating }
                     }
                 }
             }
