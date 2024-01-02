@@ -108,7 +108,12 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_exit, android.R.id.home -> {
+            R.id.menu_exit -> {
+                showExitDialog()
+                true
+            }
+
+            android.R.id.home -> {
                 navigateUpToParent()
                 true
             }
