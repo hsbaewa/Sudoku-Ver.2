@@ -73,11 +73,9 @@ class MultiDashboardViewModel(
                 val currentSize = size
 
                 val remain = withContext(Dispatchers.IO) { battleRepository.list() }
+                    .filter { it != participating }
                 addAll(
-                    remain.mapNotNull { item ->
-                        item.takeIf { it != participating }
-                            ?.run { MultiDashboardListItem.MultiPlayItem(this, false) }
-                    }
+                    remain.map { MultiDashboardListItem.MultiPlayItem(it, false) }
                 )
 
                 nativeItemAdManager?.fetchNativeAd()?.run {

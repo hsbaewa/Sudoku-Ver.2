@@ -189,7 +189,10 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             is ParticipantEntity.Playing,
             is ParticipantEntity.Cleared -> viewerBoard { it.setStatus(participant) }
 
-            else -> releaseViewerBoard()
+            else -> {
+                releaseViewerBoard()
+                showNativeAd()
+            }
         }
     }
 
@@ -359,5 +362,10 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             .setNegativeButton(R.string.cancel, null)
             .setCancelable(false)
             .show()
+    }
+
+    private fun showNativeAd() = with(supportFragmentManager.beginTransaction()) {
+        replace(R.id.layout_enemy, NativeAdFragment.newInstance())
+        commit()
     }
 }
