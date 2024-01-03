@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.feature.multi.dashboard
 
+import com.google.android.gms.ads.nativead.NativeAd
 import kr.co.hs.sudoku.model.battle.BattleEntity
 
 sealed class MultiDashboardListItem {
@@ -30,5 +31,10 @@ sealed class MultiDashboardListItem {
     object HeaderOthersItem : MultiDashboardListItem() {
         override val id: String
             get() = "HeaderOthersItem"
+    }
+
+    data class AdItem(val nativeAd: NativeAd) : MultiDashboardListItem() {
+        override val id: String
+            get() = "AdItem"
     }
 }

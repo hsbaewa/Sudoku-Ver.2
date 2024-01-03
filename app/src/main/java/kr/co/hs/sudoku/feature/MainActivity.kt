@@ -28,6 +28,7 @@ import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.AppOpenAdManager
+import kr.co.hs.sudoku.NativeItemAdManager
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
@@ -66,7 +67,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
-        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
+        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository(), NativeItemAdManager(app))
     }
     private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels {
         ChallengeDashboardViewModel.ProviderFactory(app.getChallengeRepository())

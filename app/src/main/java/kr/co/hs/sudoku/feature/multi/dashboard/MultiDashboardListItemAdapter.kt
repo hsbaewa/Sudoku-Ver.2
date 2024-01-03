@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
+import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAdBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
@@ -23,6 +24,7 @@ class MultiDashboardListItemAdapter(
         const val VT_ADD = 1040
         const val VT_HEADER_USERS = 1050
         const val VT_HEADER_OTHERS = 1060
+        const val VT_AD = 1070
     }
 
     private lateinit var viewModel: MultiDashboardViewModel
@@ -67,6 +69,10 @@ class MultiDashboardListItemAdapter(
                 LayoutListItemMultiPlayHeaderBinding.inflate(inflater, parent, false)
             )
 
+            VT_AD -> MultiDashboardListItemViewHolder.AdItemView(
+                LayoutListItemMultiPlayAdBinding.inflate(inflater, parent, false)
+            )
+
             else -> throw Exception("invalid type")
         }
     }
@@ -91,6 +97,9 @@ class MultiDashboardListItemAdapter(
             is MultiDashboardListItem.HeaderUsersItem ->
                 (holder as MultiDashboardListItemViewHolder.HeaderUsers).onBind(item)
 
+            is MultiDashboardListItem.AdItem ->
+                (holder as MultiDashboardListItemViewHolder.AdItemView).onBind(item)
+
             null -> {}
         }
     }
@@ -102,6 +111,7 @@ class MultiDashboardListItemAdapter(
             MultiDashboardListItem.CreateNewItem -> VT_ADD
             MultiDashboardListItem.HeaderOthersItem -> VT_HEADER_OTHERS
             MultiDashboardListItem.HeaderUsersItem -> VT_HEADER_USERS
+            is MultiDashboardListItem.AdItem -> VT_AD
             null -> -1
         }
     }

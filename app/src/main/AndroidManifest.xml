@@ -24,6 +24,10 @@
             android:name="kr.co.hs.sudoku.adUnitId.OpenAd"
             android:value="@string/ads_unit_id_opening" />
 
+        <meta-data
+            android:name="kr.co.hs.sudoku.adUnitId.NativeAd"
+            android:value="@string/ads_unit_id_item" />
+
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"

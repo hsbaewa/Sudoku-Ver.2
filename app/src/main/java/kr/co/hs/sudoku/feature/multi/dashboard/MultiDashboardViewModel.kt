@@ -15,22 +15,26 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.NativeItemAdManager
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import kotlin.random.Random
 
 class MultiDashboardViewModel(
-    val battleRepository: BattleRepository
+    val battleRepository: BattleRepository,
+    private val nativeItemAdManager: NativeItemAdManager? = null
 ) : ViewModel() {
     class ProviderFactory(
-        private val battleRepository: BattleRepository
+        private val battleRepository: BattleRepository,
+        private val nativeItemAdManager: NativeItemAdManager? = null
     ) : ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
             return if (modelClass.isAssignableFrom(MultiDashboardViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                MultiDashboardViewModel(battleRepository) as T
+                MultiDashboardViewModel(battleRepository, nativeItemAdManager) as T
             } else {
                 throw IllegalArgumentException()
             }
@@ -44,12 +48,13 @@ class MultiDashboardViewModel(
         get() = Pager(
             config = PagingConfig(pageSize = 1),
             pagingSourceFactory = {
-                BattleListPagingSource(battleRepository)
+                BattleListPagingSource(battleRepository, nativeItemAdManager)
             }
         ).liveData.cachedIn(viewModelScope)
 
     private class BattleListPagingSource(
-        private val battleRepository: BattleRepository
+        private val battleRepository: BattleRepository,
+        private val nativeItemAdManager: NativeItemAdManager?
     ) : PagingSource<Long, MultiDashboardListItem>() {
         override fun getRefreshKey(state: PagingState<Long, MultiDashboardListItem>) = null
         override suspend fun load(params: LoadParams<Long>) = runCatching {
@@ -65,6 +70,8 @@ class MultiDashboardViewModel(
                     add(MultiDashboardListItem.MultiPlayItem(participating, true))
                 }
                 add(MultiDashboardListItem.HeaderOthersItem)
+                val currentSize = size
+
                 val remain = withContext(Dispatchers.IO) { battleRepository.list() }
                 addAll(
                     remain.mapNotNull { item ->
@@ -72,6 +79,12 @@ class MultiDashboardViewModel(
                             ?.run { MultiDashboardListItem.MultiPlayItem(this, false) }
                     }
                 )
+
+                nativeItemAdManager?.fetchNativeAd()?.run {
+                    val random =
+                        Random.nextInt(remain.size.plus(1).takeIf { it <= 3 } ?: 3) + currentSize
+                    add(random, MultiDashboardListItem.AdItem(this))
+                }
             }
             val nextKey: Long? = null
             LoadResult.Page(list, null, nextKey)
