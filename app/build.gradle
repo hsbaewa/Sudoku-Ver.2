@@ -92,7 +92,7 @@ dependencies {
     //Google Play Service
     implementation "com.google.android.gms:play-services-games-v2:19.0.0"
     //Tasks await 함수 사용을 위해 종속 항목 추가
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1'
 
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'

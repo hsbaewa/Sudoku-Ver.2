@@ -29,7 +29,7 @@ jacocoTestReport {
 dependencies {
     testImplementation 'junit:junit:4.13.2'
 
-    def coroutines_version = '1.6.4'
+    def coroutines_version = '1.7.1'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 
