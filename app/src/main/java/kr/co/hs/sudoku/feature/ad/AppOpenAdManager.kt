@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku
+package kr.co.hs.sudoku.feature.ad
 
 import android.app.Activity
 import android.view.View
@@ -8,6 +8,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.appopen.AppOpenAd
+import kr.co.hs.sudoku.BuildConfig
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getMetaData
 
 class AppOpenAdManager(
@@ -20,6 +21,7 @@ class AppOpenAdManager(
             "ca-app-pub-3940256099942544/9257395921"
         } else {
             activity.getMetaData("kr.co.hs.sudoku.adUnitId.OpenAd")
+                ?.takeIf { it.isNotEmpty() }
         }
 
     private val splashContent: View

@@ -80,6 +80,13 @@ jobs:
           metadata-key: 'kr.co.hs.sudoku.adUnitId.NativeAdForStage'
           metadata-value: ${{secrets.ADS_UNIT_ID_NATIVE_FOR_STAGE}}
           print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.BannerAdSinglePlay 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.BannerAdSinglePlay'
+          metadata-value: ${{secrets.ADS_UNIT_ID_BANNER_FOR_SINGLE_PLAY}}
+          print-file: true
       - name: 빌드 환경 java 버전 설정
         uses: actions/setup-java@v3
         with:

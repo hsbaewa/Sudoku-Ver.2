@@ -25,6 +25,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
+import kr.co.hs.sudoku.feature.ad.AdaptiveBannerAdManager
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
@@ -148,7 +149,10 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
                 historyQueue
             }
             dismissProgressIndicator()
-            withStarted { challengePlayViewModel.requestChallenge() }
+            withStarted {
+                challengePlayViewModel.requestChallenge()
+                AdaptiveBannerAdManager(this@ChallengePlayActivity).attachBanner(binding.layoutAdView)
+            }
         }
     }
 

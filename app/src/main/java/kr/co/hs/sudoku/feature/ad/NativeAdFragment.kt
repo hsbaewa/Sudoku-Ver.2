@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature.multi.play
+package kr.co.hs.sudoku.feature.ad
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -25,6 +25,7 @@ class NativeAdFragment : Fragment() {
             "ca-app-pub-3940256099942544/2247696110"
         } else {
             requireContext().getMetaData("kr.co.hs.sudoku.adUnitId.NativeAdForStage")
+                ?.takeIf { it.isNotEmpty() }
         }
     private lateinit var binding: LayoutPlayNativeAdBinding
 

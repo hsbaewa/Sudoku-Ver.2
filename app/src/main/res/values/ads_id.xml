@@ -4,4 +4,5 @@
     <string name="ads_unit_id_opening" translatable="false" />
     <string name="ads_unit_id_item" translatable="false" />
     <string name="ads_unit_id_native_ad_for_stage" translatable="false" />
+    <string name="ads_unit_id_banner_ad_for_single_play" translatable="false" />
 </resources>

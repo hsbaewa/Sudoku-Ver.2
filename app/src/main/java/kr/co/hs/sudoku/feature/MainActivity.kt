@@ -27,8 +27,8 @@ import com.google.android.gms.games.PlayGames
 import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.App
-import kr.co.hs.sudoku.AppOpenAdManager
-import kr.co.hs.sudoku.NativeItemAdManager
+import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
+import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
