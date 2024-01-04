@@ -76,8 +76,12 @@ class BattleRepositoryImpl(
         val participant = getParticipant(t, currentUserUid) ?: return
         val participantBattleId = participant.battleId ?: return
         val battle = getBattle(t, participantBattleId)?.toDomain() ?: return
-        if (battle !is BattleEntity.Closed)
-            throw Exception("이미 생성된 게임(${battle.id})이 있습니다. 생성된 게임을 종료 후 다시 시도 해 주세요.")
+        if (battle !is BattleEntity.Closed) {
+            throw BattleRepositoryException(
+                "이미 생성된 게임(${battle.id})이 있습니다. 생성된 게임을 종료 후 다시 시도 해 주세요.",
+                AlreadyHasCreated
+            )
+        }
     }
 
 
@@ -87,11 +91,14 @@ class BattleRepositoryImpl(
     override suspend fun search(battleId: String) = with(battleRemoteSource) {
         val battle = getBattle(battleId)
             ?.toDomain()
-            ?: throw Exception("게임($battleId)이 존재하지 않습니다.")
+            ?: throw BattleRepositoryException("게임($battleId)이 존재하지 않습니다.", NotFound)
 
         battle
             .takeIf { it is BattleEntity.Opened }
-            ?: throw Exception("게임($battleId)이 대기중이 아닙니다.(${battle.javaClass.simpleName})")
+            ?: throw BattleRepositoryException(
+                "게임($battleId)이 대기중이 아닙니다.(${battle.javaClass.simpleName})",
+                RequireStatusOpened
+            )
     }
 
     override suspend fun list() = battleRemoteSource
@@ -141,12 +148,16 @@ class BattleRepositoryImpl(
 
     private fun BattleRemoteSource.getParticipating(t: Transaction): BattleEntity {
         val participant =
-            getParticipant(t, currentUserUid) ?: throw Exception("참여중인 게임이 없습니다.")
+            getParticipant(t, currentUserUid) ?: throw BattleRepositoryException(
+                "참여중인 게임이 없습니다.",
+                NotFound
+            )
 
         val battleId = participant.battleId
             ?: throw Exception("참여 중인 게임 정보가 올바르지 않습니다.(battle id is null)")
 
-        val battle = getBattle(t, battleId) ?: throw Exception("참여 중인 게임이 종료 되었습니다.")
+        val battle = getBattle(t, battleId)
+            ?: throw BattleRepositoryException("참여 중인 게임이 종료 되었습니다.", AlreadyHasClosed)
 
         return battle.toDomain()
     }
@@ -160,13 +171,16 @@ class BattleRepositoryImpl(
         FirebaseFirestore.getInstance().runTransaction { t ->
             with(battleRemoteSource) {
                 val battle = getBattle(t, battleId)
-                    ?: throw Exception("유효 하지 않은 게임($battleId)입니다.")
+                    ?: throw BattleRepositoryException("유효 하지 않은 게임($battleId)입니다.", NotFound)
 
                 getParticipant(t, currentUserUid)
                     ?.battleId
                     ?.also {
                         if (it == battle.id) {
-                            throw AlreadyJoinedException("참여 하려는 게임(${it})에 이미 참가 중 입니다.")
+                            throw BattleRepositoryException(
+                                "참여 하려는 게임(${it})에 이미 참가 중 입니다.",
+                                AlreadyHasJoined
+                            )
                         } else {
 //                            throw Exception("다른 게임(${it})에 참가 중 입니다. 참가 중인 게임을 종료 후 다시 시도 해 주세요.")
                         }
@@ -176,17 +190,26 @@ class BattleRepositoryImpl(
                 val battleEntity = when (val entity = battle.toDomain()) {
                     is BattleEntity.Opened -> entity
                     is BattleEntity.Closed ->
-                        throw Exception("이미 클리어 된 게임($battleId)입니다.")
+                        throw BattleRepositoryException(
+                            "이미 클리어 된 게임($battleId)입니다.",
+                            AlreadyHasCleared
+                        )
 
                     is BattleEntity.Pending, is BattleEntity.Playing ->
-                        throw Exception("이미 진행 중인 게임($battleId)입니다.")
+                        throw BattleRepositoryException(
+                            "이미 진행 중인 게임($battleId)입니다.",
+                            AlreadyHasStarted
+                        )
 
                     is BattleEntity.Invalid ->
                         throw Exception("유효 하지 않은 게임($battleId)입니다.(mapping error)")
                 }
 
                 if (battleEntity.participantSize >= battleEntity.maxParticipants)
-                    throw Exception("게임($battleId)의 참여자가 ${battleEntity.participantSize}/${battleEntity.maxParticipants}로 이미 가득 찼습니다.")
+                    throw BattleRepositoryException(
+                        "게임($battleId)의 참여자가 ${battleEntity.participantSize}/${battleEntity.maxParticipants}로 이미 가득 찼습니다.",
+                        AlreadyFull
+                    )
 
                 setParticipant(t, BattleParticipantModel(currentUserUid).also {
                     it.update(profileRemoteSource.getProfile(t, currentUserUid))
@@ -199,8 +222,6 @@ class BattleRepositoryImpl(
         }.await()
     }
 
-    class AlreadyJoinedException(message: String?) : Exception(message)
-
 
     /**
      *
@@ -210,10 +231,13 @@ class BattleRepositoryImpl(
         FirebaseFirestore.getInstance().runTransaction { t ->
             with(battleRemoteSource) {
                 val participant = getParticipant(t, uid)
-                    ?: throw Exception("현재 어떠한 방에도 참여 중이지 않습니다.")
+                    ?: throw BattleRepositoryException("현재 어떠한 방에도 참여 중이지 않습니다.", RequireJoinFirst)
 
                 if (participant.isReady == isReady) {
-                    throw Exception("이미 준비 상태가 ${participant.isReady} 상태입니다.")
+                    throw BattleRepositoryException(
+                        "이미 준비 상태가 ${participant.isReady} 상태입니다.",
+                        if (isReady) AlreadyHasReady else AlreadyHasUnReady
+                    )
                 }
 
                 val battleId = participant.battleId
@@ -222,10 +246,13 @@ class BattleRepositoryImpl(
                 getBattle(t, battleId)
                     ?.run {
                         if (hostUid == participant.uid) {
-                            throw Exception("host($hostUid)는 ready 상태 변경이 불가 합니다.")
+                            throw BattleRepositoryException(
+                                "host($hostUid)는 ready 상태 변경이 불가 합니다.",
+                                OnlyParticipant
+                            )
                         }
                     }
-                    ?: throw Exception("참여 중인 방이 삭제 되었거나 정보가 올바르지 않습니다.")
+                    ?: throw BattleRepositoryException("참여 중인 방이 삭제 되었거나 정보가 올바르지 않습니다.", NotFound)
 
                 setParticipant(t, uid, mapOf("isReady" to isReady))
             }
@@ -243,18 +270,27 @@ class BattleRepositoryImpl(
     private suspend fun doPendingStart() {
         val battle = with(getParticipating()) {
             if (this !is BattleEntity.Opened)
-                throw Exception("방이 게임을 시작 할 수 있는 상태가 아닙니다.")
+                throw BattleRepositoryException("방이 게임을 시작 할 수 있는 상태가 아닙니다.", RequireStatusOpened)
 
-            if (host != currentUserUid)
-                throw Exception("오직 방장(${host})만이 게임을 시작 할 수 있습니다.")
+            if (host != currentUserUid) {
+                throw BattleRepositoryException("오직 방장(${host})만이 게임을 시작 할 수 있습니다.", OnlyHost)
+            }
 
             this
         }
 
         with(battleRemoteSource.getParticipantList(battle.id)) {
             when {
-                none { it.uid != currentUserUid } -> throw Exception("참여자가 아무도 없습니다.")
-                any { !it.isReady } -> throw Exception("아직 모든 참여자가 준비가 되어 있지 않습니다.")
+                none { it.uid != currentUserUid } -> throw BattleRepositoryException(
+                    "참여자가 아무도 없습니다.",
+                    EmptyParticipant
+                )
+
+                any { !it.isReady } -> throw BattleRepositoryException(
+                    "아직 모든 참여자가 준비가 되어 있지 않습니다.",
+                    RequireReadyAllUsers
+                )
+
                 else -> battleRemoteSource.updateBattle(
                     battle.id,
                     mapOf("pendingAt" to FieldValue.serverTimestamp())
@@ -295,18 +331,30 @@ class BattleRepositoryImpl(
     private suspend fun doStart() {
         val battleId = with(getParticipating()) {
             if (this !is BattleEntity.Pending)
-                throw Exception("방이 게임을 시작 할 수 있는 상태가 아닙니다. 먼저 pending을 호출하세요.")
+                throw BattleRepositoryException(
+                    "방이 게임을 시작 할 수 있는 상태가 아닙니다. 먼저 pending을 호출하세요.",
+                    RequireStatusOpened
+                )
 
-            if (host != currentUserUid)
-                throw Exception("오직 방장(${host})만이 게임을 시작 할 수 있습니다.")
+            if (host != currentUserUid) {
+                throw BattleRepositoryException("오직 방장(${host})만이 게임을 시작 할 수 있습니다.", OnlyHost)
+            }
 
             id
         }
 
         with(battleRemoteSource.getParticipantList(battleId)) {
             when {
-                none { it.uid != currentUserUid } -> throw Exception("참여자가 아무도 없습니다.")
-                any { !it.isReady } -> throw Exception("아직 모든 참여자가 준비가 되어 있지 않습니다.")
+                none { it.uid != currentUserUid } -> throw BattleRepositoryException(
+                    "참여자가 아무도 없습니다.",
+                    EmptyParticipant
+                )
+
+                any { !it.isReady } -> throw BattleRepositoryException(
+                    "아직 모든 참여자가 준비가 되어 있지 않습니다.",
+                    RequireReadyAllUsers
+                )
+
                 else -> battleRemoteSource.updateBattle(
                     battleId,
                     mapOf(
@@ -333,8 +381,12 @@ class BattleRepositoryImpl(
                             ?.let { battleId -> getBattle(t, battleId) }
                             ?.toDomain()
 
-                        if (battle !is BattleEntity.Playing)
-                            throw Exception("게임이 아직 시작 되지 않았습니다.")
+                        if (battle !is BattleEntity.Playing) {
+                            throw BattleRepositoryException(
+                                "게임이 아직 시작 되지 않았습니다.",
+                                RequireStatusStart
+                            )
+                        }
 
                         battle
                             .startingMatrix[row][column]
@@ -366,14 +418,21 @@ class BattleRepositoryImpl(
         getParticipants(battle)
 
         if (battle !is BattleEntity.Playing && battle !is BattleEntity.Closed) {
-            throw Exception("아직 게임(${battle.id})이 시작 되지 않았습니다. 게임이 시작 된 이후에 기록을 저장 할 수 있습니다.")
+            throw BattleRepositoryException(
+                "아직 게임(${battle.id})이 시작 되지 않았습니다. 게임이 시작 된 이후에 기록을 저장 할 수 있습니다.",
+                RequireStatusStart
+            )
         }
 
         FirebaseFirestore.getInstance().runTransaction { t ->
             with(battleRemoteSource) {
                 val recordModel = getBattleRecord(t, battle.id, currentUserUid)
-                if (recordModel != null)
-                    throw Exception("이미 ${recordModel.clearTime}ms로 클리어 한 기록이 있습니다.")
+                if (recordModel != null) {
+                    throw BattleRepositoryException(
+                        "이미 ${recordModel.clearTime}ms로 클리어 한 기록이 있습니다.",
+                        AlreadyHasCleared
+                    )
+                }
 
                 val profile = profileRemoteSource.getProfile(t, currentUserUid)
 
@@ -391,7 +450,10 @@ class BattleRepositoryImpl(
                     }
 
                     else -> {
-                        throw Exception("아직 게임(${battle.id})이 시작 되지 않았습니다. 게임이 시작 된 이후에 기록을 저장 할 수 있습니다.")
+                        throw BattleRepositoryException(
+                            "아직 게임(${battle.id})이 시작 되지 않았습니다. 게임이 시작 된 이후에 기록을 저장 할 수 있습니다.",
+                            RequireStatusStart
+                        )
                     }
                 }
 
@@ -422,7 +484,10 @@ class BattleRepositoryImpl(
                 val participant = getParticipant(t, uid)
                 val battleId = battleParamId
                     ?: participant?.battleId
-                    ?: throw Exception("게임에 참여 중이지 않아서 종료가 할 수 없습니다.")
+                    ?: throw BattleRepositoryException(
+                        "게임에 참여 중이지 않아서 종료가 할 수 없습니다.",
+                        RequireJoinFirst
+                    )
 
                 val battleModel = getBattle(t, battleId)
 
@@ -469,4 +534,26 @@ class BattleRepositoryImpl(
     override suspend fun getStatistics() = getStatistics(currentUserUid)
     override suspend fun getStatistics(uid: String) =
         battleRemoteSource.getStatistics(uid).toDomain()
+
+
+    sealed interface ErrorType
+    object AlreadyHasCreated : ErrorType
+    object AlreadyHasJoined : ErrorType
+    object AlreadyHasCleared : ErrorType
+    object AlreadyHasStarted : ErrorType
+    object AlreadyHasReady : ErrorType
+    object AlreadyHasUnReady : ErrorType
+    object AlreadyHasClosed : ErrorType
+    object AlreadyFull : ErrorType
+    object NotFound : ErrorType
+    object RequireReadyAllUsers : ErrorType
+    object RequireStatusOpened : ErrorType
+    object RequireJoinFirst : ErrorType
+    object OnlyParticipant : ErrorType
+    object OnlyHost : ErrorType
+    object EmptyParticipant : ErrorType
+    object RequireStatusStart : ErrorType
+
+
+    class BattleRepositoryException(message: String?, val type: ErrorType) : Exception(message)
 }
