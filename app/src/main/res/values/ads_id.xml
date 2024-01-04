@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ads_application_id" translatable="false" />
+    <string name="ads_unit_id_opening" translatable="false" />
+    <string name="ads_unit_id_item" translatable="false" />
+    <string name="ads_unit_id_native_ad_for_stage" translatable="false" />
+</resources>
