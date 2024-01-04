@@ -28,6 +28,7 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
+import kr.co.hs.sudoku.feature.ad.NativeAdFragment
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
@@ -189,7 +190,10 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             is ParticipantEntity.Playing,
             is ParticipantEntity.Cleared -> viewerBoard { it.setStatus(participant) }
 
-            else -> releaseViewerBoard()
+            else -> {
+                releaseViewerBoard()
+                showNativeAd()
+            }
         }
     }
 
@@ -359,5 +363,10 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             .setNegativeButton(R.string.cancel, null)
             .setCancelable(false)
             .show()
+    }
+
+    private fun showNativeAd() = with(supportFragmentManager.beginTransaction()) {
+        replace(R.id.layout_enemy, NativeAdFragment.newInstance())
+        commit()
     }
 }

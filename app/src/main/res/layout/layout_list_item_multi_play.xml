@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_view"
@@ -19,7 +20,7 @@
 
             <kr.co.hs.sudoku.views.MatrixItemView
                 android:id="@+id/matrix"
-                android:layout_width="100dp"
+                android:layout_width="120dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -49,13 +50,14 @@
                 android:ellipsize="end"
                 android:fontFamily="@font/goreyong_ddalgi"
                 android:lines="1"
-                android:textSize="14sp"
+                android:textSize="13dp"
                 app:layout_constrainedWidth="true"
                 app:layout_constraintBottom_toTopOf="@id/tv_message"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/iv_profile_icon"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" />
+                app:layout_constraintVertical_chainStyle="packed"
+                tools:ignore="SpUsage" />
 
             <TextView
                 android:id="@+id/tv_message"
@@ -65,12 +67,13 @@
                 android:ellipsize="end"
                 android:fontFamily="@font/goreyong_ddalgi"
                 android:maxLines="3"
-                android:textSize="12sp"
+                android:textSize="12dp"
                 app:layout_constrainedWidth="true"
                 app:layout_constraintBottom_toTopOf="@id/tv_statistics"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/matrix"
-                app:layout_constraintTop_toBottomOf="@id/tv_display_name" />
+                app:layout_constraintTop_toBottomOf="@id/tv_display_name"
+                tools:ignore="SpUsage" />
 
             <TextView
                 android:id="@+id/tv_statistics"
@@ -80,12 +83,13 @@
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="16dp"
                 android:fontFamily="@font/goreyong_ddalgi"
-                android:textSize="14sp"
+                android:textSize="14dp"
                 app:layout_constrainedWidth="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/matrix"
-                app:layout_constraintTop_toBottomOf="@id/tv_message" />
+                app:layout_constraintTop_toBottomOf="@id/tv_message"
+                tools:ignore="SpUsage" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

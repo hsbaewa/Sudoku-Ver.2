@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- For apps targeting Android 13 or higher & GMA SDK version 20.3.0 or lower -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -12,6 +15,30 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HSSudoku2.Starting"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/ads_application_id" />
+
+        <meta-data
+            android:name="kr.co.hs.sudoku.adUnitId.OpenAd"
+            android:value="@string/ads_unit_id_opening" />
+
+        <meta-data
+            android:name="kr.co.hs.sudoku.adUnitId.NativeAd"
+            android:value="@string/ads_unit_id_item" />
+
+        <meta-data
+            android:name="kr.co.hs.sudoku.adUnitId.NativeAdForStage"
+            android:value="@string/ads_unit_id_native_ad_for_stage" />
+
+        <meta-data
+            android:name="kr.co.hs.sudoku.adUnitId.BannerAdSinglePlay"
+            android:value="@string/ads_unit_id_banner_ad_for_single_play" />
+
+        <meta-data
+            android:name="kr.co.hs.sudoku.adUnitId.RewardAdChallengeRetry"
+            android:value="@string/ads_unit_id_reward_ad_for_challenge_retry" />
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"

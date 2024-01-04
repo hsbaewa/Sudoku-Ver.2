@@ -6,6 +6,7 @@ import coil.load
 import kotlinx.coroutines.Job
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.ViewHolder
+import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAdBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
@@ -134,5 +135,34 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
             with(binding.tvHeader) {
                 text = context.getString(R.string.multi_play_header_others)
             }
+    }
+
+    class AdItemView(private val binding: LayoutListItemMultiPlayAdBinding) :
+        MultiDashboardListItemViewHolder<MultiDashboardListItem.AdItem>(binding.root) {
+        override val clickableView: View by lazy { binding.root }
+        override fun onBind(item: MultiDashboardListItem.AdItem) {
+            with(binding.nativeAdView) {
+                iconView = binding.ivIcon
+                headlineView = binding.tvHeadline
+                bodyView = binding.tvBody
+                callToActionView = binding.cardView
+                mediaView = binding.mediaView
+            }
+
+            item.nativeAd.mediaContent?.run {
+                binding.mediaView.mediaContent = this
+            }
+            item.nativeAd.icon?.drawable?.run {
+                binding.ivIcon.setImageDrawable(this)
+            }
+            item.nativeAd.headline?.run {
+                binding.tvHeadline.text = this
+            }
+            item.nativeAd.body?.run {
+                binding.tvBody.text = this
+            }
+
+            binding.nativeAdView.setNativeAd(item.nativeAd)
+        }
     }
 }

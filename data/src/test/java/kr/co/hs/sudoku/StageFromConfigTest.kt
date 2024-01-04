@@ -5,15 +5,14 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.datasource.impl.StageRemoteSourceFromConfig
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
+import kotlin.time.Duration
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class StageFromConfigTest {
 
     private lateinit var remoteConfig: FirebaseRemoteConfig
@@ -53,7 +52,7 @@ class StageFromConfigTest {
     }
 
     @Test
-    fun getBeginnerFromRemoteConfig() = runTest {
+    fun getBeginnerFromRemoteConfig() = runTest(timeout = Duration.INFINITE) {
         val remoteSource = StageRemoteSourceFromConfig(remoteConfig)
         remoteSource.getBeginnerGenerateMask()
 

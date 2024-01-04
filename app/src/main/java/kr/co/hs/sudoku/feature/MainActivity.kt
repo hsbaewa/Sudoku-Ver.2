@@ -27,12 +27,14 @@ import com.google.android.gms.games.PlayGames
 import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.App
+import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
+import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
-import kr.co.hs.sudoku.extension.platform.Bitmap.toCropCircle
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.extension.platform.Bitmap.toCropCircle
 import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
@@ -65,7 +67,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
-        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
+        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository(), NativeItemAdManager(app))
     }
     private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels {
         ChallengeDashboardViewModel.ProviderFactory(app.getChallengeRepository())
@@ -134,6 +136,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             selectedItemId =
                 savedInstanceState?.getInt(EXTRA_CURRENT_TAB_ITEM_ID) ?: R.id.menu_single
         }
+
+        AppOpenAdManager(this).showIfAvailable()
     }
 
     /**

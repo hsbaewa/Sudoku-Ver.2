@@ -15,8 +15,10 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutListChallengeRankBinding
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndicator
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
+import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.feature.ad.ChallengeRetryRewardAdManager
 import kr.co.hs.sudoku.feature.challenge.play.ChallengePlayActivity
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
@@ -79,10 +81,46 @@ class ChallengeDashboardFragment : Fragment() {
 
     private fun startChallenge(challengeEntity: ChallengeEntity) =
         viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
-            showSnackBar(throwable.message.toString())
+            when (throwable) {
+                is AlreadyException -> showConfirm(
+                    getString(R.string.app_name),
+                    throwable.message.toString()
+                ) {
+                    if (it) {
+                        retryChallenge(challengeEntity)
+                    }
+                }
+
+                else -> showAlert(
+                    getString(R.string.app_name),
+                    throwable.message.toString()
+                ) {}
+            }
         }) {
             if (challengeEntity.isComplete)
-                throw Exception(getString(R.string.error_challenge_already_record))
+                throw AlreadyException(getString(R.string.error_challenge_already_record))
             ChallengePlayActivity.start(requireContext(), challengeEntity.challengeId)
         }
+
+    private class AlreadyException(message: String?) : Exception(message)
+
+
+    private fun retryChallenge(challengeEntity: ChallengeEntity) {
+        viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            dismissProgressIndicator()
+            showAlert(getString(R.string.app_name), throwable.message.toString()) {}
+        }) {
+            showProgressIndicator()
+            val result = ChallengeRetryRewardAdManager(requireActivity()).showRewardedAd()
+            if (!result)
+                throw InvalidRewardedException(getString(R.string.error_challenge_retry_rewarded))
+
+            viewModel.doDeleteRecord()
+            dismissProgressIndicator()
+
+            ChallengePlayActivity.start(requireContext(), challengeEntity.challengeId)
+        }
+    }
+
+    private class InvalidRewardedException(message: String?) : Exception(message)
 }

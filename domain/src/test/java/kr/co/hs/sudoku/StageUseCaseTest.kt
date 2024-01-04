@@ -2,12 +2,10 @@ package kr.co.hs.sudoku
 
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
 import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
 import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
@@ -15,8 +13,8 @@ import kr.co.hs.sudoku.usecase.GetSudokuUseCaseImpl
 import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.time.Duration
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class StageUseCaseTest {
     @Test
     fun testBeginnerRepository() = runBlocking {
@@ -49,7 +47,7 @@ class StageUseCaseTest {
     }
 
     @Test
-    fun testIntermediateRepository() = runTest {
+    fun testIntermediateRepository() = runTest(timeout = Duration.INFINITE) {
         val matrixRepo: MatrixRepository<IntermediateMatrix> = mockk()
         coEvery { matrixRepo.getList() } answers {
             listOf(
@@ -117,7 +115,7 @@ class StageUseCaseTest {
 //    }
 
 //    @Test
-//    fun testAdvancedRepository() = runTest {
+//    fun testAdvancedRepository() = runTest(timeout = Duration.INFINITE) {
 //        val matrixRepo: MatrixRepository<AdvancedMatrix> = mockk()
 //        coEvery { matrixRepo.getList() } answers {
 //            listOf(

@@ -10,7 +10,7 @@
             android:id="@+id/app_bar_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/tv_timer"
+            app:layout_constraintBottom_toTopOf="@id/layout_ad_view"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -23,6 +23,17 @@
                 android:layout_height="wrap_content" />
 
         </com.google.android.material.appbar.AppBarLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_ad_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@id/tv_timer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/app_bar_layout"
+            app:layout_constraintVertical_chainStyle="spread_inside" />
 
         <TextView
             android:id="@+id/tv_timer"
@@ -37,9 +48,7 @@
             app:layout_constraintHeight_percent="0.2"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/app_bar_layout"
-            app:layout_constraintVertical_chainStyle="spread_inside" />
-
+            app:layout_constraintTop_toBottomOf="@id/layout_ad_view" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout_control"

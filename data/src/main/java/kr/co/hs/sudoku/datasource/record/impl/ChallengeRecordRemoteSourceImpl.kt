@@ -32,23 +32,24 @@ class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
         .collection("record")
 
 
-    override suspend fun setRecord(id: String, record: ClearTimeRecordModel): Boolean =
-        getRankingCollection(id)
-            .document(record.uid).set(record)
-            .await()
-            .run { true }
+    override suspend fun setRecord(id: String, record: ClearTimeRecordModel) =
+        runCatching {
+            getRankingCollection(id).document(record.uid).set(record).await()
+            true
+        }.getOrDefault(false)
 
-    override suspend fun setRecord(id: String, record: ReserveRecordModel): Boolean {
-        return getRankingCollection(id)
-            .document(record.uid)
-            .set(
-                record
-                    .asMutableMap()
-                    .apply { this["startAt"] = FieldValue.serverTimestamp() }
-            )
-            .await()
-            .run { true }
-    }
+    override suspend fun setRecord(id: String, record: ReserveRecordModel) =
+        runCatching {
+            getRankingCollection(id)
+                .document(record.uid)
+                .set(
+                    record
+                        .asMutableMap()
+                        .apply { this["startAt"] = FieldValue.serverTimestamp() }
+                )
+                .await()
+            true
+        }.getOrDefault(false)
 
     override suspend fun getRecord(id: String, uid: String): ClearTimeRecordModel =
         getRankingCollection(id)
@@ -74,5 +75,15 @@ class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
             .await()
             .toObject(ReserveRecordModel::class.java)
             ?: throw Exception("not reserved record")
+    }
+
+    override suspend fun deleteRecord(id: String, uid: String): Boolean {
+        return runCatching {
+            getRankingCollection(id)
+                .document(uid)
+                .delete()
+                .await()
+            true
+        }.getOrDefault(false)
     }
 }

@@ -10,13 +10,17 @@ import android.view.MenuItem
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withStarted
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlaySingleBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
+import kr.co.hs.sudoku.feature.ad.AdaptiveBannerAdManager
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
@@ -102,6 +106,10 @@ class SinglePlayActivity : Activity() {
                     else -> {}
                 }
             }
+        }
+
+        lifecycleScope.launch {
+            withStarted { AdaptiveBannerAdManager(this@SinglePlayActivity).attachBanner(binding.layoutAdView) }
         }
     }
 

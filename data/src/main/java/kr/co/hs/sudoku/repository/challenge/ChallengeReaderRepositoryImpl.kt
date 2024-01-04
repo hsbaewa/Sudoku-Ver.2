@@ -24,6 +24,7 @@ class ChallengeReaderRepositoryImpl(
                     ?.run {
                         startPlayAt = this.startAt?.toDate()
                         isPlaying = startPlayAt != null
+                        relatedUid = uid
                     }
                 runCatching { getRecord(challengeId, currentUserUid) }
                     .getOrNull()
@@ -40,6 +41,7 @@ class ChallengeReaderRepositoryImpl(
                     ?.run {
                         startPlayAt = this.startAt?.toDate()
                         isPlaying = startPlayAt != null
+                        relatedUid = uid
                     }
                 runCatching { getRecord(challengeId, currentUserUid) }
                     .getOrNull()

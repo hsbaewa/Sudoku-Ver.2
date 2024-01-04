@@ -45,12 +45,54 @@ jobs:
           echo "$GOOGLE_SERVICES"
           echo "$GOOGLE_SERVICES" > app/google-services.json
           cat app/google-services.json
-      - name: AndroidManifest.xml 메타정보 설정
+      - name: com.google.android.gms.games.APP_ID 설정
         uses: jacinlowe/update-android-manifest-package-action@v1.0.1
         with:
           android-manifest-path: './app/src/main/AndroidManifest.xml'
           metadata-key: 'com.google.android.gms.games.APP_ID'
           metadata-value: ${{secrets.GAME_SERVICE_PROJECT_ID}}
+          print-file: true
+      - name: com.google.android.gms.ads.APPLICATION_ID 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'com.google.android.gms.ads.APPLICATION_ID'
+          metadata-value: ${{secrets.ADS_APPLICATION_ID}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.OpenAd 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.OpenAd'
+          metadata-value: ${{secrets.ADS_UNIT_ID_OPENING}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.NativeAd 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.NativeAd'
+          metadata-value: ${{secrets.ADS_UNIT_ID_NATIVE_ITEM}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.NativeAdForStage 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.NativeAdForStage'
+          metadata-value: ${{secrets.ADS_UNIT_ID_NATIVE_FOR_STAGE}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.BannerAdSinglePlay 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.BannerAdSinglePlay'
+          metadata-value: ${{secrets.ADS_UNIT_ID_BANNER_FOR_SINGLE_PLAY}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.RewardAdChallengeRetry 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.RewardAdChallengeRetry'
+          metadata-value: ${{secrets.ADS_UNIT_ID_REWARD_FOR_CHALLENGE_RETRY}}
           print-file: true
       - name: 빌드 환경 java 버전 설정
         uses: actions/setup-java@v3

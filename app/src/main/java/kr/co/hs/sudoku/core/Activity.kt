@@ -39,6 +39,17 @@ abstract class Activity : AppCompatActivity() {
         setOnDismissListener { onClosed() }
     }.show()
 
+    inline fun showAlert(
+        title: String? = null,
+        msg: String,
+        crossinline onClosed: () -> Unit
+    ): AlertDialog = with(MaterialAlertDialogBuilder(this)) {
+        title?.run { setTitle(this) }
+        setMessage(msg)
+        setPositiveButton(R.string.confirm) { _, _ -> onClosed() }
+        setOnDismissListener { onClosed() }
+    }.show()
+
     inline fun showConfirm(
         titleResId: Int? = null,
         msgResId: Int,
@@ -46,6 +57,18 @@ abstract class Activity : AppCompatActivity() {
     ): AlertDialog = with(MaterialAlertDialogBuilder(this)) {
         titleResId?.run { setTitle(this) }
         setMessage(msgResId)
+        setPositiveButton(R.string.confirm) { _, _ -> onConfirm(true) }
+        setNegativeButton(R.string.cancel) { _, _ -> onConfirm(false) }
+        setOnDismissListener { onConfirm(false) }
+    }.show()
+
+    inline fun showConfirm(
+        title: String? = null,
+        msg: String,
+        crossinline onConfirm: (Boolean) -> Unit
+    ): AlertDialog = with(MaterialAlertDialogBuilder(this)) {
+        title?.run { setTitle(this) }
+        setMessage(msg)
         setPositiveButton(R.string.confirm) { _, _ -> onConfirm(true) }
         setNegativeButton(R.string.cancel) { _, _ -> onConfirm(false) }
         setOnDismissListener { onConfirm(false) }
