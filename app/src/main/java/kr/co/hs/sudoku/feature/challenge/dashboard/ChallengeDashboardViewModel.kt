@@ -74,4 +74,8 @@ class ChallengeDashboardViewModel(
 
         setProgress(false)
     }
+
+    suspend fun doDeleteRecord() = withContext(Dispatchers.IO) {
+        currentUserUid?.let { repository.deleteRecord(it) }
+    }
 }

@@ -17,4 +17,5 @@ data class ChallengeEntityImpl(
     override var isPlaying = false
     override var startPlayAt: Date? = null
     override var isComplete = false
+    override var relatedUid: String? = null
 }

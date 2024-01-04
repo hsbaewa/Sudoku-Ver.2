@@ -52,7 +52,8 @@
     <string name="rank_mine_format_name">[me]%1$s</string>
 
     <string name="error_require_authenticate">This feature requires login.</string>
-    <string name="error_challenge_already_record">You have already completed this challenge.</string>
+    <string name="error_challenge_already_record">You have already completed the challenge. You can receive rewards for trying again through advertising. Would you like to try again?</string>
+    <string name="error_challenge_retry_rewarded">failed rewarded</string>
 
     <string name="caption_with_cpu">with CPU</string>
     <string name="caption_with_user">with User</string>

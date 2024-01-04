@@ -9,4 +9,5 @@ interface RecordRemoteSource {
     suspend fun setRecord(id: String, record: ReserveRecordModel): Boolean
     suspend fun getRecord(id: String, uid: String): ClearTimeRecordModel
     suspend fun getReservedMyRecord(id: String, uid: String): ReserveRecordModel
+    suspend fun deleteRecord(id: String, uid: String): Boolean
 }

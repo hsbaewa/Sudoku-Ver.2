@@ -3,6 +3,7 @@ package kr.co.hs.sudoku.feature.challenge.play
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -38,6 +39,9 @@ import java.io.FileOutputStream
 
 class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
+        private const val TAG = "ChallengePlayActivity"
+        private fun debug(msg: String) = Log.d(TAG, msg)
+
         private const val EXTRA_CHALLENGE_ID = "EXTRA_CHALLENGE_ID"
 
         private fun newIntent(context: Context, challengeId: String) =
@@ -70,7 +74,7 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
             by lazy { CachedHistoryQueue(FileOutputStream(historyCacheFile, true)) }
 
     private suspend fun getLastSudokuMatrix() = historyCacheFile
-        .takeIf { it.length() > 0 }
+        .takeIf { it.exists() && it.length() > 0 }
         ?.run { withContext(Dispatchers.IO) { historyQueue.load(inputStream()) } }
 
     /**
@@ -113,21 +117,25 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
                 lifecycleScope.launch {
                     getLastSudokuMatrix()
                         ?.run { sudokuFragment.resume(this) }
-                        ?: run {
-                            withContext(Dispatchers.IO) { historyQueue.createHeader(it.matrix) }
-                            sudokuFragment.init()
-                        }
+                        ?: run { sudokuFragment.init() }
                 }
 
             }
             command.observe(this@ChallengePlayActivity) {
                 when (it) {
                     is ChallengePlayViewModel.Started -> {
-                        with(recordViewModel) {
-                            sudokuFragment.bindStage(this)
-                            setTimer(realServerTimer)
-                            setHistoryWriter(historyQueue)
-                            play()
+                        lifecycleScope.launch {
+                            val challenge = challengePlayViewModel.challengeEntity.value
+                            if (getLastSudokuMatrix() == null && challenge != null) {
+                                withContext(Dispatchers.IO) { historyQueue.createHeader(challenge.matrix) }
+                            }
+
+                            with(recordViewModel) {
+                                sudokuFragment.bindStage(this)
+                                setTimer(realServerTimer)
+                                setHistoryWriter(historyQueue)
+                                play()
+                            }
                         }
                     }
 

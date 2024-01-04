@@ -93,5 +93,16 @@ class ChallengeRecordRepositoryImpl : ChallengeRecordRepository {
                     ?: throw NullPointerException("challenge id is null")
             }
 
-
+    override suspend fun deleteRecord(uid: String): Boolean {
+        return challengeId
+            ?.let { remoteSource.deleteRecord(it, uid) }
+            ?.takeIf { it }
+            ?.run {
+                cachedMap
+                    .takeIf { it.containsKey(uid) }
+                    ?.run { remove(uid) }
+                true
+            }
+            ?: false
+    }
 }

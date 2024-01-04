@@ -49,7 +49,8 @@
     <string name="rank_mine_format_name">[me]%1$s</string>
 
     <string name="error_require_authenticate">This feature requires login.</string>
-    <string name="error_challenge_already_record">이미 도전 완료하였습니다.</string>
+    <string name="error_challenge_already_record">이미 도전 완료 하였습니다. 광고를 통해 재 도전의 보상을 받을 수 있습니다. 재 도전 하시겠습니까?</string>
+    <string name="error_challenge_retry_rewarded">재 도전 보상을 받지 못하였습니다.</string>
 
     <string name="caption_with_cpu">with CPU</string>
     <string name="caption_with_user">with User</string>

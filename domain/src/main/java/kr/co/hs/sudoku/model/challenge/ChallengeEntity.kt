@@ -10,4 +10,5 @@ interface ChallengeEntity {
     var isPlaying: Boolean
     var startPlayAt: Date?
     var isComplete: Boolean
+    var relatedUid: String?
 }

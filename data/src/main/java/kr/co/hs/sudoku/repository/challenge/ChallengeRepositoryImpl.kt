@@ -48,4 +48,15 @@ class ChallengeRepositoryImpl(
         return reader.getLatestChallenge()
             .also { setChallengeId(it.challengeId) }
     }
+
+    override suspend fun deleteRecord(uid: String): Boolean {
+        return challengeRecordRepository.deleteRecord(uid).apply {
+            if (this) {
+                with(cachedMap) {
+                    filterValues { it.relatedUid == uid }
+                        .forEach { remove(it.key) }
+                }
+            }
+        }
+    }
 }
