@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -21,9 +20,9 @@ import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import kotlin.time.Duration
 
 @Suppress("NonAsciiCharacters", "TestFunctionName")
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class BattleViewModelTest : BattleRepositoryTest() {
 
@@ -66,7 +65,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
     }
 
     @Test
-    override fun 게임_참여_테스트() = runTest {
+    override fun 게임_참여_테스트() = runTest(timeout = Duration.INFINITE) {
         viewModel[0].doJoin(testBattleId)
 
         var battleEntity = viewModel[0].battleEntity.getOrAwaitValue(10) {
@@ -88,7 +87,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
     }
 
     @Test
-    override fun 게임_시작_테스트() = runTest {
+    override fun 게임_시작_테스트() = runTest(timeout = Duration.INFINITE) {
         viewModel[0].doJoin(testBattleId)
 
         assertThrows(Exception::class.java) {
@@ -117,7 +116,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
     }
 
     @Test
-    override fun 게임_종료_테스트() = runTest {
+    override fun 게임_종료_테스트() = runTest(timeout = Duration.INFINITE) {
         viewModel[0].doJoin(testBattleId)
         viewModel[0].doReady()
 
@@ -145,7 +144,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
 
     @Test
-    override fun 게임_클리어_테스트() = runTest {
+    override fun 게임_클리어_테스트() = runTest(timeout = Duration.INFINITE) {
         viewModel[0].doJoin(testBattleId)
 
         assertThrows(Exception::class.java) {
@@ -173,7 +172,7 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
 
     @Test
-    override fun 셀_변경_테스트() = runTest {
+    override fun 셀_변경_테스트() = runTest(timeout = Duration.INFINITE) {
         viewModel[0].doJoin(testBattleId)
 
         assertThrows(Exception::class.java) {

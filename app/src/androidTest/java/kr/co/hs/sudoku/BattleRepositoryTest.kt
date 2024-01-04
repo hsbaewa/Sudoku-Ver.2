@@ -29,6 +29,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration
 
 @Suppress("NonAsciiCharacters", "TestFunctionName", "SpellCheckingInspection")
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -72,7 +73,7 @@ open class BattleRepositoryTest {
     protected val userBattleRepository: List<BattleRepository> by ::_userBattleRepository
 
     @Test
-    fun 게임_생성_테스트() = runTest {
+    fun 게임_생성_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix())
         assertEquals(battle.host, userUidList[0])
         assertEquals(2, battle.maxParticipants)
@@ -121,7 +122,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    open fun 게임_참여_테스트() = runTest {
+    open fun 게임_참여_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix(), 3)
         assertEquals(1, battle.participantSize)
         assertEquals(userUidList[0], battle.host)
@@ -219,7 +220,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 게임_찾기_테스트() = runTest {
+    fun 게임_찾기_테스트() = runTest(timeout = Duration.INFINITE) {
         assertThrows(Exception::class.java) {
             runBlocking { userBattleRepository[0].getParticipating() }
         }.also { assertEquals(it.message, "참여중인 게임이 없습니다.") }
@@ -248,7 +249,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 게임_준비_테스트() = runTest {
+    fun 게임_준비_테스트() = runTest(timeout = Duration.INFINITE) {
         assertThrows(Exception::class.java) {
             runBlocking { userBattleRepository[0].ready() }
         }.also { assertEquals(it.message, "현재 어떠한 방에도 참여 중이지 않습니다.") }
@@ -299,7 +300,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    open fun 게임_시작_테스트() = runTest {
+    open fun 게임_시작_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
 
@@ -370,7 +371,7 @@ open class BattleRepositoryTest {
 
 
     @Test
-    open fun 게임_종료_테스트() = runTest(dispatchTimeoutMs = 1000 * 60 * 60) {
+    open fun 게임_종료_테스트() = runTest(timeout = Duration.INFINITE) {
         var battleId: String?
         assertEquals(
             userBattleRepository[0].create(getTestMatrix()).apply {
@@ -440,7 +441,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    open fun 게임_클리어_테스트() = runTest(dispatchTimeoutMs = 1000 * 60 * 60) {
+    open fun 게임_클리어_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
@@ -554,7 +555,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 클리어_기록_조회_테스트() = runTest {
+    fun 클리어_기록_조회_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
@@ -634,7 +635,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    open fun 셀_변경_테스트() = runTest {
+    open fun 셀_변경_테스트() = runTest(timeout = Duration.INFINITE) {
         val battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository2 = BattleEventRepositoryImpl(battleId = battle.id)

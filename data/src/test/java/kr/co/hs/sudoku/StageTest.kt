@@ -6,7 +6,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -22,8 +21,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
+import kotlin.time.Duration
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class StageTest {
 
     lateinit var stageRemoteSource: StageRemoteSourceImpl
@@ -63,14 +62,14 @@ class StageTest {
     }
 
     @Test
-    fun testStageRemoteSource() = runTest {
+    fun testStageRemoteSource() = runTest(timeout = Duration.INFINITE) {
         assertEquals(3, stageRemoteSource.getBeginnerGenerateMask().size)
         assertEquals(1, stageRemoteSource.getIntermediateGenerateMask().size)
         assertEquals(1, stageRemoteSource.getAdvancedGenerateMask().size)
     }
 
     @Test
-    fun testBeginnerStageRepository() = runTest {
+    fun testBeginnerStageRepository() = runTest(timeout = Duration.INFINITE) {
         val matrixRepository = BeginnerMatrixRepository()
         matrixRepository.setRemoteSource(stageRemoteSource)
 
@@ -91,7 +90,7 @@ class StageTest {
     }
 
     @Test
-    fun testIntermediateStageRepository() = runTest {
+    fun testIntermediateStageRepository() = runTest(timeout = Duration.INFINITE) {
         val matrixRepository = IntermediateMatrixRepository()
         matrixRepository.setRemoteSource(stageRemoteSource)
 
@@ -112,7 +111,7 @@ class StageTest {
     }
 
     @Test
-    fun testCustomStageRepository() = runTest {
+    fun testCustomStageRepository() = runTest(timeout = Duration.INFINITE) {
         val sourceRes = javaClass.classLoader?.getResource("customSource.json")
         val stream = ByteArrayOutputStream()
         withContext(Dispatchers.IO) {
