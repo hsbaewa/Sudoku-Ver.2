@@ -25,8 +25,7 @@ import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.ad.NativeAdFragment
 import kr.co.hs.sudoku.feature.stage.StageFragment
@@ -36,6 +35,7 @@ import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
+import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import kr.co.hs.sudoku.repository.timer.BattleTimer
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import org.jetbrains.annotations.TestOnly
@@ -72,6 +72,9 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     private var isAlreadyPending = false
     private var isExitAfterCleared = false
 
+    @TestOnly
+    var isShowErrorDialog = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.lifecycleOwner = this
@@ -80,14 +83,26 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
         with(battleViewModel) {
-            isRunningProgress.observe(this@MultiPlayActivity) {
-                it.takeIf { it }
-                    ?.run { showProgressIndicator() }
-                    ?: dismissProgressIndicator()
-            }
+            isRunningProgress.observe(this@MultiPlayActivity) { isShowProgressIndicator = it }
+            error.observe(this@MultiPlayActivity) {
+                if (!isShowErrorDialog)
+                    return@observe
 
+                when (it) {
+                    is BattleRepositoryImpl.BattleRepositoryException -> {
+                        val message = when (it.type) {
+                            BattleRepositoryImpl.EmptyParticipant -> getString(R.string.multi_play_error_empty_participants)
+                            BattleRepositoryImpl.RequireReadyAllUsers -> getString(R.string.multi_play_error_require_ready_all_users)
+                            else -> it.message.toString()
+                        }
+                        showAlert(title.toString(), message) {}
+                    }
+
+                    else -> showAlert(title.toString(), it.message.toString()) {}
+                }
+            }
             battleEntity.observe(this@MultiPlayActivity) { onBattleEntity(it) }
-            startEventMonitoring(intent.getStringExtra(EXTRA_BATTLE_ID) ?: "")
+            intent.getStringExtra(EXTRA_BATTLE_ID)?.run { startEventMonitoring(this) }
         }
 
 

@@ -70,6 +70,8 @@
     <string name="status_pending_battle_for_participant">대기중</string>
     <string name="status_host_battle_for_participant">방장</string>
     <string name="status_clear_battle_for_participant">클리어</string>
+    <string name="multi_play_error_empty_participants">대결 상대가 아무도 없습니다.</string>
+    <string name="multi_play_error_require_ready_all_users">상대가 준비가 되어 있지 않습니다.</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">인공지능</string>

@@ -35,6 +35,7 @@ class BattlePlayTest {
         val scenario = launch(MultiPlayActivity::class.java)
         scenario.onActivity {
             it.startingMatrix = CustomMatrix(matrix)
+            it.isShowErrorDialog = false
         }
 
         scenario.onActivity {

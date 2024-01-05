@@ -74,6 +74,8 @@
     <string name="status_host_battle_for_participant">Host</string>
     <string name="status_clear_battle_for_participant">Clear</string>
     <string name="versus" translatable="false">VS</string>
+    <string name="multi_play_error_empty_participants">There is no one to play game.</string>
+    <string name="multi_play_error_require_ready_all_users">Your opponent is not ready.</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">A.I</string>
