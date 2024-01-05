@@ -98,7 +98,7 @@ class ViewerBoardFragmentTest {
             it.setStatus(guest)
         }
         onView(withId(R.id.viewSilhouette)).check(matches(isDisplayed()))
-        onView(withText("Pending")).check(matches(isDisplayed()))
+        onView(withText("Waiting")).check(matches(isDisplayed()))
 
         fragmentScenario.onFragment {
             it.setStatus(ready)
