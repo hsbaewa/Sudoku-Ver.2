@@ -86,11 +86,21 @@
                     app:strokeColor="@color/gray_600"
                     app:strokeWidth="2dp">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/goreyong_ddalgi"
+                        android:text="@string/multi_create_please_select_stage"
+                        android:textSize="16sp" />
+
                     <kr.co.hs.sudoku.views.MatrixItemView
                         android:id="@+id/matrix"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@color/white" />
+                        android:background="@color/white"
+                        android:visibility="invisible" />
+
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
