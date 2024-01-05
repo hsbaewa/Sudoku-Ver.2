@@ -103,12 +103,13 @@ jobs:
           VERSION_CODE: ${{ github.run_number }}
           VERSION_NAME: ${{ inputs.versionName }}
         run: |
+          export VERSION_CODE_OFFSET=`expr $VERSION_CODE + 25`
           ./gradlew clean bundleRelease \
             -Pandroid.injected.signing.store.file=$HOME/sign.keystore \
             -Pandroid.injected.signing.store.password=$PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
-            -PversionCode=$VERSION_CODE+28 \
+            -PversionCode=$VERSION_CODE_OFFSET \
             -PversionName=$VERSION_NAME \
             --stacktrace
       - name: build를 artifact에 업로드
