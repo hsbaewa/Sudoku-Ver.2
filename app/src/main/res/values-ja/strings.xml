@@ -60,6 +60,7 @@
     <string name="multi_create_label_ai">プライバシーと対決</string>
     <string name="select_matrix_title">数独の選択</string>
     <string name="require_select_stage">数独ステージを選択してください。</string>
+    <string name="multi_create_please_select_stage">タッチして選択</string>
 
     <!-- 멀티 플레이 게임 -->
     <string name="battle_exit_message">ゲームを終了しますか？相手の記録に応じて敗北することもできます。</string>
@@ -70,6 +71,8 @@
     <string name="status_pending_battle_for_participant">待機中</string>
     <string name="status_host_battle_for_participant">部屋長</string>
     <string name="status_clear_battle_for_participant">クリア</string>
+    <string name="multi_play_error_empty_participants">対決相手は誰もいません。</string>
+    <string name="multi_play_error_require_ready_all_users">相手が準備ができていません。</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">人工知能</string>

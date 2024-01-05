@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -13,7 +14,6 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutCreateMultiPlayBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayWithAIActivity
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
 import kr.co.hs.sudoku.feature.matrixlist.MatrixSelectBottomSheetFragment
@@ -50,15 +50,13 @@ class MultiPlayCreateActivity : Activity() {
 
         with(binding.matrix) {
             matrixListViewModel.selection.observe(this@MultiPlayCreateActivity) {
+                MatrixSelectBottomSheetFragment.dismiss(supportFragmentManager)
                 matrix = it
                 invalidate()
-                MatrixSelectBottomSheetFragment.dismiss(supportFragmentManager)
+                if (it != null) {
+                    binding.matrix.isVisible = true
+                }
             }
-        }
-
-        with(matrixListViewModel) {
-            isRunningProgress.observe(this@MultiPlayCreateActivity) { isShowProgressIndicator = it }
-            selectAny()
         }
 
         with(binding.btnCreate) {
@@ -71,7 +69,10 @@ class MultiPlayCreateActivity : Activity() {
                             multiPlayViewModel.create(this)
                         }
                     }
-                    ?: showSnackBar(getString(R.string.require_select_stage))
+                    ?: showAlert(
+                        getString(R.string.app_name),
+                        getString(R.string.require_select_stage)
+                    ) {}
             }
         }
 

@@ -60,6 +60,7 @@
     <string name="multi_create_label_ai">인긍지능과 대결</string>
     <string name="select_matrix_title">스도쿠 선택</string>
     <string name="require_select_stage">스도쿠 스테이지를 선택하세요.</string>
+    <string name="multi_create_please_select_stage">터치하여 선택</string>
 
     <!-- 멀티 플레이 게임 -->
     <string name="battle_exit_message">게임을 종료하시겠습니까? 상대의 기록에 따라 패배할 수도 있습니다.</string>
