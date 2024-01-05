@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">数独バトル</string>
+
+    <!-- 액션바 -->
+    <string name="please_wait_profile">読み込み中…</string>
+    <string name="welcome_not_login">ログインしてください</string>
+    <string name="welcome_format">いらっしゃいませ %1$s</string>
+    <string name="multi_noti_waiting">待機中のマルチプレイ数独…</string>
+    <string name="multi_noti_playing">遊びながらマルチプレイ数独…</string>
+    <string name="sign_in">サインイン</string>
+    <string name="update_user_profile">ユーザープロフィールを更新する</string>
+    <string name="settings_cell_haptic">数独セルのクリック触覚を有効にしました</string>
+    <string name="version_format">Ver. %1$s(%2$d)</string>
+
+    <!-- 프로필 설정 -->
+    <string name="profile_update_title">プロフィールの更新</string>
+    <string name="profile_display_name">ニックネーム</string>
+    <string name="profile_input_display_name">ニックネーム入力</string>
+    <string name="profile_status_message">ステータスメッセージ</string>
+    <string name="profile_input_status_message">ステータスメッセージの入力</string>
+    <string name="profile_update">更新</string>
+    <string name="profile_image_update_title">プロフィール画像</string>
+    <string name="profile_image_update_message">プロフィール画像として使用するURLを入力してください。</string>
+    <string name="profile_image_input_hint">画像URL入力</string>
+    <string name="profile_image_url_invalid">url が無効です。</string>
+
+    <!-- 메인 하단 탭 -->
+    <string name="navigation_tab_single">シングル</string>
+    <string name="navigation_tab_multi">マルチ</string>
+    <string name="navigation_tab_challenge">挑戦</string>
+
+    <!-- 싱글 플레이 대시보드 -->
+    <string name="title_single_play">シングルプレイ</string>
+
+    <!-- 싱글 플레이 게임 -->
+    <string name="retry_message">進行中のゲームを初期化して再起動しますか？</string>
+
+    <!-- 멀티 플레이 대시보드 -->
+    <string name="title_multi_play">マルチプレイ</string>
+    <string name="multi_play_add">+新規</string>
+    <string name="multi_play_header_users">作成したゲーム</string>
+    <string name="multi_play_header_others">ゲームに参加</string>
+    <string name="multi_list_join_confirm">このゲームに参加しますか？</string>
+    <string name="multi_list_empty_message">参加できるゲームはありません。</string>
+    <string name="loading_statistics">完全な検索中… </string>
+    <string name="loading_participants">参加者情報を閲覧中… </string>
+    <string name="error_statistics">完全検索の失敗</string>
+    <string name="error_participants">参加者情報の検索に失敗しました</string>
+    <string name="format_statistics">%1$d戦%2$d勝記録中</string>
+
+    <!-- 멀티 플레이 생성 -->
+    <string name="multi_create_title">ゲームの作成</string>
+    <string name="multi_create_label_select_matrix">数独の選択</string>
+    <string name="multi_create_label_select_participants">人数の選択</string>
+    <string name="multi_create_label_participants_2">2人</string>
+    <string name="multi_create_label_participants_3">3人</string>
+    <string name="multi_create_label_participants_4">4人</string>
+    <string name="multi_create_label_do_create">スタート!!</string>
+    <string name="multi_create_label_ai">プライバシーと対決</string>
+    <string name="select_matrix_title">数独の選択</string>
+    <string name="require_select_stage">数独ステージを選択してください。</string>
+
+    <!-- 멀티 플레이 게임 -->
+    <string name="battle_exit_message">ゲームを終了しますか？相手の記録に応じて敗北することもできます。</string>
+    <string name="caption_start_battle_for_host">ゲームの開始</string>
+    <string name="caption_pending_battle_for_participant">準備</string>
+    <string name="caption_ready_battle_for_participant">準備をキャンセル</string>
+    <string name="status_ready_battle_for_participant">準備済み</string>
+    <string name="status_pending_battle_for_participant">待機中</string>
+    <string name="status_host_battle_for_participant">部屋長</string>
+    <string name="status_clear_battle_for_participant">クリア</string>
+
+    <!-- AI와 대결 게임 -->
+    <string name="caption_cpu">人工知能</string>
+    <string name="me">私</string>
+
+    <!-- 도전 대시보드 -->
+    <string name="title_challenge">挑戦</string>
+    <string name="challenge_dashboard_header_matrix">今日の課題</string>
+    <string name="challenge_dashboard_header_rank">ランキング</string>
+    <string name="error_challenge_already_record">既に挑戦完了しました。広告を通じて再挑戦の報酬を得ることができます。再挑戦しますか？</string>
+    <string name="error_challenge_retry_rewarded">再挑戦報酬を受け取りませんでした。</string>
+
+    <!-- 스도쿠 게임 결과 팝업 -->
+    <string name="complete_message">おめでとうございます！\n数独をクリアしました！</string>
+    <string name="lost_message">こんな…あなたが負けました… </string>
+    <string name="record">記録</string>
+
+    <!-- 공통 -->
+    <string name="start">スタート</string>
+    <string name="exit_game">ゲームの終了</string>
+    <string name="confirm">確認</string>
+    <string name="retry">再試行</string>
+    <string name="show_replay">リプレイを表示</string>
+    <string name="exit_confirm_for_single">本当にゲームを終了しますか？</string>
+    <string name="cancel">キャンセル</string>
+    <!-- -->
+</resources>
