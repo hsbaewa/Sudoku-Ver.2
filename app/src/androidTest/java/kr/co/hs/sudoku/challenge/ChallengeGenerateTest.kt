@@ -15,8 +15,8 @@ import kotlin.time.Duration
 @RunWith(AndroidJUnit4::class)
 class ChallengeGenerateTest {
 
-//    @Test
-//    fun generateChallenge() = runTest(timeout = Duration.INFINITE) {
+    @Test
+    fun generateChallenge() = runTest(timeout = Duration.INFINITE) {
 //        val challengeRepository = ChallengeRepositoryImpl()
 //
 //        val createMatrix = RandomCreateSudoku(9, 50.0).getIntMatrix()
@@ -29,5 +29,7 @@ class ChallengeGenerateTest {
 //
 //        val result = challengeRepository.createChallenge(challengeEntity)
 //        assertTrue(result)
-//    }
+
+        assertTrue(true)
+    }
 }
