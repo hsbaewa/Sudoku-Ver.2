@@ -44,7 +44,7 @@ class ChallengeRemoteSourceImpl : ChallengeRemoteSource {
                     .also { it.id = id }
                     .asMutableMap()
                     .also { it["createdAt"] = FieldValue.serverTimestamp() }
-            )
+            ).await()
 
             true
         }

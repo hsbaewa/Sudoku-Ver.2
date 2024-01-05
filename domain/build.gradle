@@ -35,4 +35,6 @@ dependencies {
 
     def mockk_version = '1.13.8'
     testImplementation "io.mockk:mockk:$mockk_version"
+
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 }
