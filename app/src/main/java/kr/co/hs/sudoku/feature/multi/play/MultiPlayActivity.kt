@@ -25,8 +25,7 @@ import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.ad.NativeAdFragment
 import kr.co.hs.sudoku.feature.stage.StageFragment
@@ -73,6 +72,9 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     private var isAlreadyPending = false
     private var isExitAfterCleared = false
 
+    @TestOnly
+    var isShowErrorDialog = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.lifecycleOwner = this
@@ -81,15 +83,11 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
         with(battleViewModel) {
-            isRunningProgress.observe(this@MultiPlayActivity) {
-                it.takeIf { it }
-                    ?.run { showProgressIndicator() }
-                    ?: dismissProgressIndicator()
-            }
-
-            battleEntity.observe(this@MultiPlayActivity) { onBattleEntity(it) }
-            startEventMonitoring(intent.getStringExtra(EXTRA_BATTLE_ID) ?: "")
+            isRunningProgress.observe(this@MultiPlayActivity) { isShowProgressIndicator = it }
             error.observe(this@MultiPlayActivity) {
+                if (!isShowErrorDialog)
+                    return@observe
+
                 when (it) {
                     is BattleRepositoryImpl.BattleRepositoryException -> {
                         val message = when (it.type) {
@@ -103,6 +101,8 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                     else -> showAlert(title.toString(), it.message.toString()) {}
                 }
             }
+            battleEntity.observe(this@MultiPlayActivity) { onBattleEntity(it) }
+            intent.getStringExtra(EXTRA_BATTLE_ID)?.run { startEventMonitoring(this) }
         }
 
 
