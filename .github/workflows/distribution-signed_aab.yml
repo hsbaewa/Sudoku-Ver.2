@@ -1,5 +1,5 @@
 name: Signed AAB 배포
-run-name: 버전 ${{ inputs.versionName }}(${{ github.run_number + 28 }}) 배포
+run-name: 버전 ${{ inputs.versionName }}(${{ github.run_number }} + 28) 배포
 
 on:
   workflow_dispatch:
@@ -100,7 +100,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
           #          VERSION_CODE: ${{ inputs.versionCode }}
-          VERSION_CODE: ${{ github.run_number + 28 }}
+          VERSION_CODE: ${{ github.run_number }} + 28
           VERSION_NAME: ${{ inputs.versionName }}
         run: |
           ./gradlew clean bundleRelease \
