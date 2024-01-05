@@ -1,35 +1,19 @@
 <resources>
-    <string name="level_format">Level %1$d</string>
-    <string name="start">Start</string>
-    <string name="exit_game">Exit Game</string>
+    <string name="app_name">Sudoku Battle</string>
 
-    <string name="stage_beginner">Beginner</string>
-    <string name="stage_intermediate">Intermediate</string>
-    <string name="stage_advanced">Advanced</string>
+    <!-- 액션바 -->
+    <string name="please_wait_profile">Loading…</string>
+    <string name="welcome_not_login">Please login</string>
+    <string name="welcome_format">Welcome %1$s</string>
+    <string name="multi_noti_waiting">Multi play sudoku in waiting…</string>
+    <string name="multi_noti_playing">Multi play sudoku in playing…</string>
+    <string name="sign_in">Sign in</string>
+    <string name="update_user_profile">Update user profile</string>
+    <string name="settings_cell_haptic">Enabled sudoku cell click haptic</string>
+    <string name="version_format">Ver. %1$s(%2$d)</string>
 
-    <string name="navigation_tab_single">Single</string>
-    <string name="navigation_tab_challenge">Challenge</string>
-    <string name="navigation_tab_settings">Settings</string>
-    <string name="navigation_tab_multi">Multi</string>
 
-    <string name="ready_complete">Ready Complete!</string>
-
-    <string name="complete_message">Congratulation!\nClear this level!!</string>
-    <string name="lost_message">sorry.. you lost.</string>
-    <string name="record">Your Record</string>
-
-    <string name="confirm">Confirm</string>
-    <string name="retry">Retry</string>
-    <string name="show_replay">Show Replay</string>
-
-    <string name="memo_status_on">Memo Off</string>
-    <string name="memo_status_off">Memo</string>
-    <string name="memo_format">Memo %1$s</string>
-    <string name="Delete">Del</string>
-
-    <string name="retry_message">are you sure retry this game?</string>
-    <string name="cancel">Cancel</string>
-
+    <!-- 프로필 설정 -->
     <string name="profile_update_title">Profile update</string>
     <string name="profile_display_name">Display name</string>
     <string name="profile_input_display_name">input display name</string>
@@ -41,71 +25,34 @@
     <string name="profile_image_input_hint">input your profile image</string>
     <string name="profile_image_url_invalid">url is invalid</string>
 
-    <string name="challenge_title">today\'s Challenge</string>
-    <string name="challenge_title_leaderboard">Leaderboard</string>
+    <!-- 메인 하단 탭 -->
+    <string name="navigation_tab_single">Single</string>
+    <string name="navigation_tab_multi">Multi</string>
+    <string name="navigation_tab_challenge">Challenge</string>
 
-    <string name="rank_format_first" translatable="false">1st</string>
-    <string name="rank_format_second" translatable="false">2nd</string>
-    <string name="rank_format_third" translatable="false">3rd</string>
-    <string name="rank_format" translatable="false">%1$dth</string>
-    <string name="record_format">record : %1$s</string>
-    <string name="rank_mine_format_name">[me]%1$s</string>
-
-    <string name="error_require_authenticate">This feature requires login.</string>
-    <string name="error_challenge_already_record">You have already completed the challenge. You can receive rewards for trying again through advertising. Would you like to try again?</string>
-    <string name="error_challenge_retry_rewarded">failed rewarded</string>
-
-    <string name="caption_with_cpu">with CPU</string>
-    <string name="caption_with_user">with User</string>
-    <string name="caption_single_play">single play</string>
-
-    <string name="caption_cpu">CPU</string>
-    <string name="me">Me</string>
-
-    <string name="versus">VS</string>
-
-    <string name="format_statistics">%2$d wins of %1$d matches</string>
-    <string name="caption_empty_battle_list">empty battle</string>
-    <string name="caption_create_battle">create</string>
-    <string name="join">Join</string>
-
-    <string name="caption_start_battle_for_host">Start Game</string>
-    <string name="caption_pending_battle_for_participant">Ready</string>
-    <string name="caption_ready_battle_for_participant">Cancel Ready</string>
-    <string name="status_ready_battle_for_participant">is Ready</string>
-    <string name="status_pending_battle_for_participant">Pending</string>
-    <string name="status_host_battle_for_participant">Host</string>
-    <string name="status_clear_battle_for_participant">Clear</string>
-
-    <string name="title_select_stage_for_battle">select stage</string>
-
-    <string name="battle_exit_message">Are you sure you want to quit the game? Depending on your opponent\'s record, you may be set for a loss.</string>
-
-    <string name="require_select_stage">require select stage</string>
-
-    <string name="app_name">Sudoku Battle</string>
-
+    <!-- 싱글 플레이 대시보드 -->
+    <string name="title_single_play">Single Play</string>
     <string name="beginner_matrix_size" translatable="false">4 X 4</string>
     <string name="intermediate_matrix_size" translatable="false">9 X 9</string>
     <string name="advanced_matrix_size" translatable="false">16 X 16</string>
 
-    <string name="exit_confirm_for_single">Are you sure you want to quit the game?</string>
+    <!-- 싱글 플레이 게임 -->
+    <string name="retry_message">Would you like to reset and restart the game?</string>
 
-    <string name="title_single_play">Single Play</string>
-    <string name="select_matrix_title">Select Sudoku</string>
-
-    <string name="loading_statistics">loading statistics…</string>
-    <string name="loading_participants">loading participants…</string>
-    <string name="error_statistics">statistics load failed</string>
-    <string name="error_participants">participants load failed</string>
-
+    <!-- 멀티 플레이 대시보드 -->
     <string name="title_multi_play">Multi Play</string>
     <string name="multi_play_add">+ New Game</string>
     <string name="multi_play_header_users">For users</string>
     <string name="multi_play_header_others">For participate</string>
-    <string name="multi_play_error_empty_participants">There is no one to play game.</string>
-    <string name="multi_play_error_require_ready_all_users">Your opponent is not ready.</string>
+    <string name="multi_list_join_confirm">Would you like to join this game?</string>
+    <string name="multi_list_empty_message">There are no games available to participate.</string>
+    <string name="loading_statistics">loading statistics…</string>
+    <string name="loading_participants">loading participants…</string>
+    <string name="error_statistics">statistics load failed</string>
+    <string name="error_participants">participants load failed</string>
+    <string name="format_statistics">%2$d wins of %1$d matches</string>
 
+    <!-- 멀티 플레이 생성 -->
     <string name="multi_create_title">Create Multi Play</string>
     <string name="multi_create_label_select_matrix">Select sudoku</string>
     <string name="multi_create_label_select_participants">Select participants count</string>
@@ -113,26 +60,57 @@
     <string name="multi_create_label_participants_3">3</string>
     <string name="multi_create_label_participants_4">4</string>
     <string name="multi_create_label_do_create">Do create!!</string>
-
-    <string name="multi_noti_waiting">Multi play sudoku in waiting…</string>
-    <string name="multi_noti_playing">Multi play sudoku in playing…</string>
-
-    <string name="multi_list_join_confirm">Would you like to join this game?</string>
-    <string name="multi_list_empty_message">There are no games available to participate.</string>
-
     <string name="multi_create_label_ai">Play with A.I</string>
+    <string name="select_matrix_title">Select Sudoku</string>
+    <string name="require_select_stage">require select stage</string>
 
+    <!-- 멀티 플레이 게임 -->
+    <string name="battle_exit_message">Are you sure you want to quit the game? Depending on your opponent\'s record, you may be set for a loss.</string>
+    <string name="caption_start_battle_for_host">Start Game</string>
+    <string name="caption_pending_battle_for_participant">Ready</string>
+    <string name="caption_ready_battle_for_participant">Cancel Ready</string>
+    <string name="status_ready_battle_for_participant">is Ready</string>
+    <string name="status_pending_battle_for_participant">Waiting</string>
+    <string name="status_host_battle_for_participant">Host</string>
+    <string name="status_clear_battle_for_participant">Clear</string>
+    <string name="versus" translatable="false">VS</string>
+    <string name="multi_play_error_empty_participants">There is no one to play game.</string>
+    <string name="multi_play_error_require_ready_all_users">Your opponent is not ready.</string>
+
+    <!-- AI와 대결 게임 -->
+    <string name="caption_cpu">A.I</string>
+    <string name="me">Me</string>
+
+    <!-- 도전 대시보드 -->
     <string name="title_challenge">Challenge</string>
     <string name="challenge_dashboard_header_matrix">Today\'s challenge</string>
     <string name="challenge_dashboard_header_rank">Ranking</string>
     <string name="challenge_divider_for_my_rank" translatable="false">.\n.\n.</string>
+    <string name="error_challenge_already_record">You have already completed the challenge. You can receive rewards for trying again through advertising. Would you like to try again?</string>
+    <string name="error_challenge_retry_rewarded">failed rewarded</string>
+    <string name="rank_format_first" translatable="false">1st</string>
+    <string name="rank_format_second" translatable="false">2nd</string>
+    <string name="rank_format_third" translatable="false">3rd</string>
+    <string name="rank_format" translatable="false">%1$dth</string>
 
-    <string name="sign_in">Sign in</string>
-    <string name="update_user_profile">Update user profile</string>
-    <string name="settings_cell_haptic">Enabled sudoku cell click haptic</string>
-    <string name="version_format">Ver. %1$s(%2$d)</string>
+    <!-- 스도쿠 게임 결과 팝업 -->
+    <string name="complete_message">Congratulation!\nClear sudoku!!</string>
+    <string name="lost_message">sorry.. you lost.</string>
+    <string name="record">Your Record</string>
 
-    <string name="please_wait_profile">Loading…</string>
-    <string name="welcome_format">Welcome %1$s</string>
-    <string name="welcome_not_login">Please login</string>
+    <!-- 스도쿠 컨트롤러 -->
+    <string name="memo_status_on" translatable="false">Memo Off</string>
+    <string name="memo_status_off" translatable="false">Memo</string>
+    <string name="memo_format" translatable="false">Memo %1$s</string>
+    <string name="Delete" translatable="false">Del</string>
+
+    <!-- 공통 -->
+    <string name="start">Start</string>
+    <string name="exit_game">Exit Game</string>
+    <string name="confirm">Confirm</string>
+    <string name="retry">Retry</string>
+    <string name="show_replay">Show Replay</string>
+    <string name="exit_confirm_for_single">Are you sure you want to quit the game?</string>
+    <string name="cancel">Cancel</string>
+    <!-- -->
 </resources>
