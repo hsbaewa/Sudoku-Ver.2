@@ -8,12 +8,16 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.games.PlayGamesSdk
 import kr.co.hs.sudoku.extension.StringExt.md5
+import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
+import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
+import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepository
+import java.lang.ref.Reference
 import java.lang.ref.SoftReference
 
 class App : Application() {
@@ -32,21 +36,27 @@ class App : Application() {
         MobileAds.initialize(this)
     }
 
-    private var challengeRepositoryRef: SoftReference<ChallengeRepository>? = null
+    private var challengeRepositoryRef: Reference<ChallengeRepository>? = null
     fun getChallengeRepository(): ChallengeRepository =
         challengeRepositoryRef?.get()
             ?: ChallengeRepositoryImpl().apply {
                 challengeRepositoryRef = SoftReference(this)
             }
 
-    private var profileRepositoryRef: SoftReference<ProfileRepository>? = null
+    private var profileRepositoryRef: Reference<ProfileRepository>? = null
     fun getProfileRepository(): ProfileRepository =
         profileRepositoryRef?.get()
             ?: ProfileRepositoryImpl().apply { profileRepositoryRef = SoftReference(this) }
 
-    private var battleRepositoryRef: SoftReference<BattleRepository>? = null
+    private var battleRepositoryRef: Reference<BattleRepository>? = null
     fun getBattleRepository(): BattleRepository =
         battleRepositoryRef?.get()
             ?: BattleRepositoryImpl()
                 .apply { battleRepositoryRef = SoftReference(this) }
+
+    private var gameSettingsRepositoryRef: Reference<GameSettingsRepository>? = null
+    fun getGameSettingsRepository(): GameSettingsRepository =
+        gameSettingsRepositoryRef?.get()
+            ?: GameSettingsRepositoryImpl(dataStore)
+                .apply { gameSettingsRepositoryRef = SoftReference(this) }
 }

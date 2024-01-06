@@ -1,7 +1,9 @@
 package kr.co.hs.sudoku.viewmodel
 
 import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.settings.GameSettingsEntity
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 
@@ -17,5 +19,7 @@ class GameSettingsViewModel(private val repository: GameSettingsRepository) : Vi
 
     val gameSettings: LiveData<GameSettingsEntity> = repository.getGameSettings().asLiveData()
     fun setGameSettings(entity: GameSettingsEntity) =
-        viewModelScope.launch { repository.setGameSettings(entity) }
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            withContext(Dispatchers.IO) { repository.setGameSettings(entity) }
+        }
 }

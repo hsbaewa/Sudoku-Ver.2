@@ -25,7 +25,9 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.google.android.gms.games.PlayGames
 import com.google.android.material.navigation.NavigationBarView
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
@@ -35,7 +37,6 @@ import kr.co.hs.sudoku.databinding.ActivityMainBinding
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.Bitmap.toCropCircle
-import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardFragment
@@ -46,9 +47,7 @@ import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.feature.profile.ProfileUpdateActivity
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
-import kr.co.hs.sudoku.model.settings.GameSettingsEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
-import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import java.net.URL
 
@@ -80,7 +79,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         )
     }
     private val gameSettingsViewModel: GameSettingsViewModel by viewModels {
-        GameSettingsViewModel.Factory(GameSettingsRepositoryImpl(dataStore))
+        GameSettingsViewModel.Factory(app.getGameSettingsRepository())
     }
     private val launcherForProfileUpdate =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -137,7 +136,19 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 savedInstanceState?.getInt(EXTRA_CURRENT_TAB_ITEM_ID) ?: R.id.menu_single
         }
 
-        AppOpenAdManager(this).showIfAvailable()
+        val gameSettings = runBlocking {
+            app.getGameSettingsRepository().getGameSettings().firstOrNull()
+        }
+        when (gameSettings?.isFirstAppOpen) {
+            true -> {
+                gameSettings.isFirstAppOpen = false
+                gameSettingsViewModel.setGameSettings(gameSettings)
+            }
+
+            false -> AppOpenAdManager(this@MainActivity).showIfAvailable()
+            null -> {}
+        }
+
     }
 
     /**
@@ -275,7 +286,10 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             R.id.enabled_cell_haptic -> {
                 val currentSettings = !item.isChecked
                 item.isChecked = currentSettings
-                gameSettingsViewModel.setGameSettings(GameSettingsEntity(enabledHapticFeedback = currentSettings))
+                gameSettingsViewModel.gameSettings.value?.let { gameSettings ->
+                    gameSettings.enabledHapticFeedback = currentSettings
+                    gameSettingsViewModel.setGameSettings(gameSettings)
+                }
                 true
             }
 
