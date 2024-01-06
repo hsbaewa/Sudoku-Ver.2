@@ -167,7 +167,7 @@ jobs:
           packageName: kr.co.hs.sudoku
           releaseFiles: app/build/outputs/apk/release/app-release.apk
           track: beta
-          userFraction: 1.0
+          userFraction: "1.0"
           mappingFile: app/build/outputs/mapping/release/mapping.txt
 
   firebase-distribution:
