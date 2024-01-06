@@ -162,10 +162,8 @@ jobs:
           path: app/build
       - name: apk를 PlayStore에 배포(베타트랙)
         uses: r0adkll/upload-google-play@v1
-        env:
-          SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_FOR_GOOGLE_PLAY_DISTRIBUTION_JSON }}
         with:
-          serviceAccountJsonPlainText: ${{ SERVICE_ACCOUNT_JSON }}
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_FOR_GOOGLE_PLAY_DISTRIBUTION_JSON }}
           packageName: kr.co.hs.sudoku
           releaseFiles: app/build/outputs/apk/release/app-release.apk
           track: beta
