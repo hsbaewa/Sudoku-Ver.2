@@ -17,6 +17,11 @@ on:
         type: boolean
         required: false
         default: false
+      isPlayStore:
+        description: 'PlayStore에 배포'
+        type: boolean
+        required: false
+        default: false
       isDistributionFirebase:
         description: 'firebase app distribution을 통해 배포'
         type: boolean
@@ -145,6 +150,25 @@ jobs:
         with:
           name: app-release
           path: app/build/outputs/apk/release/app-release.apk
+  playstore:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.isPlayStore }}
+    needs: build-release
+    steps:
+      - name: build를 artifact로부터 다운로드
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: app/build
+      - name: apk를 PlayStore에 배포(베타트랙)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ SERVICE_ACCOUNT_FOR_GOOGLE_PLAY_DISTRIBUTION_JSON }}
+          packageName: kr.co.hs.sudoku
+          releaseFiles: app/build/outputs/apk/release/app-release.apk
+          track: beta
+          userFraction: 1.0
+          mappingFile: app/build/outputs/mapping/release/mapping.txt
 
   firebase-distribution:
     runs-on: ubuntu-latest
