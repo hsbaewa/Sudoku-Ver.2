@@ -24,4 +24,9 @@ abstract class Fragment : androidx.fragment.app.Fragment() {
         msg: String,
         crossinline onConfirm: (Boolean) -> Unit
     ) = (requireActivity() as Activity).showConfirm(title, msg, onConfirm)
+
+    protected fun Throwable.showErrorAlert() = showAlert(
+        requireActivity().title.toString(),
+        (requireActivity() as Activity).getErrorMessage(this)
+    ) {}
 }

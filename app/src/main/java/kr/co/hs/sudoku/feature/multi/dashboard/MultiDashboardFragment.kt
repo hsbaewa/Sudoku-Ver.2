@@ -23,7 +23,6 @@ import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.showSnackBar
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
@@ -141,7 +140,7 @@ class MultiDashboardFragment : Fragment() {
     private fun joinMultiPlay(battleEntity: BattleEntity) =
         viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             dismissProgressIndicator()
-            showSnackBar(throwable.message.toString())
+            throwable.showErrorAlert()
         }) {
             showProgressIndicator()
             withContext(Dispatchers.IO) { playViewModel.doJoin(battleEntity.id) }
