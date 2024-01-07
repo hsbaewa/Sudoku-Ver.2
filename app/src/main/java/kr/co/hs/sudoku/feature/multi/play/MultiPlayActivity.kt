@@ -166,7 +166,11 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             is BattleEntity.Pending -> if (!isAlreadyPending && battleEntity.isGeneratedSudoku) {
                 isAlreadyPending = true
                 controlBoard {
-                    it.startCountDown { battleViewModel.start() }
+                    it.startCountDown {
+                        battleViewModel
+                            .takeIf { vm -> vm.isHost() }
+                            ?.start()
+                    }
                     it.setStatus(false, null)
                 }
                 viewerBoard {
