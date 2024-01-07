@@ -7,6 +7,7 @@ import androidx.core.app.NavUtils
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 
 abstract class Activity : AppCompatActivity() {
 
@@ -74,10 +75,19 @@ abstract class Activity : AppCompatActivity() {
         setOnDismissListener { onConfirm(false) }
     }.show()
 
-    protected fun Throwable.showErrorAlert(): AlertDialog =
-        with(MaterialAlertDialogBuilder(this@Activity)) {
-            setMessage(this@showErrorAlert.message.toString())
-            setPositiveButton(R.string.confirm) { _, _ -> }
-            setOnDismissListener { }
-        }.show()
+    fun getErrorMessage(t: Throwable) = when (t) {
+        is BattleRepositoryImpl.BattleRepositoryException -> {
+            when (t.type) {
+                BattleRepositoryImpl.EmptyParticipant -> getString(R.string.multi_play_error_empty_participants)
+                BattleRepositoryImpl.RequireReadyAllUsers -> getString(R.string.multi_play_error_require_ready_all_users)
+                BattleRepositoryImpl.AlreadyFull -> getString(R.string.multi_list_error_already_full)
+                BattleRepositoryImpl.NotFound -> getString(R.string.multi_list_not_found)
+                else -> t.message.toString()
+            }
+        }
+
+        else -> t.message.toString()
+    }
+
+    protected fun Throwable.showErrorAlert() = showAlert(title.toString(), getErrorMessage(this)) {}
 }

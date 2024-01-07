@@ -38,7 +38,6 @@ import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
-import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import kr.co.hs.sudoku.repository.timer.BattleTimer
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import org.jetbrains.annotations.TestOnly
@@ -385,17 +384,6 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         if (!isShowErrorDialog)
             return
 
-        when (this) {
-            is BattleRepositoryImpl.BattleRepositoryException -> {
-                val message = when (type) {
-                    BattleRepositoryImpl.EmptyParticipant -> getString(R.string.multi_play_error_empty_participants)
-                    BattleRepositoryImpl.RequireReadyAllUsers -> getString(R.string.multi_play_error_require_ready_all_users)
-                    else -> message.toString()
-                }
-                showAlert(title.toString(), message) {}
-            }
-
-            else -> showAlert(title.toString(), message.toString()) {}
-        }
+        showErrorAlert()
     }
 }
