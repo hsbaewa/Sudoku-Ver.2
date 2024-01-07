@@ -1,11 +1,13 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.gms.google-services'
     id 'kotlin-parcelize'
+    id 'kotlin-kapt'
+    id 'com.google.gms.google-services'
     // Add the App Distribution Gradle plugin
     id 'com.google.firebase.appdistribution'
-    id 'kotlin-kapt'
+    // Add the Crashlytics Gradle plugin
+    id 'com.google.firebase.crashlytics'
 }
 
 def getVersionCodeFromParameter = { ->
@@ -39,10 +41,12 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseAppDistribution {
-                appId="1:616519348076:android:7e79f73996ffc659234d49"
-                artifactType="APK"
-                releaseNotesFile="app-distribution-release-note.txt"
-                testersFile="app-distribution-testers.txt"
+                artifactType = "APK"
+                releaseNotesFile = "app-distribution-release-note.txt"
+                testersFile = "app-distribution-testers.txt"
+            }
+            firebaseCrashlytics {
+                mappingFileUploadEnabled true
             }
         }
         alpha {
@@ -106,12 +110,13 @@ dependencies {
     implementation 'androidx.fragment:fragment-ktx:1.6.2'
 
     // Import the Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:31.2.2')
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
     // Add the dependency for the Firebase SDK for Google Analytics
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
     implementation 'com.tbuonomo:dotsindicator:4.3'
 

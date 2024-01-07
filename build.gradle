@@ -15,4 +15,6 @@ plugins {
     id 'jacoco'
     // Add the dependency for the App Distribution Gradle plugin
     id 'com.google.firebase.appdistribution' version '4.0.0' apply false
+    // Add the dependency for the Crashlytics Gradle plugin
+    id 'com.google.firebase.crashlytics' version "2.9.9" apply false
 }
