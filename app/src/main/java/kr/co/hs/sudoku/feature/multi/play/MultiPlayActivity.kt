@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,7 +26,9 @@ import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.ad.NativeAdFragment
 import kr.co.hs.sudoku.feature.stage.StageFragment
@@ -84,23 +87,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
         with(battleViewModel) {
             isRunningProgress.observe(this@MultiPlayActivity) { isShowProgressIndicator = it }
-            error.observe(this@MultiPlayActivity) {
-                if (!isShowErrorDialog)
-                    return@observe
-
-                when (it) {
-                    is BattleRepositoryImpl.BattleRepositoryException -> {
-                        val message = when (it.type) {
-                            BattleRepositoryImpl.EmptyParticipant -> getString(R.string.multi_play_error_empty_participants)
-                            BattleRepositoryImpl.RequireReadyAllUsers -> getString(R.string.multi_play_error_require_ready_all_users)
-                            else -> it.message.toString()
-                        }
-                        showAlert(title.toString(), message) {}
-                    }
-
-                    else -> showAlert(title.toString(), it.message.toString()) {}
-                }
-            }
+            error.observe(this@MultiPlayActivity) { it.showMultiPlayError() }
             battleEntity.observe(this@MultiPlayActivity) { onBattleEntity(it) }
             intent.getStringExtra(EXTRA_BATTLE_ID)?.run { startEventMonitoring(this) }
         }
@@ -373,10 +360,14 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         MaterialAlertDialogBuilder(this)
             .setMessage(R.string.battle_exit_message)
             .setPositiveButton(R.string.confirm) { _, _ ->
-                if (battleViewModel.isClosedBattle()) {
+                lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                    dismissProgressIndicator()
+                    throwable.showMultiPlayError()
+                }) {
+                    showProgressIndicator()
+                    battleViewModel.doExit()
+                    dismissProgressIndicator()
                     finish()
-                } else {
-                    battleViewModel.exit()
                 }
             }
             .setNegativeButton(R.string.cancel, null)
@@ -387,5 +378,24 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     private fun showNativeAd() = with(supportFragmentManager.beginTransaction()) {
         replace(R.id.layout_enemy, NativeAdFragment.newInstance())
         commit()
+    }
+
+
+    private fun Throwable.showMultiPlayError() {
+        if (!isShowErrorDialog)
+            return
+
+        when (this) {
+            is BattleRepositoryImpl.BattleRepositoryException -> {
+                val message = when (type) {
+                    BattleRepositoryImpl.EmptyParticipant -> getString(R.string.multi_play_error_empty_participants)
+                    BattleRepositoryImpl.RequireReadyAllUsers -> getString(R.string.multi_play_error_require_ready_all_users)
+                    else -> message.toString()
+                }
+                showAlert(title.toString(), message) {}
+            }
+
+            else -> showAlert(title.toString(), message.toString()) {}
+        }
     }
 }
