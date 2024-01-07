@@ -176,6 +176,9 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
 
     implementation 'com.google.android.gms:play-services-ads:22.6.0'
+
+    // For Kotlin users also add the Kotlin extensions library for Play In-App Update:
+    implementation 'com.google.android.play:app-update-ktx:2.1.0'
 }
 
 

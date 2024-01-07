@@ -11,7 +11,8 @@
     <string name="sign_in">サインイン</string>
     <string name="update_user_profile">ユーザープロフィールを更新する</string>
     <string name="settings_cell_haptic">数独セルのクリック触覚を有効にしました</string>
-    <string name="version_format">Ver. %1$s(%2$d)</string>
+    <string name="version_format">Ver.%1$s</string>
+    <string name="version_updatable_format">Ver.%1$s(クリックして更新可能)</string>
 
     <!-- 프로필 설정 -->
     <string name="profile_update_title">プロフィールの更新</string>
@@ -98,5 +99,9 @@
     <string name="show_replay">リプレイを表示</string>
     <string name="exit_confirm_for_single">本当にゲームを終了しますか？</string>
     <string name="cancel">キャンセル</string>
+    <string name="in_app_update_title">アプリの更新</string>
+    <string name="in_app_update_message">最新のアプリアップデートがあります。アップデートを続行しますか？</string>
+    <string name="in_app_update_message_canceled">今すぐアプリの更新をキャンセルします。その後、オプションメニューからアップデートを進めることができます。</string>
+    <string name="in_app_update_message_confirm">今すぐアプリを更新します。</string>
     <!-- -->
 </resources>

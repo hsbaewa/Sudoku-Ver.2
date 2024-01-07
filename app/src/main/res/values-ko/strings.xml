@@ -11,7 +11,8 @@
     <string name="sign_in">로그인</string>
     <string name="update_user_profile">프로필 정보 업데이트</string>
     <string name="settings_cell_haptic">스도쿠 셀 클릭시 햅틱 설정</string>
-    <string name="version_format">버전. %1$s(%2$d)</string>
+    <string name="version_format">버전.%1$s</string>
+    <string name="version_updatable_format">버전.%1$s(클릭하여 업데이트 가능)</string>
 
     <!-- 프로필 설정 -->
     <string name="profile_update_title">프로필 수정</string>
@@ -98,5 +99,9 @@
     <string name="show_replay">리플레이 보기</string>
     <string name="exit_confirm_for_single">정말로 게임을 종료 하시겠습니까?</string>
     <string name="cancel">취소</string>
+    <string name="in_app_update_title">앱 업데이트</string>
+    <string name="in_app_update_message">최신 앱 업데이트가 있습니다. 업데이트를 진행 하시겠습니까?</string>
+    <string name="in_app_update_message_canceled">지금 앱 업데이트를 취소합니다. 이후에 옵션 메뉴를 통해 업데이트 진행이 가능합니다.</string>
+    <string name="in_app_update_message_confirm">지금 앱 업데이트를 진행합니다.</string>
     <!-- -->
 </resources>
