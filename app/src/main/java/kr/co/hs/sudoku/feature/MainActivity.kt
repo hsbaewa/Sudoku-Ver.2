@@ -25,9 +25,15 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.google.android.gms.games.PlayGames
 import com.google.android.material.navigation.NavigationBarView
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
+import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
@@ -87,6 +93,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 userProfileViewModel.requestCurrentUserProfile()
             }
         }
+    private var hasUpdate = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,6 +156,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             null -> {}
         }
 
+        checkUpdate()
     }
 
     /**
@@ -265,7 +273,11 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
         menu?.findItem(R.id.version_info)?.title = packageManager.runCatching {
             val packageInfo = getPackageInfo(packageName, PackageManager.GET_META_DATA)
-            getString(R.string.version_format, packageInfo.versionName, packageInfo.versionCode)
+            if (hasUpdate) {
+                getString(R.string.version_updatable_format, packageInfo.versionName)
+            } else {
+                getString(R.string.version_format, packageInfo.versionName)
+            }
         }.getOrDefault("")
 
         return super.onCreateOptionsMenu(menu)
@@ -293,6 +305,11 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 true
             }
 
+            R.id.version_info -> {
+                lifecycleScope.launch { doUpdate() }
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -301,4 +318,51 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         super.onSaveInstanceState(outState)
         outState.putInt(EXTRA_CURRENT_TAB_ITEM_ID, binding.bottomNavigationView.selectedItemId)
     }
+
+
+    /**
+     * in-app update
+     */
+    private fun checkUpdate() = lifecycleScope.launch {
+        withStarted {
+            launch {
+                if (getUpdateInfo()?.hasUpdate() == true) {
+                    hasUpdate = true
+                    showConfirm(R.string.in_app_update_title, R.string.in_app_update_message) {
+                        if (it) {
+                            lifecycleScope.launch { doUpdate() }
+                        }
+                    }
+                } else {
+                    hasUpdate = false
+                }
+                invalidateOptionsMenu()
+            }
+        }
+    }
+
+    private suspend fun getUpdateInfo() = AppUpdateManagerFactory.create(this)
+        .runCatching { appUpdateInfo.await() }
+        .getOrNull()
+
+    private fun AppUpdateInfo.hasUpdate() =
+        updateAvailability() == UPDATE_AVAILABLE && isUpdateTypeAllowed(IMMEDIATE)
+
+    private val launcherForInAppUpdate =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                showAlert(R.string.in_app_update_title, R.string.in_app_update_message_confirm) {}
+            } else {
+                showAlert(R.string.in_app_update_title, R.string.in_app_update_message_canceled) {}
+            }
+        }
+
+    private suspend fun doUpdate() = getUpdateInfo()
+        ?.let { updateInfo ->
+            AppUpdateManagerFactory.create(this).startUpdateFlowForResult(
+                updateInfo,
+                launcherForInAppUpdate,
+                AppUpdateOptions.newBuilder(IMMEDIATE).build()
+            )
+        }
 }

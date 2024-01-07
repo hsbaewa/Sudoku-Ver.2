@@ -10,7 +10,8 @@
     <string name="sign_in">Sign in</string>
     <string name="update_user_profile">Update user profile</string>
     <string name="settings_cell_haptic">Enabled sudoku cell click haptic</string>
-    <string name="version_format">Ver. %1$s(%2$d)</string>
+    <string name="version_format">Ver.%1$s</string>
+    <string name="version_updatable_format">Ver.%1$s(Click to update)</string>
 
 
     <!-- 프로필 설정 -->
@@ -113,5 +114,9 @@
     <string name="show_replay">Show Replay</string>
     <string name="exit_confirm_for_single">Are you sure you want to quit the game?</string>
     <string name="cancel">Cancel</string>
+    <string name="in_app_update_title">App Update</string>
+    <string name="in_app_update_message">There is the latest app update. Would you like to proceed with the update?</string>
+    <string name="in_app_update_message_canceled">Cancel app update now. The update can be performed later through the options menu.</string>
+    <string name="in_app_update_message_confirm">Proceed with updating the app now.</string>
     <!-- -->
 </resources>
