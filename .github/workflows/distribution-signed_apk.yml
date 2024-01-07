@@ -206,7 +206,7 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           ./gradlew appDistributionUploadRelease \
-            --appId=$VERSION_CODE \
+            --appId=$APP_ID \
             --stacktrace
 #  init-environment:
 #    runs-on: ubuntu-latest
