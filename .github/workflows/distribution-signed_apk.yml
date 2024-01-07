@@ -202,9 +202,12 @@ jobs:
       - name: Firebase에 배포
         shell: bash
         env:
+          APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          ./gradlew appDistributionUploadRelease
+          ./gradlew appDistributionUploadRelease \
+            --appId=$APP_ID \
+            --stacktrace
 #  init-environment:
 #    runs-on: ubuntu-latest
 #    steps:
