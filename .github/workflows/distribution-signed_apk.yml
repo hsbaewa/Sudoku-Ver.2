@@ -168,7 +168,6 @@ jobs:
           releaseFiles: app/build/outputs/apk/release/app-release.apk
           track: beta
           mappingFile: app/build/outputs/mapping/release/mapping.txt
-          changesNotSentForReview: true
 
   firebase-distribution:
     runs-on: ubuntu-latest
