@@ -106,7 +106,7 @@ jobs:
         env:
           RELEASE_NOTE: ${{ github.event.release.body }}
         run: |
-          mkdir -R distribution/whatsnew
+          mkdir -p distribution/whatsnew
           echo "$RELEASE_NOTE" > distribution/whatsnew/whatsnew-en-US
           echo "$RELEASE_NOTE" > distribution/whatsnew/whatsnew-ja-JP
           echo "$RELEASE_NOTE" > distribution/whatsnew/whatsnew-ko-KR
