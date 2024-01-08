@@ -115,7 +115,7 @@ object FragmentExtension {
             addView(
                 it,
                 LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-                    .apply { setMargins(0, 0, 0, 100.dp.toInt()) }
+                    .apply { setMargins(0, 0, 0, 50.dp.toInt()) }
             )
         }
 
