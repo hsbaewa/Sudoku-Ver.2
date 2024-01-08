@@ -1,5 +1,5 @@
 name: release test
-run-name: tag ${{ github.ref }}
+run-name: tag ${{ github.ref_name }}
 
 on:
   release:
