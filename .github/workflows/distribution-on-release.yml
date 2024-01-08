@@ -1,5 +1,5 @@
-name: release test
-run-name: tag ${{ github.ref_name }}
+name: 릴리즈 배포
+run-name: 릴리즈 버전 ${{ github.ref_name }}(${{ github.run_number }}) Play Store에 배포
 
 on:
   release:
@@ -80,40 +80,23 @@ jobs:
         run: |
           echo "$KEYSTORE" > $HOME/sign.base64
           base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
-#      - name: assembleRelease
-#        shell: bash
-#        env:
-#          PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-#          KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
-#          KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
-#          #          VERSION_CODE: ${{ inputs.versionCode }}
-#          VERSION_CODE: ${{ github.run_number }}
-#          VERSION_NAME: ${{ inputs.versionName }}
-#        run: |
-#          ./gradlew clean assembleRelease \
-#            -Pandroid.injected.signing.store.file=$HOME/sign.keystore \
-#            -Pandroid.injected.signing.store.password=$PASSWORD \
-#            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
-#            -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
-#            -PversionCode=$VERSION_CODE \
-#            -PversionName=$VERSION_NAME \
-#            --stacktrace
-#      - name: build를 artifact에 업로드
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: build
-#          path: app/build
-
-#  playstore:
-#    runs-on: ubuntu-latest
-#    if: ${{ inputs.isPlayStore }}
-#    needs: build-release
-#    steps:
-#      - name: build를 artifact로부터 다운로드
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: build
-#          path: app/build
+      - name: assembleRelease
+        shell: bash
+        env:
+          PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: ${{ github.ref_name }}
+        run: |
+          ./gradlew clean assembleRelease \
+            -Pandroid.injected.signing.store.file=$HOME/sign.keystore \
+            -Pandroid.injected.signing.store.password=$PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+            -PversionCode=$VERSION_CODE \
+            -PversionName=$VERSION_NAME \
+            --stacktrace
 #      - name: apk를 PlayStore에 배포(베타트랙)
 #        uses: r0adkll/upload-google-play@v1
 #        with:
