@@ -110,11 +110,12 @@ jobs:
           echo "$RELEASE_NOTE" > distribution/whatsnew/whatsnew-en-US
           echo "$RELEASE_NOTE" > distribution/whatsnew/whatsnew-ja-JP
           echo "$RELEASE_NOTE" > distribution/whatsnew/whatsnew-ko-KR
+          zip whatsnew.zip distribution/whatsnew/*
       - name: 릴리즈 노트를 Release asset에 업로드
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: distribution/whatsnew
+          asset_path: whatsnew.zip
 #        uses: actions/upload-release-asset@v1
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
