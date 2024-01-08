@@ -1,0 +1,124 @@
+name: release test
+run-name: tag ${{ tag_name }}
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 소스코드 Checkout
+        uses: actions/checkout@v3
+      - name: google-services.json 파일 생성
+        shell: bash
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          echo "$GOOGLE_SERVICES"
+          echo "$GOOGLE_SERVICES" > app/google-services.json
+          cat app/google-services.json
+      - name: com.google.android.gms.games.APP_ID 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'com.google.android.gms.games.APP_ID'
+          metadata-value: ${{secrets.GAME_SERVICE_PROJECT_ID}}
+          print-file: true
+      - name: com.google.android.gms.ads.APPLICATION_ID 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'com.google.android.gms.ads.APPLICATION_ID'
+          metadata-value: ${{secrets.ADS_APPLICATION_ID}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.OpenAd 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.OpenAd'
+          metadata-value: ${{secrets.ADS_UNIT_ID_OPENING}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.NativeAd 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.NativeAd'
+          metadata-value: ${{secrets.ADS_UNIT_ID_NATIVE_ITEM}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.NativeAdForStage 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.NativeAdForStage'
+          metadata-value: ${{secrets.ADS_UNIT_ID_NATIVE_FOR_STAGE}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.BannerAdSinglePlay 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.BannerAdSinglePlay'
+          metadata-value: ${{secrets.ADS_UNIT_ID_BANNER_FOR_SINGLE_PLAY}}
+          print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.RewardAdChallengeRetry 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.RewardAdChallengeRetry'
+          metadata-value: ${{secrets.ADS_UNIT_ID_REWARD_FOR_CHALLENGE_RETRY}}
+          print-file: true
+      - name: 빌드 환경 java 버전 설정
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt' # See 'Supported distributions' for available options
+          java-version: '17'
+      - name: 키스토어 파일 생성
+        shell: bash
+        env:
+          KEYSTORE: ${{ secrets.ENCODED_BASE64_KEYSTORE }}
+        run: |
+          echo "$KEYSTORE" > $HOME/sign.base64
+          base64 -d -i $HOME/sign.base64 > $HOME/sign.keystore
+#      - name: assembleRelease
+#        shell: bash
+#        env:
+#          PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+#          KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+#          KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+#          #          VERSION_CODE: ${{ inputs.versionCode }}
+#          VERSION_CODE: ${{ github.run_number }}
+#          VERSION_NAME: ${{ inputs.versionName }}
+#        run: |
+#          ./gradlew clean assembleRelease \
+#            -Pandroid.injected.signing.store.file=$HOME/sign.keystore \
+#            -Pandroid.injected.signing.store.password=$PASSWORD \
+#            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+#            -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+#            -PversionCode=$VERSION_CODE \
+#            -PversionName=$VERSION_NAME \
+#            --stacktrace
+#      - name: build를 artifact에 업로드
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: build
+#          path: app/build
+
+#  playstore:
+#    runs-on: ubuntu-latest
+#    if: ${{ inputs.isPlayStore }}
+#    needs: build-release
+#    steps:
+#      - name: build를 artifact로부터 다운로드
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: build
+#          path: app/build
+#      - name: apk를 PlayStore에 배포(베타트랙)
+#        uses: r0adkll/upload-google-play@v1
+#        with:
+#          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_FOR_GOOGLE_PLAY_DISTRIBUTION_JSON }}
+#          packageName: kr.co.hs.sudoku
+#          releaseFiles: app/build/outputs/apk/release/app-release.apk
+#          track: beta
+#          mappingFile: app/build/outputs/mapping/release/mapping.txt
