@@ -100,7 +100,7 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: app/build/outputs/apk/release/app-release.apk
-          asset_name: release-${{ github.ref_name }}(${{ github.run_number }}).apk
+          asset_name: release-${{ github.ref_name }}-${{ github.run_number }}.apk
       - name: 릴리즈 노트 생성
         shell: bash
         env:
