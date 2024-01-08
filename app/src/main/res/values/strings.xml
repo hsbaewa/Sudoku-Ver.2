@@ -12,7 +12,8 @@
     <string name="settings_cell_haptic">Enabled sudoku cell click haptic</string>
     <string name="version_format">Ver.%1$s</string>
     <string name="version_updatable_format">Ver.%1$s(Click to update)</string>
-
+    <string name="clear_seen_guide">Review description</string>
+    <string name="clear_seen_guide_success">You can now see descriptions for every feature again.</string>
 
     <!-- 프로필 설정 -->
     <string name="profile_update_title">Profile update</string>
@@ -120,5 +121,13 @@
     <string name="in_app_update_message">There is the latest app update. Would you like to proceed with the update?</string>
     <string name="in_app_update_message_canceled">Cancel app update now. The update can be performed later through the options menu.</string>
     <string name="in_app_update_message_confirm">Proceed with updating the app now.</string>
+
+    <!-- 가이드 -->
+    <string name="single_tab_guide_title">Single Play</string>
+    <string name="single_tab_guide_desc">Provides a function to play when you want to practice alone.\nThe value of the stage cell changes every time.</string>
+    <string name="multi_tab_guide_title">Multi Play</string>
+    <string name="multi_tab_guide_desc">You can compete against other players.\nYou can create your own room or participate in a game created by another player.</string>
+    <string name="challenge_tab_guide_title">Challenge Sudoku</string>
+    <string name="challenge_tab_guide_desc">Boast your record by clearing Sudoku of the specified difficulty level.</string>
     <!-- -->
 </resources>
