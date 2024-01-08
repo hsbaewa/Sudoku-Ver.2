@@ -3,7 +3,7 @@ run-name: 릴리즈 버전 ${{ github.ref_name }}(${{ github.run_number }}) Play
 
 on:
   release:
-    types: [ published ]
+    types: [ published, edited ]
 
 jobs:
   build-release:
