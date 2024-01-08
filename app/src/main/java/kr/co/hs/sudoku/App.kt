@@ -28,10 +28,13 @@ class App : Application() {
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        @SuppressLint("HardwareIds")
-        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)?.md5
         val adRequestConfiguration = RequestConfiguration.Builder()
-        deviceId?.run { adRequestConfiguration.setTestDeviceIds(listOf(this)) }
+        if (BuildConfig.DEBUG) {
+            @SuppressLint("HardwareIds")
+            val deviceId =
+                Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)?.md5
+            deviceId?.run { adRequestConfiguration.setTestDeviceIds(listOf(this)) }
+        }
         MobileAds.setRequestConfiguration(adRequestConfiguration.build())
         MobileAds.initialize(this)
     }
