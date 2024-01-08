@@ -1,5 +1,5 @@
 name: 릴리즈 배포
-run-name: 릴리즈 버전 ${{ github.ref_name }}(${{ github.run_number }}) Play Store에 배포
+run-name: 릴리즈 버전 ${{ github.ref_name }}(${{ github.run_number }}) Play Store에 배포 ${{github.event.release.body}}
 
 on:
   release:
