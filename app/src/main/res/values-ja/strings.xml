@@ -13,6 +13,8 @@
     <string name="settings_cell_haptic">数独セルのクリック触覚を有効にしました</string>
     <string name="version_format">Ver.%1$s</string>
     <string name="version_updatable_format">Ver.%1$s(クリックして更新可能)</string>
+    <string name="clear_seen_guide">説明文を再表示</string>
+    <string name="clear_seen_guide_success">これで、すべての機能固有の説明文を再表示できます。</string>
 
     <!-- 프로필 설정 -->
     <string name="profile_update_title">プロフィールの更新</string>
@@ -105,5 +107,13 @@
     <string name="in_app_update_message">最新のアプリアップデートがあります。アップデートを続行しますか？</string>
     <string name="in_app_update_message_canceled">今すぐアプリの更新をキャンセルします。その後、オプションメニューからアップデートを進めることができます。</string>
     <string name="in_app_update_message_confirm">今すぐアプリを更新します。</string>
+
+    <!-- 가이드 -->
+    <string name="single_tab_guide_title">シングルプレイ</string>
+    <string name="single_tab_guide_desc">自分で練習したいときにプレイできる機能を提供します。\nステージセルの値は毎回変更されます。</string>
+    <string name="multi_tab_guide_title">マルチプレイ</string>
+    <string name="multi_tab_guide_desc">他のプレイヤーと対戦することができます。\n私は自分の部屋を作成したり、他のプレイヤーが作成したゲームに参加したりできます。</string>
+    <string name="challenge_tab_guide_title">挑戦数独</string>
+    <string name="challenge_tab_guide_desc">指定された難易度の数独をクリアして自分の記録を誇ります。</string>
     <!-- -->
 </resources>

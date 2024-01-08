@@ -14,6 +14,10 @@
             android:id="@+id/enabled_cell_haptic"
             android:checkable="true"
             android:title="@string/settings_cell_haptic" />
+
+        <item
+            android:id="@+id/clear_seen_guide"
+            android:title="@string/clear_seen_guide" />
     </group>
 
     <group android:id="@+id/info">

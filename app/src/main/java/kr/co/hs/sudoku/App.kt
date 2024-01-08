@@ -11,11 +11,13 @@ import kr.co.hs.sudoku.extension.StringExt.md5
 import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
+import kr.co.hs.sudoku.repository.RegistrationRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
+import kr.co.hs.sudoku.repository.settings.RegistrationRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import java.lang.ref.Reference
 import java.lang.ref.SoftReference
@@ -62,4 +64,10 @@ class App : Application() {
         gameSettingsRepositoryRef?.get()
             ?: GameSettingsRepositoryImpl(dataStore)
                 .apply { gameSettingsRepositoryRef = SoftReference(this) }
+
+    private var registrationRepositoryRef: Reference<RegistrationRepository>? = null
+    fun getRegistrationRepository(): RegistrationRepository =
+        registrationRepositoryRef?.get()
+            ?: RegistrationRepositoryImpl(dataStore)
+                .apply { registrationRepositoryRef = SoftReference(this) }
 }

@@ -4,36 +4,45 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.DrawableWrapper
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ViewGroup
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
 import androidx.core.content.ContextCompat
+import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.gms.games.PlayGames
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
 import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
@@ -56,6 +65,8 @@ import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import java.net.URL
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
@@ -143,17 +154,19 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 savedInstanceState?.getInt(EXTRA_CURRENT_TAB_ITEM_ID) ?: R.id.menu_single
         }
 
-        val gameSettings = runBlocking {
-            app.getGameSettingsRepository().getGameSettings().firstOrNull()
-        }
-        when (gameSettings?.isFirstAppOpen) {
-            true -> {
-                gameSettings.isFirstAppOpen = false
-                gameSettingsViewModel.setGameSettings(gameSettings)
+        if (savedInstanceState == null) {
+            val isFirstAppOpened = runBlocking {
+                app.getRegistrationRepository().isFirstAppOpened()
             }
+            when (isFirstAppOpened) {
+                true -> {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        app.getRegistrationRepository().appOpened()
+                    }
+                }
 
-            false -> AppOpenAdManager(this@MainActivity).showIfAvailable()
-            null -> {}
+                false -> AppOpenAdManager(this@MainActivity).showIfAvailable()
+            }
         }
 
         checkUpdate()
@@ -167,9 +180,41 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
      **/
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
-            R.id.menu_single -> showSinglePlayDashboard()
-            R.id.menu_multi -> showMultiPlayDashboard()
-            R.id.challenge -> showChallengeDashboard()
+            R.id.menu_single -> {
+                showSinglePlayDashboard()
+                lifecycleScope.launch {
+                    val hasSeenSinglePlayGuide = withContext(Dispatchers.IO) {
+                        app.getRegistrationRepository().hasSeenSinglePlayGuide()
+                    }
+                    if (!hasSeenSinglePlayGuide) {
+                        showSingleTabGuide(lifecycle)
+                    }
+                }
+            }
+
+            R.id.menu_multi -> {
+                showMultiPlayDashboard()
+                lifecycleScope.launch {
+                    val hasSeenMultiPlayGuide = withContext(Dispatchers.IO) {
+                        app.getRegistrationRepository().hasSeenMultiPlayGuide()
+                    }
+                    if (!hasSeenMultiPlayGuide) {
+                        showMultiTabGuide(lifecycle)
+                    }
+                }
+            }
+
+            R.id.challenge -> {
+                showChallengeDashboard()
+                lifecycleScope.launch {
+                    val hasSeenChallengeGuide = withContext(Dispatchers.IO) {
+                        app.getRegistrationRepository().hasSeenChallengeGuide()
+                    }
+                    if (!hasSeenChallengeGuide) {
+                        showChallengeTabGuide(lifecycle)
+                    }
+                }
+            }
         }
         true
     }
@@ -305,6 +350,14 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 true
             }
 
+            R.id.clear_seen_guide -> {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { app.getRegistrationRepository().clear() }
+                    showAlert(null, R.string.clear_seen_guide_success) {}
+                }
+                true
+            }
+
             R.id.version_info -> {
                 lifecycleScope.launch { doUpdate() }
                 true
@@ -363,6 +416,106 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 updateInfo,
                 launcherForInAppUpdate,
                 AppUpdateOptions.newBuilder(IMMEDIATE).build()
+            )
+        }
+
+
+    /**
+     * 탭별 가이드 표시
+     */
+    private suspend fun showSingleTabGuide(lifecycle: Lifecycle, onDismiss: (() -> Unit)? = null) {
+        val bounds = binding.bottomNavigationView.getTabBounds(0)
+        TapTargetView.showFor(
+            this,
+            TapTarget.forBounds(
+                bounds,
+                getString(R.string.single_tab_guide_title),
+                getString(R.string.single_tab_guide_desc)
+            ).apply {
+                cancelable(false)
+                transparentTarget(true)
+                outerCircleColor(R.color.gray_700)
+            },
+            object : TapTargetView.Listener() {
+                override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
+                    lifecycle.coroutineScope.launch(Dispatchers.IO) {
+                        app.getRegistrationRepository().seenSinglePlayGuide()
+                    }
+                    onDismiss?.invoke()
+                }
+            }
+        )
+    }
+
+    private suspend fun showMultiTabGuide(lifecycle: Lifecycle, onDismiss: (() -> Unit)? = null) {
+        val bounds = binding.bottomNavigationView.getTabBounds(1)
+        TapTargetView.showFor(
+            this,
+            TapTarget.forBounds(
+                bounds,
+                getString(R.string.multi_tab_guide_title),
+                getString(R.string.multi_tab_guide_desc)
+            ).apply {
+                cancelable(false)
+                transparentTarget(true)
+                outerCircleColor(R.color.gray_700)
+            },
+            object : TapTargetView.Listener() {
+                override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
+                    lifecycle.coroutineScope.launch(Dispatchers.IO) {
+                        app.getRegistrationRepository().seenMultiPlayGuide()
+                    }
+                    onDismiss?.invoke()
+                }
+            }
+        )
+    }
+
+    private suspend fun showChallengeTabGuide(
+        lifecycle: Lifecycle,
+        onDismiss: (() -> Unit)? = null
+    ) {
+        val bounds = binding.bottomNavigationView.getTabBounds(2)
+        TapTargetView.showFor(
+            this,
+            TapTarget.forBounds(
+                bounds,
+                getString(R.string.challenge_tab_guide_title),
+                getString(R.string.challenge_tab_guide_desc)
+            ).apply {
+                cancelable(false)
+                transparentTarget(true)
+                outerCircleColor(R.color.gray_700)
+            },
+            object : TapTargetView.Listener() {
+                override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
+                    lifecycle.coroutineScope.launch(Dispatchers.IO) {
+                        app.getRegistrationRepository().seenChallengeGuide()
+                    }
+                    onDismiss?.invoke()
+                }
+            }
+        )
+    }
+
+    private suspend fun BottomNavigationView.getTabBounds(position: Int) =
+        suspendCoroutine { emit ->
+            viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    val tabView = (children.first() as ViewGroup).children.toList()[position]
+                    val location = IntArray(2)
+                    tabView.getLocationOnScreen(location)
+                    emit.resume(
+                        Rect(
+                            location[0],
+                            location[1],
+                            location[0] + tabView.width,
+                            location[1] + tabView.height
+                        )
+                    )
+                }
+            }
             )
         }
 }
