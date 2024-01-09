@@ -9,13 +9,15 @@ import com.google.android.gms.games.GamesSignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.PlayGamesAuthProvider
-import com.google.firebase.auth.ktx.userProfileChangeRequest
+import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeUser
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
@@ -107,7 +109,10 @@ class UserProfileViewModel(
         setProgress(true)
 
         _profile.value = firebaseAuth.currentUser?.uid
-            ?.let { uid -> withContext(Dispatchers.IO) { profileRepository.getProfile(uid) } }
+            ?.let { uid ->
+                withContext(Dispatchers.IO) { profileRepository.getProfile(uid) }
+                    .apply { FirebaseMessaging.getInstance().subscribeUser(uid).await() }
+            }
             ?: run {
                 if (gamesSignInClient.isAuthenticatedGames()) {
                     migrationUserProfileGamesWithFirebase()

@@ -68,6 +68,8 @@
     <string name="select_matrix_title">Select Sudoku</string>
     <string name="require_select_stage">require select stage</string>
     <string name="multi_create_please_select_stage">Touch to select</string>
+    <string name="multi_create_label_notification_joined_participant">Notification when other party joins</string>
+    <string name="multi_create_label_notification_joined_participant_guide">After creating a room, if an opponent joins, you will be notified by a status bar notification.</string>
 
     <!-- 멀티 플레이 게임 -->
     <string name="battle_exit_message">Are you sure you want to quit the game? Depending on your opponent\'s record, you may be set for a loss.</string>
@@ -81,6 +83,7 @@
     <string name="versus" translatable="false">VS</string>
     <string name="multi_play_error_empty_participants">There is no one to play game.</string>
     <string name="multi_play_error_require_ready_all_users">Your opponent is not ready.</string>
+    <string name="multi_play_notification_joined_participant">%1$s participated in the game I created. Click the notification to proceed with the match.</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">A.I</string>
@@ -129,5 +132,10 @@
     <string name="multi_tab_guide_desc">You can compete against other players.\nYou can create your own room or participate in a game created by another player.</string>
     <string name="challenge_tab_guide_title">Challenge Sudoku</string>
     <string name="challenge_tab_guide_desc">Boast your record by clearing Sudoku of the specified difficulty level.</string>
+
+
+    <!-- 알림 채널 ID -->
+    <string name="channel_id_multi_play_joined_participant" translatable="false">multi_play_joined_participant</string>
+    <string name="channel_name_multi_play_joined_participant" translatable="false">multi_play_joined_participant</string>
     <!-- -->
 </resources>

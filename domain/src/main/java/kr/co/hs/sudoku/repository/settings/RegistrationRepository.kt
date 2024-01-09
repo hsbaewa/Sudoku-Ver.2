@@ -9,6 +9,8 @@ interface RegistrationRepository {
     suspend fun seenMultiPlayGuide()
     suspend fun hasSeenChallengeGuide(): Boolean
     suspend fun seenChallengeGuide()
+    suspend fun hasSeenNotificationParticipate(): Boolean
+    suspend fun seenNotificationParticipate()
 
     suspend fun clear()
 }

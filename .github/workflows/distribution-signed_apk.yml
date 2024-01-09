@@ -99,6 +99,13 @@ jobs:
           metadata-key: 'kr.co.hs.sudoku.adUnitId.RewardAdChallengeRetry'
           metadata-value: ${{secrets.ADS_UNIT_ID_REWARD_FOR_CHALLENGE_RETRY}}
           print-file: true
+      - name: kr.co.hs.sudoku.messaging.serverKey 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.messaging.serverKey'
+          metadata-value: ${{secrets.FIREBASE_CLOUD_MESSAGING_SERVER_KEY}}
+          print-file: true
       - name: 빌드 환경 java 버전 설정
         uses: actions/setup-java@v3
         with:

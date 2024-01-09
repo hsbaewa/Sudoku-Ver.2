@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_MULTI_PLAY_GUIDE
+import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_MULTI_PLAY_PARTICIPANT_NOTIFICATION
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_SINGLE_PLAY_GUIDE
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_IS_FIRST_APP_OPEN
 import kr.co.hs.sudoku.mapper.SettingsMapper.getRegistrationEntity
@@ -46,11 +47,19 @@ class RegistrationRepositoryImpl(
         dataStore.edit { it[PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE] = true }
     }
 
+    override suspend fun hasSeenNotificationParticipate() =
+        getRegistrationFlow().firstOrNull()?.hasSeenMultiPlayParticipateNotification ?: false
+
+    override suspend fun seenNotificationParticipate() {
+        dataStore.edit { it[PREFERENCE_HAS_SEEN_MULTI_PLAY_PARTICIPANT_NOTIFICATION] = true }
+    }
+
     override suspend fun clear() {
         dataStore.edit {
             it.remove(PREFERENCE_HAS_SEEN_SINGLE_PLAY_GUIDE)
             it.remove(PREFERENCE_HAS_SEEN_MULTI_PLAY_GUIDE)
             it.remove(PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE)
+            it.remove(PREFERENCE_HAS_SEEN_MULTI_PLAY_PARTICIPANT_NOTIFICATION)
         }
     }
 }

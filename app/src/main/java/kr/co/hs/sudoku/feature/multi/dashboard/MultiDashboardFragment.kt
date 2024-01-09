@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
+import kr.co.hs.sudoku.core.MessagingService
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
@@ -144,6 +145,7 @@ class MultiDashboardFragment : Fragment() {
         }) {
             showProgressIndicator()
             withContext(Dispatchers.IO) { playViewModel.doJoin(battleEntity.id) }
+            MessagingService.sendJoinedMultiPlay(requireContext(), battleEntity)
             dismissProgressIndicator()
             startMultiPlay(battleEntity.id)
         }

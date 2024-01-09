@@ -1,18 +1,27 @@
 package kr.co.hs.sudoku.feature.multi
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetView
+import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutCreateMultiPlayBinding
+import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeBattle
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayWithAIActivity
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
@@ -59,6 +68,14 @@ class MultiPlayCreateActivity : Activity() {
             }
         }
 
+        with(binding.checkboxNotificationParticipant) {
+            addOnCheckedStateChangedListener { _, state ->
+                if (state == STATE_CHECKED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    launcherForNotification.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+
         with(binding.btnCreate) {
             setOnClickListener {
                 matrixListViewModel.selection.value
@@ -66,7 +83,16 @@ class MultiPlayCreateActivity : Activity() {
                         if (binding.checkboxWithAi.isChecked) {
                             startWithAI()
                         } else {
-                            multiPlayViewModel.create(this)
+                            val registrationRepository =
+                                (applicationContext as App).getRegistrationRepository()
+                            val hasSeen =
+                                runBlocking { registrationRepository.hasSeenNotificationParticipate() }
+
+                            if (hasSeen) {
+                                multiPlayViewModel.create(this)
+                            } else {
+                                showParticipateNotificationGuide()
+                            }
                         }
                     }
                     ?: showAlert(
@@ -80,6 +106,9 @@ class MultiPlayCreateActivity : Activity() {
             isRunningProgress.observe(this@MultiPlayCreateActivity) { isShowProgressIndicator = it }
             battleEntity.observe(this@MultiPlayCreateActivity) {
                 if (it != null) {
+                    if (binding.checkboxNotificationParticipant.isChecked) {
+                        FirebaseMessaging.getInstance().subscribeBattle(it)
+                    }
                     startMultiPlay(it.id)
                 }
             }
@@ -110,4 +139,37 @@ class MultiPlayCreateActivity : Activity() {
         }
 
     }
+
+
+    private fun showParticipateNotificationGuide(onDismiss: (() -> Unit)? = null) {
+        TapTargetView.showFor(
+            this,
+            TapTarget.forView(
+                binding.checkboxNotificationParticipant,
+                getString(R.string.multi_create_label_notification_joined_participant),
+                getString(R.string.multi_create_label_notification_joined_participant_guide)
+            ).apply {
+                cancelable(false)
+                transparentTarget(true)
+                outerCircleColor(R.color.gray_700)
+            },
+            object : TapTargetView.Listener() {
+                override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
+                    runBlocking {
+                        val app = applicationContext as App
+                        app.getRegistrationRepository().seenNotificationParticipate()
+                    }
+                    onDismiss?.invoke()
+                }
+            }
+        )
+    }
+
+
+    private val launcherForNotification =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if (!it) {
+                binding.checkboxNotificationParticipant.isChecked = false
+            }
+        }
 }
