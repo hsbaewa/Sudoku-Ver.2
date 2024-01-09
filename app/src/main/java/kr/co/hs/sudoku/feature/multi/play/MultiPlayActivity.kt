@@ -74,7 +74,6 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     private var lastKnownOpponentProfile: ProfileEntity? = null
 
     private var isAlreadyPending = false
-    private var isExitAfterCleared = false
 
     @TestOnly
     var isShowErrorDialog = true
@@ -143,12 +142,6 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                     startTimer(battleEntity)
                 }
 
-                if (battleEntity is BattleEntity.Closed
-                    && user is ParticipantEntity.Cleared
-                    && isExitAfterCleared
-                ) {
-                    finish()
-                }
             }
 
             is BattleEntity.Pending -> if (!isAlreadyPending && battleEntity.isGeneratedSudoku) {
@@ -351,30 +344,28 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         dlgBinding.lottieAnim.playAnimation()
         MaterialAlertDialogBuilder(this)
             .setView(dlgBinding.root)
-            .setPositiveButton(R.string.confirm) { _, _ ->
-                isExitAfterCleared = true
-                battleViewModel.exit()
-            }
+            .setPositiveButton(R.string.confirm) { _, _ -> onEndGameClearOrExit() }
             .setCancelable(false)
             .show()
     }
 
+    private fun onEndGameClearOrExit() =
+        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            dismissProgressIndicator()
+            throwable.showMultiPlayError()
+        }) {
+            showProgressIndicator()
+            val battle = battleViewModel.battleEntity.value
+            battleViewModel.doExit()
+            battle?.run { FirebaseMessaging.getInstance().unsubscribeBattle(this) }
+            dismissProgressIndicator()
+            navigateUpToParent()
+        }
+
     private fun showExitDialog() {
         MaterialAlertDialogBuilder(this)
             .setMessage(R.string.battle_exit_message)
-            .setPositiveButton(R.string.confirm) { _, _ ->
-                lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
-                    dismissProgressIndicator()
-                    throwable.showMultiPlayError()
-                }) {
-                    showProgressIndicator()
-                    val battle = battleViewModel.battleEntity.value
-                    battleViewModel.doExit()
-                    battle?.run { FirebaseMessaging.getInstance().unsubscribeBattle(this) }
-                    dismissProgressIndicator()
-                    finish()
-                }
-            }
+            .setPositiveButton(R.string.confirm) { _, _ -> onEndGameClearOrExit() }
             .setNegativeButton(R.string.cancel, null)
             .setCancelable(false)
             .show()
