@@ -2,14 +2,14 @@ package kr.co.hs.sudoku.datasource.record.impl
 
 import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.record.ReserveRecordModel
 
-class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
+class ChallengeRecordRemoteSourceImpl : FireStoreRemoteSource(), RecordRemoteSource {
 
     override suspend fun getRecords(id: String, limit: Int) =
         getRankingCollection(id)
@@ -24,9 +24,7 @@ class ChallengeRecordRemoteSourceImpl : RecordRemoteSource {
                 model.rank = index.toLong() + 1
             }
 
-    private fun getRankingCollection(challengeId: String) = FirebaseFirestore.getInstance()
-        .collection("version")
-        .document("v2")
+    private fun getRankingCollection(challengeId: String) = rootDocument
         .collection("challenge")
         .document(challengeId)
         .collection("record")

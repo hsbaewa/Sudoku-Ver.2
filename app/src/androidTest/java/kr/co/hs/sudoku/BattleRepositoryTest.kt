@@ -3,7 +3,6 @@ package kr.co.hs.sudoku
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import io.mockk.every
 import io.mockk.spyk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -16,6 +15,7 @@ import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
 import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
+import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.battle.BattleEventRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
@@ -32,7 +32,6 @@ import org.junit.Test
 import kotlin.time.Duration
 
 @Suppress("NonAsciiCharacters", "TestFunctionName", "SpellCheckingInspection")
-@OptIn(ExperimentalCoroutinesApi::class)
 open class BattleRepositoryTest {
     private val _userProfile = ArrayList<ProfileEntity>()
     private val _userBattleRepository = ArrayList<BattleRepository>()
@@ -47,10 +46,12 @@ open class BattleRepositoryTest {
     @Before
     open fun initRepository() = runTest {
         val profileRepository = ProfileRepositoryImpl()
+        (profileRepository as TestableRepository).setFireStoreRootVersion("test")
 
         userUidList.forEach {
             _userProfile.add(profileRepository.getProfile(it))
             val battleRepository = spyk<BattleRepositoryImpl>(recordPrivateCalls = true)
+            (battleRepository as TestableRepository).setFireStoreRootVersion("test")
             every { battleRepository.getProperty("currentUserUid") } returns it
             _userBattleRepository.add(battleRepository)
         }
@@ -100,6 +101,7 @@ open class BattleRepositoryTest {
         이벤트 검증
          */
         val eventRepository = BattleEventRepositoryImpl(battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -131,6 +133,7 @@ open class BattleRepositoryTest {
         이벤트 검증
          */
         val eventRepository = BattleEventRepositoryImpl(battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -260,6 +263,7 @@ open class BattleRepositoryTest {
         }.also { assertEquals(it.message, "이미 준비 상태가 true 상태입니다.") }
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -305,6 +309,7 @@ open class BattleRepositoryTest {
 
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -381,6 +386,7 @@ open class BattleRepositoryTest {
         )
 
         var eventRepository = BattleEventRepositoryImpl(battleId = battleId!!)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -399,6 +405,7 @@ open class BattleRepositoryTest {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -445,6 +452,7 @@ open class BattleRepositoryTest {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -559,6 +567,7 @@ open class BattleRepositoryTest {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
         eventRepository.startMonitoring()
 
         launch {
@@ -589,6 +598,7 @@ open class BattleRepositoryTest {
         battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository2 = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository2 as TestableRepository).setFireStoreRootVersion("test")
         eventRepository2.startMonitoring()
 
         launch {
@@ -639,6 +649,7 @@ open class BattleRepositoryTest {
         val battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository2 = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository2 as TestableRepository).setFireStoreRootVersion("test")
         eventRepository2.startMonitoring()
 
         launch {

@@ -1,16 +1,19 @@
 package kr.co.hs.sudoku.repository.challenge
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.impl.ChallengeRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
+import kr.co.hs.sudoku.repository.TestableRepository
 
 class ChallengeReaderRepositoryImpl(
     private val remoteSource: ChallengeRemoteSource = ChallengeRemoteSourceImpl(),
     private val recordRemoteSource: RecordRemoteSource = ChallengeRecordRemoteSourceImpl()
-) : ChallengeReaderRepository {
+) : ChallengeReaderRepository, TestableRepository {
 
     private val currentUserUid: String
         get() = FirebaseAuth.getInstance().currentUser?.uid
@@ -51,4 +54,14 @@ class ChallengeReaderRepositoryImpl(
         } ?: throw Exception("invalid challenge entity")
 
     override suspend fun getChallengeIds() = remoteSource.getChallengeIds()
+
+    override fun setFireStoreRootVersion(versionName: String) {
+        (remoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
+
+        (recordRemoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
+    }
 }

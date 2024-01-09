@@ -2,13 +2,12 @@ package kr.co.hs.sudoku.datasource.battle.impl
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.AggregateSource
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions.merge
 import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.tasks.await
+import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.battle.BattleModel
@@ -17,25 +16,9 @@ import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import java.util.Date
 
-class BattleRemoteSourceImpl(
-    private val battleCollection: CollectionReference = DEFAULT_BATTLE_COLLECTION,
-    private val participantsCollection: CollectionReference = DEFAULT_PARTICIPANTS_COLLECTION
-) : BattleRemoteSource {
-
-    companion object {
-        val DEFAULT_BATTLE_COLLECTION = FirebaseFirestore.getInstance()
-            .collection("version")
-            .document("v2")
-            .collection("battle")
-
-        val DEFAULT_PARTICIPANTS_COLLECTION = FirebaseFirestore.getInstance()
-            .collection("version")
-            .document("v2")
-            .collection("battleParticipants")
-    }
-
-    override fun getBattleCollectionRef() = battleCollection
-    override fun getParticipantCollectionRef() = participantsCollection
+class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
+    override fun getBattleCollectionRef() = rootDocument.collection("battle")
+    override fun getParticipantCollectionRef() = rootDocument.collection("battleParticipants")
 
     override fun getBattleRecordCollectionRef(battleId: String) =
         getBattleCollectionRef()

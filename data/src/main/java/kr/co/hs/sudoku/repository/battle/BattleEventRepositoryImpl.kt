@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.repository.battle
 
 import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,12 +18,13 @@ import kr.co.hs.sudoku.mapper.BattleMapper.toDomain
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain2
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
+import kr.co.hs.sudoku.repository.TestableRepository
 
 class BattleEventRepositoryImpl(
     override val battleId: String,
     private val remoteSource: BattleRemoteSourceImpl = BattleRemoteSourceImpl(),
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-) : BattleEventRepository {
+) : BattleEventRepository, TestableRepository {
 
     companion object {
         private const val TAG = "BattleEventRepositoryImpl"
@@ -308,5 +310,11 @@ class BattleEventRepositoryImpl(
         stopMonitoringBattle()
 
         coroutineScope.cancel()
+    }
+
+    override fun setFireStoreRootVersion(versionName: String) {
+        remoteSource.rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
     }
 }

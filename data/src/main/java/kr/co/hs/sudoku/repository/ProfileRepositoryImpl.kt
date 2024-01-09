@@ -12,14 +12,9 @@ import kr.co.hs.sudoku.repository.user.ProfileRepository
 
 class ProfileRepositoryImpl(
     private val dataSource: ProfileDataSource = ProfileDataSourceImpl()
-) : ProfileRepository {
+) : ProfileRepository, TestableRepository {
 
-    private val profileCollection = FirebaseFirestore.getInstance()
-        .collection("version")
-        .document("v2")
-        .collection("profile")
-
-    private val remoteSource = ProfileRemoteSourceImpl(profileCollection)
+    private val remoteSource = ProfileRemoteSourceImpl()
 
     override suspend fun getProfile(uid: String): ProfileEntity {
         return dataSource.getProfile(uid)?.toDomain().takeIf { it != null }?.run {
@@ -42,4 +37,10 @@ class ProfileRepositoryImpl(
         iconUrl = iconUrl,
         locale = locale?.run { LocaleModel(lang, region) }
     )
+
+    override fun setFireStoreRootVersion(versionName: String) {
+        remoteSource.rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
+    }
 }

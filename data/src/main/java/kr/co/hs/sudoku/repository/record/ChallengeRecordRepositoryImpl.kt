@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.repository.record
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.RecordMapper.toDomain
 import kr.co.hs.sudoku.model.rank.RankerEntity
@@ -8,11 +9,12 @@ import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.LocaleModel
 import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
+import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRecordRepository
 import java.util.Locale
 import java.util.TreeSet
 
-class ChallengeRecordRepositoryImpl : ChallengeRecordRepository {
+class ChallengeRecordRepositoryImpl : ChallengeRecordRepository, TestableRepository {
 
     private val remoteSource = ChallengeRecordRemoteSourceImpl()
     private val cachedMap = HashMap<String, RankerEntity>()
@@ -104,5 +106,11 @@ class ChallengeRecordRepositoryImpl : ChallengeRecordRepository {
                 true
             }
             ?: false
+    }
+
+    override fun setFireStoreRootVersion(versionName: String) {
+        remoteSource.rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
     }
 }

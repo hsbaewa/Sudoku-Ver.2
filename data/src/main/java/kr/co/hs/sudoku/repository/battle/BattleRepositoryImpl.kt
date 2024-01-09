@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
 import kr.co.hs.sudoku.datasource.battle.impl.BattleRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
@@ -22,6 +23,7 @@ import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
+import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kotlin.math.sqrt
 
@@ -29,7 +31,7 @@ import kotlin.math.sqrt
 class BattleRepositoryImpl(
     private val battleRemoteSource: BattleRemoteSource = BattleRemoteSourceImpl(),
     private val profileRemoteSource: ProfileRemoteSource = ProfileRemoteSourceImpl()
-) : BattleRepository {
+) : BattleRepository, TestableRepository {
 
     override val currentUserUid: String
         get() = FirebaseAuth.getInstance().currentUser?.uid
@@ -556,4 +558,14 @@ class BattleRepositoryImpl(
 
 
     class BattleRepositoryException(message: String?, val type: ErrorType) : Exception(message)
+
+    override fun setFireStoreRootVersion(versionName: String) {
+        (profileRemoteSource as FireStoreRemoteSource).rootDocument =
+            FirebaseFirestore.getInstance()
+                .collection("version")
+                .document(versionName)
+        (battleRemoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
+    }
 }

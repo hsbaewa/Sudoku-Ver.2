@@ -1,24 +1,31 @@
 package kr.co.hs.sudoku.repository.challenge
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.impl.ChallengeRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.record.ReserveRecordModel
+import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.record.ChallengeRecordRepositoryImpl
 
 class ChallengeRepositoryImpl(
     private val remoteSource: ChallengeRemoteSource = ChallengeRemoteSourceImpl(),
     private val recordRemoteSource: RecordRemoteSource = ChallengeRecordRemoteSourceImpl(),
-    private val reader: ChallengeReaderRepository = ChallengeReaderRepositoryImpl(remoteSource),
+    private val reader: ChallengeReaderRepository = ChallengeReaderRepositoryImpl(
+        remoteSource,
+        recordRemoteSource
+    ),
     private val writer: ChallengeWriterRepository = ChallengeWriterRepositoryImpl(remoteSource),
     private val challengeRecordRepository: ChallengeRecordRepositoryImpl = ChallengeRecordRepositoryImpl()
 ) : ChallengeRepository,
     ChallengeReaderRepository by reader,
     ChallengeWriterRepository by writer,
-    ChallengeRecordRepository by challengeRecordRepository {
+    ChallengeRecordRepository by challengeRecordRepository,
+    TestableRepository {
 
     private val cachedMap = HashMap<String, ChallengeEntity>()
 
@@ -58,5 +65,17 @@ class ChallengeRepositoryImpl(
                 }
             }
         }
+    }
+
+    override fun setFireStoreRootVersion(versionName: String) {
+        (remoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
+
+        (recordRemoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()
+            .collection("version")
+            .document(versionName)
+
+        challengeRecordRepository.setFireStoreRootVersion(versionName)
     }
 }
