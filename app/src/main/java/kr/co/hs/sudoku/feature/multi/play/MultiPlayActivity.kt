@@ -199,7 +199,9 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
             else -> {
                 releaseViewerBoard()
-                showNativeAd()
+                if (!isVisibleNativeAd()) {
+                    showNativeAd()
+                }
             }
         }
     }
@@ -292,7 +294,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
 
     fun setUserProfile(profile: ProfileEntity?) = if (profile != null) {
-        profile.takeIf { it != lastKnownUserProfile }
+        profile.takeIf { it.uid != lastKnownUserProfile?.uid }
             ?.run {
                 profile.run {
                     binding.ivUserIcon.load(
@@ -317,7 +319,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
     fun setOpponentProfile(profile: ProfileEntity?) = if (profile != null) {
         profile
-            .takeIf { it != lastKnownOpponentProfile }
+            .takeIf { it.uid != lastKnownOpponentProfile?.uid }
             ?.run {
                 profile.run {
                     binding.ivEnemyIcon.load(
@@ -379,10 +381,13 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     }
 
     private fun showNativeAd() = with(supportFragmentManager.beginTransaction()) {
-        replace(R.id.layout_enemy, NativeAdFragment.newInstance())
+        val tag = NativeAdFragment::class.java.name
+        replace(R.id.layout_enemy, NativeAdFragment.newInstance(), tag)
         commit()
     }
 
+    private fun isVisibleNativeAd() =
+        supportFragmentManager.findFragmentByTag(NativeAdFragment::class.java.name) != null
 
     private fun Throwable.showMultiPlayError() {
         if (!isShowErrorDialog)
