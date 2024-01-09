@@ -159,15 +159,28 @@
                     android:id="@+id/checkbox_with_ai"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="30dp"
                     android:fontFamily="@font/goreyong_ddalgi"
                     android:text="@string/multi_create_label_ai"
+                    android:textColor="@color/gray_600"
+                    android:textSize="15sp"
+                    app:layout_constraintBottom_toTopOf="@id/checkbox_notification_participant"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/radio_group_participants" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/checkbox_notification_participant"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="30dp"
+                    android:fontFamily="@font/goreyong_ddalgi"
+                    android:text="@string/multi_create_label_notification_joined_participant"
                     android:textColor="@color/gray_600"
                     android:textSize="15sp"
                     app:layout_constraintBottom_toTopOf="@id/btn_create"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/radio_group_participants" />
+                    app:layout_constraintTop_toBottomOf="@id/checkbox_with_ai" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_create"
@@ -182,7 +195,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/checkbox_with_ai" />
+                    app:layout_constraintTop_toBottomOf="@id/checkbox_notification_participant" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

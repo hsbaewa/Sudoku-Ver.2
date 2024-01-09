@@ -7,6 +7,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.games.PlayGamesSdk
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.messaging.FirebaseMessaging
+import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeAllUser
 import kr.co.hs.sudoku.extension.StringExt.md5
 import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
@@ -39,6 +42,10 @@ class App : Application() {
         }
         MobileAds.setRequestConfiguration(adRequestConfiguration.build())
         MobileAds.initialize(this)
+
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+
+        FirebaseMessaging.getInstance().subscribeAllUser()
     }
 
     private var challengeRepositoryRef: Reference<ChallengeRepository>? = null

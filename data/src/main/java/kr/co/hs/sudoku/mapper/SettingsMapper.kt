@@ -16,6 +16,8 @@ object SettingsMapper {
         booleanPreferencesKey("preference.hasSeenMultiPlayGuide")
     val PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE =
         booleanPreferencesKey("preference.hasSeenChallengeGuide")
+    val PREFERENCE_HAS_SEEN_MULTI_PLAY_PARTICIPANT_NOTIFICATION =
+        booleanPreferencesKey("preference.hasSeenMultiPlayParticipateNotification")
 
     fun Preferences.getGameSettingsEntity() =
         GameSettingsEntity(this[PREFERENCE_ENABLED_HAPTIC_FEEDBACK] ?: true)
@@ -24,6 +26,7 @@ object SettingsMapper {
         this[PREFERENCE_IS_FIRST_APP_OPEN] ?: true,
         this[PREFERENCE_HAS_SEEN_SINGLE_PLAY_GUIDE] ?: false,
         this[PREFERENCE_HAS_SEEN_MULTI_PLAY_GUIDE] ?: false,
-        this[PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE] ?: false
+        this[PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE] ?: false,
+        this[PREFERENCE_HAS_SEEN_MULTI_PLAY_PARTICIPANT_NOTIFICATION] ?: false
     )
 }

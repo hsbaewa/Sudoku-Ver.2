@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.CoilExt.load
+import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.unsubscribeBattle
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
@@ -364,7 +366,9 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                     throwable.showMultiPlayError()
                 }) {
                     showProgressIndicator()
+                    val battle = battleViewModel.battleEntity.value
                     battleViewModel.doExit()
+                    battle?.run { FirebaseMessaging.getInstance().unsubscribeBattle(this) }
                     dismissProgressIndicator()
                     finish()
                 }
