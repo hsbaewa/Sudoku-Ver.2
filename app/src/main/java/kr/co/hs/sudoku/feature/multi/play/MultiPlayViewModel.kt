@@ -55,6 +55,11 @@ class MultiPlayViewModel(
         startEventMonitoring(battleId)
     }
 
+    suspend fun doJoin(eventRepository: BattleEventRepository) {
+        withContext(Dispatchers.IO) { battleRepository.join(eventRepository.battleId) }
+        startEventMonitoring(eventRepository)
+    }
+
     fun toggleReadyOrStart() {
         viewModelScope.launch(viewModelScopeExceptionHandler) {
             setProgress(true)
@@ -126,12 +131,31 @@ class MultiPlayViewModel(
             }
     }
 
+    suspend fun doStartEventMonitoring(eventRepository: BattleEventRepository) {
+        battleEventRepository?.stopMonitoring()
+
+        eventRepository
+            .apply { startMonitoring() }
+            .also { battleEventRepository = it }
+            .also {
+                it.battleFlow.collect { entity ->
+                    _battleEntity.value = entity
+                }
+            }
+    }
 
     private var monitoringJob: Job? = null
     fun startEventMonitoring(battleId: String) {
         stopEventMonitoring()
         monitoringJob =
             viewModelScope.launch(viewModelScopeExceptionHandler) { doStartEventMonitoring(battleId) }
+    }
+
+    fun startEventMonitoring(eventRepository: BattleEventRepository) {
+        stopEventMonitoring()
+        monitoringJob = viewModelScope.launch(viewModelScopeExceptionHandler) {
+            doStartEventMonitoring(eventRepository)
+        }
     }
 
     private var battleEventRepository: BattleEventRepository? = null

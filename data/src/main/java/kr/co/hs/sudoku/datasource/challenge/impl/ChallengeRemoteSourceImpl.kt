@@ -1,14 +1,14 @@
 package kr.co.hs.sudoku.datasource.challenge.impl
 
 import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
+import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
 
-class ChallengeRemoteSourceImpl : ChallengeRemoteSource {
+class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource {
 
     override suspend fun getLatestChallenge() = challengeCollection
         .orderBy("createdAt", Query.Direction.DESCENDING)
@@ -20,10 +20,7 @@ class ChallengeRemoteSourceImpl : ChallengeRemoteSource {
         .toObject(ChallengeModel::class.java)
         ?: throw Exception("cannot parse to ChallengeModel class")
 
-    private val challengeCollection = FirebaseFirestore.getInstance()
-        .collection("version")
-        .document("v2")
-        .collection("challenge")
+    private val challengeCollection = rootDocument.collection("challenge")
 
     override suspend fun getChallenge(id: String) = challengeCollection
         .document(id)
