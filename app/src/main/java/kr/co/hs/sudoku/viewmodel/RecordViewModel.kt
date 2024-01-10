@@ -86,9 +86,8 @@ class RecordViewModel : ViewModel() {
         historyQueue?.run { stage.startCaptureHistory(this) }
     }
 
-    private fun disableCaptureHistory() {
-        stage.stopCaptureHistory()
-    }
+    private fun disableCaptureHistory() = takeIf { this::stage.isInitialized }
+        ?.run { stage.stopCaptureHistory() }
 
     private fun runHistoryEvent() = viewModelScope.launch {
         historyQueue?.let { queue ->
