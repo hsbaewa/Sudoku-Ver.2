@@ -118,5 +118,10 @@
     <string name="multi_tab_guide_desc">他のプレイヤーと対戦することができます。\n私は自分の部屋を作成したり、他のプレイヤーが作成したゲームに参加したりできます。</string>
     <string name="challenge_tab_guide_title">挑戦数独</string>
     <string name="challenge_tab_guide_desc">指定された難易度の数独をクリアして自分の記録を誇ります。</string>
+
+
+    <!-- 상태바 알림 -->
+    <string name="notification_title_app_update">アプリ更新通知</string>
+    <string name="notification_contents_app_update">%1$s バージョンがリリースされました。クリックして確認してください。</string>
     <!-- -->
 </resources>

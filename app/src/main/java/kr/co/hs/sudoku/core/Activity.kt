@@ -1,12 +1,28 @@
 package kr.co.hs.sudoku.core
 
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
+import kr.co.hs.sudoku.feature.messaging.MessagingManager
+import kr.co.hs.sudoku.feature.messaging.MessagingManager.Action.Companion.parseAction
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 
 abstract class Activity : AppCompatActivity() {
@@ -14,6 +30,30 @@ abstract class Activity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
+        intent.extras
+            ?.run { RemoteMessage(this) }
+            ?.run { onReceivedRemoteMessage(this) }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.extras
+            ?.run { RemoteMessage(this) }
+            ?.run { onReceivedRemoteMessage(this) }
+    }
+
+    private fun onReceivedRemoteMessage(remoteMessage: RemoteMessage) {
+        when (remoteMessage.parseAction()) {
+            is MessagingManager.AppUpdate -> lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                dismissProgressIndicator()
+                throwable.showErrorAlert()
+            }) {
+                showProgressIndicator()
+                doUpdate()
+            }
+
+            else -> {}
+        }
     }
 
     protected fun navigateUpToParent() =
@@ -90,4 +130,38 @@ abstract class Activity : AppCompatActivity() {
     }
 
     protected fun Throwable.showErrorAlert() = showAlert(title.toString(), getErrorMessage(this)) {}
+
+
+    /**
+     * in-app update
+     */
+    protected suspend fun getUpdateInfo() = AppUpdateManagerFactory.create(this)
+        .runCatching { appUpdateInfo.await() }
+        .getOrNull()
+
+    protected fun AppUpdateInfo.hasUpdate() =
+        updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE && isUpdateTypeAllowed(
+            AppUpdateType.IMMEDIATE
+        )
+
+    protected val launcherForInAppUpdate =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            dismissProgressIndicator()
+            if (it.resultCode == RESULT_OK) {
+                showAlert(R.string.in_app_update_title, R.string.in_app_update_message_confirm) {}
+            } else {
+                showAlert(R.string.in_app_update_title, R.string.in_app_update_message_canceled) {}
+            }
+        }
+
+    protected suspend fun doUpdate() = getUpdateInfo()
+        ?.let { updateInfo ->
+            AppUpdateManagerFactory.create(this).startUpdateFlowForResult(
+                updateInfo,
+                launcherForInAppUpdate,
+                AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+            )
+        }
+
+
 }

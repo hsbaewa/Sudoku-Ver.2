@@ -119,5 +119,10 @@
     <string name="multi_tab_guide_desc">다른 플레이어와 대결을 할 수 있습니다.\n내가 직접 방을 생성 하거나 다른 플레이어가 생성한 게임에 참여 할 수 있습니다.</string>
     <string name="challenge_tab_guide_title">도전 스도쿠</string>
     <string name="challenge_tab_guide_desc">지정된 난이도의 스도쿠를 클리어 하여 내 기록을 자랑 하세요.</string>
+
+
+    <!-- 상태바 알림 -->
+    <string name="notification_title_app_update">앱 업데이트 알림</string>
+    <string name="notification_contents_app_update">%1$s 버전이 릴리즈 되었습니다. 클릭 하여 확인해주세요.</string>
     <!-- -->
 </resources>
