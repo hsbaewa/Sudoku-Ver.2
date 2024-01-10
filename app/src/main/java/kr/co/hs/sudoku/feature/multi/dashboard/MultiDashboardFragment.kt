@@ -12,18 +12,20 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
-import kr.co.hs.sudoku.core.MessagingService
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.feature.messaging.MessagingManager
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
@@ -144,8 +146,16 @@ class MultiDashboardFragment : Fragment() {
             throwable.showErrorAlert()
         }) {
             showProgressIndicator()
-            withContext(Dispatchers.IO) { playViewModel.doJoin(battleEntity.id) }
-            MessagingService.sendJoinedMultiPlay(requireContext(), battleEntity)
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+                ?: throw Exception("invalid current user uid")
+            withContext(Dispatchers.IO) {
+                playViewModel.doJoin(battleEntity.id)
+                val app = requireContext().applicationContext as App
+                val displayName = app.getProfileRepository().getProfile(uid).displayName
+                MessagingManager(app).sendNotification(
+                    MessagingManager.JoinedMultiPlayer(battleEntity.id, displayName)
+                )
+            }
             dismissProgressIndicator()
             startMultiPlay(battleEntity.id)
         }

@@ -136,6 +136,13 @@
 
     <!-- 알림 채널 ID -->
     <string name="channel_id_multi_play_joined_participant" translatable="false">multi_play_joined_participant</string>
-    <string name="channel_name_multi_play_joined_participant" translatable="false">multi_play_joined_participant</string>
+    <string name="channel_name_multi_play_joined_participant" translatable="false">Multi Play Joined Notification</string>
+    <string name="channel_id_app_update" translatable="false">channel_id_app_update</string>
+    <string name="channel_name_app_update" translatable="false">App Update Notification</string>
+
+
+    <!-- 상태바 알림 -->
+    <string name="notification_title_app_update">App update notification</string>
+    <string name="notification_contents_app_update">Version %1$s has been released. Please click to confirm.</string>
     <!-- -->
 </resources>

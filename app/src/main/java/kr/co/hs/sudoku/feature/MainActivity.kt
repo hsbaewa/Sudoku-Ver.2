@@ -1,5 +1,7 @@
 package kr.co.hs.sudoku.feature
 
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -33,15 +35,10 @@ import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.gms.games.PlayGames
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
-import com.google.android.play.core.appupdate.AppUpdateInfo
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory
-import com.google.android.play.core.appupdate.AppUpdateOptions
-import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
-import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
@@ -51,6 +48,8 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.Bitmap.toCropCircle
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
@@ -73,6 +72,10 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     companion object {
         const val EXTRA_CURRENT_TAB_ITEM_ID = "EXTRA_CURRENT_TAB_ITEM_ID"
+
+        const val ACTION_APP_UPDATE = "ACTION_APP_UPDATE"
+        fun newIntentForUpdate(context: Context) = Intent(context, MainActivity::class.java)
+            .setAction(ACTION_APP_UPDATE)
     }
 
     private val binding: ActivityMainBinding by lazy {
@@ -170,6 +173,13 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         }
 
         checkUpdate()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        when (intent?.action) {
+            ACTION_APP_UPDATE -> checkUpdate()
+        }
     }
 
     /**
@@ -359,7 +369,13 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             }
 
             R.id.version_info -> {
-                lifecycleScope.launch { doUpdate() }
+                lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                    dismissProgressIndicator()
+                    throwable.showErrorAlert()
+                }) {
+                    showProgressIndicator()
+                    doUpdate()
+                }
                 true
             }
 
@@ -383,7 +399,13 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                     hasUpdate = true
                     showConfirm(R.string.in_app_update_title, R.string.in_app_update_message) {
                         if (it) {
-                            lifecycleScope.launch { doUpdate() }
+                            lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                                dismissProgressIndicator()
+                                throwable.showErrorAlert()
+                            }) {
+                                showProgressIndicator()
+                                doUpdate()
+                            }
                         }
                     }
                 } else {
@@ -393,31 +415,6 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             }
         }
     }
-
-    private suspend fun getUpdateInfo() = AppUpdateManagerFactory.create(this)
-        .runCatching { appUpdateInfo.await() }
-        .getOrNull()
-
-    private fun AppUpdateInfo.hasUpdate() =
-        updateAvailability() == UPDATE_AVAILABLE && isUpdateTypeAllowed(IMMEDIATE)
-
-    private val launcherForInAppUpdate =
-        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-            if (it.resultCode == RESULT_OK) {
-                showAlert(R.string.in_app_update_title, R.string.in_app_update_message_confirm) {}
-            } else {
-                showAlert(R.string.in_app_update_title, R.string.in_app_update_message_canceled) {}
-            }
-        }
-
-    private suspend fun doUpdate() = getUpdateInfo()
-        ?.let { updateInfo ->
-            AppUpdateManagerFactory.create(this).startUpdateFlowForResult(
-                updateInfo,
-                launcherForInAppUpdate,
-                AppUpdateOptions.newBuilder(IMMEDIATE).build()
-            )
-        }
 
 
     /**
