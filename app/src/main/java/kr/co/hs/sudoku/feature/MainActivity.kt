@@ -326,14 +326,18 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         menu?.findItem(R.id.enabled_cell_haptic)?.isChecked =
             gameSettingsViewModel.gameSettings.value?.enabledHapticFeedback == true
 
-        menu?.findItem(R.id.version_info)?.title = packageManager.runCatching {
-            val packageInfo = getPackageInfo(packageName, PackageManager.GET_META_DATA)
+        menu?.findItem(R.id.version_info)?.let { menuItem ->
+            val versionName = packageManager.runCatching {
+                getPackageInfo(packageName, PackageManager.GET_META_DATA).versionName
+            }.getOrNull()
             if (hasUpdate) {
-                getString(R.string.version_updatable_format, packageInfo.versionName)
+                menuItem.title = getString(R.string.version_updatable_format, versionName)
+                menuItem.isEnabled = true
             } else {
-                getString(R.string.version_format, packageInfo.versionName)
+                menuItem.title = getString(R.string.version_format, versionName)
+                menuItem.isEnabled = false
             }
-        }.getOrDefault("")
+        }
 
         return super.onCreateOptionsMenu(menu)
     }
@@ -368,7 +372,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 true
             }
 
-            R.id.version_info -> {
+            R.id.version_info -> if (hasUpdate) {
                 lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
                     dismissProgressIndicator()
                     throwable.showErrorAlert()
@@ -377,6 +381,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                     doUpdate()
                 }
                 true
+            } else {
+                false
             }
 
             else -> super.onOptionsItemSelected(item)

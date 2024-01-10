@@ -7,7 +7,7 @@ on:
       - main
 jobs:
   generate-coverage-reports:
-    runs-on: macos-latest
+    runs-on: macos-latest-xlarge
     steps:
       - name: 소스코드 Checkout
         uses: actions/checkout@v3
