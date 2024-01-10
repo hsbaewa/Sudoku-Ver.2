@@ -29,7 +29,9 @@ import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.UserProfileViewModel
@@ -40,6 +42,7 @@ import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
+import kr.co.hs.sudoku.model.stage.Stage
 import kr.co.hs.sudoku.model.stage.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
@@ -94,16 +97,6 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         onBackPressedDispatcher.addCallback { showExitDialog() }
 
-        binding.layoutUser.viewTreeObserver.addOnGlobalLayoutListener(
-            object : ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    binding.layoutUser.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    val w = binding.layoutUser.measuredWidth
-                    binding.layoutUser.layoutParams.height = w + 80.dp.toInt()
-                }
-            }
-        )
-
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
 
         with(binding) {
@@ -112,11 +105,6 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             tvEnemyMessage.isVisible = false
         }
 
-        with(supportFragmentManager.beginTransaction()) {
-            replace(R.id.layout_user, playerFragment)
-            replace(R.id.layout_enemy, aiFragment)
-            commit()
-        }
 
         with(userProfileViewModel) {
             error.observe(this@MultiPlayWithAIActivity) { it.showErrorAlert() }
@@ -155,7 +143,29 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
                 }
             }
         }
+
+        binding.layoutUser.viewTreeObserver.addOnGlobalLayoutListener(
+            object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    binding.layoutUser.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    val w = binding.layoutUser.measuredWidth
+                    binding.layoutUser.layoutParams.height = w + 80.dp.toInt()
+
+                    with(supportFragmentManager.beginTransaction()) {
+                        replace(R.id.layout_user, playerFragment)
+                        replace(R.id.layout_enemy, aiFragment)
+                        runOnCommit {
+                            initStageForAI()
+                        }
+                        commit()
+                    }
+
+                }
+            }
+        )
+
     }
+
 
     private val playerFragment: SinglePlayControlStageFragment by lazy {
         StageFragment.newInstance<SinglePlayControlStageFragment>(startingMatrix)
@@ -186,18 +196,24 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         }
     }
 
+    private lateinit var stage: Stage
+    private fun initStageForAI() = lifecycleScope.launch {
+        showProgressIndicator()
+        stage = withContext(Dispatchers.IO) {
+            val useCase = AutoGenerateSudokuUseCase(
+                startingMatrix.boxSize,
+                startingMatrix.boxCount,
+                startingMatrix
+            )
+            useCase().last()
+        }
+
+        dismissProgressIndicator()
+    }
 
     private var playAIJob: Job? = null
     private fun startPlayAI() {
         playAIJob = lifecycleScope.launch {
-            val stage = withContext(Dispatchers.IO) {
-                val useCase = AutoGenerateSudokuUseCase(
-                    startingMatrix.boxSize,
-                    startingMatrix.boxCount,
-                    startingMatrix
-                )
-                useCase().last()
-            }
             aiFragment.setStatus(true, null)
             aiFragment.setValues(stage.toValueTable())
             val playUseCase = PlaySudokuUseCaseImpl(stage = stage, 2000)
