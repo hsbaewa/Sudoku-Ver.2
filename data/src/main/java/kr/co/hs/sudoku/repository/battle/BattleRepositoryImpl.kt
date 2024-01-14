@@ -18,6 +18,7 @@ import kr.co.hs.sudoku.mapper.BattleMapper.toDomain
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain2
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.battle.BattleEntity
+import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.model.battle.BattleModel
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
@@ -568,4 +569,31 @@ class BattleRepositoryImpl(
             .collection("version")
             .document(versionName)
     }
+
+
+    override suspend fun getLeaderBoard() = with(battleRemoteSource) {
+        registerLeaderBoard(currentUserUid)
+        var current: BattleLeaderBoardEntity? = null
+        getLeaderBoard(10)
+            .mapIndexed { idx, item ->
+                BattleLeaderBoardEntity(
+                    item.uid,
+                    item.playCount,
+                    item.winCount,
+                    idx.toLong() + 1
+                )
+            }
+            .onEach {
+                if (it.playCount == current?.playCount && it.winCount == current?.winCount) {
+                    current?.ranking?.run { it.ranking = this }
+                } else {
+                    current = it
+                }
+            }
+    }
+
+    override suspend fun getLeaderBoard(uid: String) =
+        with(battleRemoteSource.getLeaderBoardModel(uid)) {
+            BattleLeaderBoardEntity(uid, playCount, winCount, ranking)
+        }
 }

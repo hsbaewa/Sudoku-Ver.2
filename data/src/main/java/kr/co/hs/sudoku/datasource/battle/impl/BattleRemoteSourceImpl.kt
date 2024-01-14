@@ -10,6 +10,7 @@ import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
+import kr.co.hs.sudoku.model.battle.BattleLeaderBoardModel
 import kr.co.hs.sudoku.model.battle.BattleModel
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
@@ -24,6 +25,8 @@ class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
         getBattleCollectionRef()
             .document(battleId)
             .collection("record")
+
+    override fun getBattleLeaderBoardCollectionRef() = rootDocument.collection("battleLeaderBoard")
 
     override fun createBattle(transaction: Transaction, battleModel: BattleModel): String {
         val documentRef = getBattleCollectionRef().document()
@@ -112,11 +115,7 @@ class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
             .toParticipantModel()
 
     override suspend fun getStatistics(uid: String) =
-        BattleStatisticsModel().apply {
-            this.uid = uid
-            this.winCount = getWinCount(uid)
-            this.clearCount = getClearCount(uid)
-        }
+        BattleStatisticsModel(uid, getWinCount(uid), getPlayCount(uid))
 
     private suspend fun getWinCount(uid: String) =
         getBattleCollectionRef()
@@ -126,7 +125,7 @@ class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
             .await()
             .count
 
-    private suspend fun getClearCount(uid: String) =
+    private suspend fun getPlayCount(uid: String) =
         getBattleCollectionRef()
             .whereArrayContains("startingParticipants", uid)
             .count()
@@ -183,5 +182,48 @@ class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
 
     override fun deleteParticipant(transaction: Transaction, uid: String) {
         transaction.delete(getParticipantCollectionRef().document(uid))
+    }
+
+    override suspend fun registerLeaderBoard(uid: String) {
+        getBattleLeaderBoardCollectionRef()
+            .document(uid)
+            .set(BattleStatisticsModel(uid, getWinCount(uid), getPlayCount(uid)), merge())
+            .await()
+    }
+
+    override suspend fun getLeaderBoard(limit: Long) = getBattleLeaderBoardCollectionRef()
+        .orderBy("winCount", Query.Direction.DESCENDING)
+        .orderBy("playCount", Query.Direction.ASCENDING)
+        .limit(limit)
+        .get()
+        .await()
+        .documents.mapNotNull { it.toObject(BattleLeaderBoardModel::class.java) }
+
+    override suspend fun getLeaderBoardModel(uid: String): BattleLeaderBoardModel {
+        val model = getBattleLeaderBoardCollectionRef()
+            .document(uid)
+            .get()
+            .await()
+            .toObject(BattleLeaderBoardModel::class.java)
+            ?: throw Exception("not found")
+
+        var cnt = getBattleLeaderBoardCollectionRef()
+            .orderBy("winCount", Query.Direction.DESCENDING)
+            .whereGreaterThan("winCount", model.winCount)
+            .count()
+            .get(AggregateSource.SERVER)
+            .await()
+            .count
+
+
+        cnt += getBattleLeaderBoardCollectionRef()
+            .whereEqualTo("winCount", model.winCount)
+            .get()
+            .await()
+            .map { it.toObject(BattleStatisticsModel::class.java) }
+            .count { it.playCount < model.playCount }
+
+        model.ranking = cnt + 1
+        return model
     }
 }
