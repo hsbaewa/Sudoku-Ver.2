@@ -655,13 +655,22 @@ open class BattleRepositoryTest {
         userBattleRepository[3].clear(5000)
 
 
-        userBattleRepository[0].getLeaderBoard()
-        userBattleRepository[1].getLeaderBoard()
-        userBattleRepository[2].getLeaderBoard()
-        val leaderBoard = userBattleRepository[3].getLeaderBoard().toMutableList()
+        userBattleRepository[0].getLeaderBoard(10)
+        userBattleRepository[1].getLeaderBoard(10)
+        userBattleRepository[2].getLeaderBoard(10)
+        val leaderBoard = userBattleRepository[3].getLeaderBoard(10)
+            .mapNotNull {
+                if (it.uid.isEmpty()) {
+                    return@mapNotNull null
+                } else {
+                    it
+                }
+            }
+            .toMutableList()
 
         leaderBoard.onEach {
-            assertEquals(it, userBattleRepository[3].getLeaderBoard(it.uid))
+            val entity = userBattleRepository[3].getLeaderBoard(it.uid)
+            assertEquals(it, entity)
         }
 
         leaderBoard.removeIf { it.uid == userUidList[2] }
