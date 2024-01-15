@@ -220,9 +220,10 @@ class BattleViewModelTest : BattleRepositoryTest() {
         assertNotNull(battleEntity)
     }
 
+    override fun 클리어_기록_조회_테스트() {}
 
     /* Copyright 2019 Google LLC.
-   SPDX-License-Identifier: Apache-2.0 */
+       SPDX-License-Identifier: Apache-2.0 */
     suspend inline fun <reified T> LiveData<T>.getOrAwaitValue(
         time: Long = 2,
         timeUnit: TimeUnit = TimeUnit.SECONDS,

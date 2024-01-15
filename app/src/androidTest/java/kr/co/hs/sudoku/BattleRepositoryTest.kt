@@ -562,7 +562,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 클리어_기록_조회_테스트() = runTest(timeout = Duration.INFINITE) {
+    open fun 클리어_기록_조회_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
