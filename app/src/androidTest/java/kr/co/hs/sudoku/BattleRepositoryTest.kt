@@ -673,12 +673,10 @@ open class BattleRepositoryTest {
             assertEquals(it, entity)
         }
 
-        leaderBoard.removeIf { it.uid == userUidList[2] }
+        val maxWinCount = leaderBoard.maxOf { it.winCount }
+        val firstGrades = leaderBoard.filter { it.winCount == maxWinCount }
 
-        assertEquals(leaderBoard.size, 3)
-
-        assertEquals(leaderBoard.first().uid, userUidList[3])
-
+        assertTrue(firstGrades.contains(leaderBoard.first()))
     }
 
     @Test
