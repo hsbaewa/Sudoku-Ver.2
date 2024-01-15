@@ -8,7 +8,9 @@ import kr.co.hs.sudoku.datasource.challenge.impl.ChallengeRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
+import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.repository.TestableRepository
+import java.util.Date
 
 class ChallengeReaderRepositoryImpl(
     private val remoteSource: ChallengeRemoteSource = ChallengeRemoteSourceImpl(),
@@ -54,6 +56,13 @@ class ChallengeReaderRepositoryImpl(
         } ?: throw Exception("invalid challenge entity")
 
     override suspend fun getChallengeIds() = remoteSource.getChallengeIds()
+
+    override suspend fun getChallenge(createdAt: Date): ChallengeEntity {
+        return remoteSource.getChallenge(createdAt).toDomain() ?: throw Exception("not found")
+    }
+
+    override suspend fun getChallenges(startAt: Date) =
+        remoteSource.getChallenges(startAt).mapNotNull { it.toDomain() }
 
     override fun setFireStoreRootVersion(versionName: String) {
         (remoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()

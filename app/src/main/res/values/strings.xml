@@ -100,6 +100,7 @@
     <string name="rank_format_second" translatable="false">2nd</string>
     <string name="rank_format_third" translatable="false">3rd</string>
     <string name="rank_format" translatable="false">%1$dth</string>
+    <string name="challenge_select_date_format" translatable="false">%1$s ▼</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">Congratulation!\nClear sudoku!!</string>

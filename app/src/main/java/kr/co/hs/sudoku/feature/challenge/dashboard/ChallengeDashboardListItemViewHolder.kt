@@ -13,6 +13,8 @@ import kr.co.hs.sudoku.databinding.LayoutListItemChallengeRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeTitleBinding
 import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem>(
     itemView: View
@@ -23,11 +25,25 @@ sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem
 
     open fun onRecycled() {}
 
-    class Title(private val binding: LayoutListItemChallengeTitleBinding) :
+    class Title(val binding: LayoutListItemChallengeTitleBinding) :
         ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem.TitleItem>(binding.root) {
         override val clickableView: View by lazy { binding.tvTitle }
-        override fun onBind(item: ChallengeDashboardListItem.TitleItem) = with(binding.tvTitle) {
-            text = getString(R.string.title_challenge)
+        override fun onBind(item: ChallengeDashboardListItem.TitleItem) {
+            with(binding.tvTitle) {
+                text = getString(R.string.title_challenge)
+            }
+            with(binding.btnSelectDate) {
+                visibility = if (item.date != null) View.VISIBLE else View.INVISIBLE
+                text = itemView.context.getString(
+                    R.string.challenge_select_date_format,
+                    item.date?.let {
+                        SimpleDateFormat(
+                            "yyyy-MM-dd",
+                            Locale.getDefault()
+                        ).format(it)
+                    }
+                )
+            }
         }
     }
 
