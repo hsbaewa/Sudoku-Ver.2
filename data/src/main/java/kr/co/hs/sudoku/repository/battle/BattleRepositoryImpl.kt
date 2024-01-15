@@ -571,10 +571,10 @@ class BattleRepositoryImpl(
     }
 
 
-    override suspend fun getLeaderBoard() = with(battleRemoteSource) {
+    override suspend fun getLeaderBoard(limit: Long) = with(battleRemoteSource) {
         registerLeaderBoard(currentUserUid)
         var current: BattleLeaderBoardEntity? = null
-        getLeaderBoard(10)
+        this.getLeaderBoard(limit)
             .mapIndexed { idx, item ->
                 BattleLeaderBoardEntity(
                     item.uid,
@@ -588,6 +588,12 @@ class BattleRepositoryImpl(
                     current?.ranking?.run { it.ranking = this }
                 } else {
                     current = it
+                }
+            }
+            .let {
+                List(limit.toInt()) { idx ->
+                    it.runCatching { get(idx) }
+                        .getOrElse { BattleLeaderBoardEntity("", 0, 0, idx.toLong() + 1) }
                 }
             }
     }

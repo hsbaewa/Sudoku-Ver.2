@@ -106,7 +106,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
         }
     }
 
-    class Title(private val binding: LayoutListItemMultiPlayTitleBinding) :
+    class Title(val binding: LayoutListItemMultiPlayTitleBinding) :
         MultiDashboardListItemViewHolder<MultiDashboardListItem.TitleItem>(binding.root) {
         override val clickableView: View by lazy { binding.tvTitle }
         override fun onBind(item: MultiDashboardListItem.TitleItem) = with(binding.tvTitle) {

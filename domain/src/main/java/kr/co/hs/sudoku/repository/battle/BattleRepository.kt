@@ -80,6 +80,6 @@ interface BattleRepository {
     /**
      * 리더보드
      */
-    suspend fun getLeaderBoard(): List<BattleLeaderBoardEntity>
+    suspend fun getLeaderBoard(limit: Long): List<BattleLeaderBoardEntity>
     suspend fun getLeaderBoard(uid: String): BattleLeaderBoardEntity
 }

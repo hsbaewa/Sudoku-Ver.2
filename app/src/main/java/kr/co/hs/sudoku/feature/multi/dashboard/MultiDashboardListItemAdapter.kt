@@ -14,7 +14,8 @@ import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
 
 class MultiDashboardListItemAdapter(
     private val onItemClick: (MultiDashboardListItem.MultiPlayItem) -> Unit,
-    private val onCreateNew: () -> Unit
+    private val onCreateNew: () -> Unit,
+    private val onClickLeaderBoard: () -> Unit
 ) : PagingDataAdapter<MultiDashboardListItem, MultiDashboardListItemViewHolder<out MultiDashboardListItem>>(
     MultiDashboardListItemDiffCallback()
 ) {
@@ -43,7 +44,9 @@ class MultiDashboardListItemAdapter(
         return when (viewType) {
             VT_TITLE -> MultiDashboardListItemViewHolder.Title(
                 LayoutListItemMultiPlayTitleBinding.inflate(inflater, parent, false)
-            )
+            ).apply {
+                binding.btnLeaderBoard.setOnClickListener { onClickLeaderBoard() }
+            }
 
             VT_ITEM -> MultiDashboardListItemViewHolder.MultiPlay(
                 LayoutListItemMultiPlayBinding.inflate(inflater, parent, false),
