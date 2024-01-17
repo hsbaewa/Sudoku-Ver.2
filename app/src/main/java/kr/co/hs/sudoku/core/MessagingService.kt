@@ -21,6 +21,7 @@ class MessagingService : FirebaseMessagingService() {
         when (val action = message.parseAction()) {
             is MessagingManager.JoinedMultiPlayer -> action.showNotification(this)
             is MessagingManager.AppUpdate -> action.showNotification(this)
+            is MessagingManager.NewChallenge -> action.showNotification(this)
             null -> {}
         }
     }

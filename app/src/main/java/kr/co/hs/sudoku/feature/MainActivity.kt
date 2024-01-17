@@ -74,8 +74,12 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         const val EXTRA_CURRENT_TAB_ITEM_ID = "EXTRA_CURRENT_TAB_ITEM_ID"
 
         const val ACTION_APP_UPDATE = "ACTION_APP_UPDATE"
+        const val ACTION_NEW_CHALLENGE = "ACTION_NEW_CHALLENGE"
         fun newIntentForUpdate(context: Context) = Intent(context, MainActivity::class.java)
             .setAction(ACTION_APP_UPDATE)
+
+        fun newIntentForNewChallenge(context: Context) = Intent(context, MainActivity::class.java)
+            .setAction(ACTION_NEW_CHALLENGE)
     }
 
     private val binding: ActivityMainBinding by lazy {
@@ -179,6 +183,9 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         super.onNewIntent(intent)
         when (intent?.action) {
             ACTION_APP_UPDATE -> checkUpdate()
+            ACTION_NEW_CHALLENGE -> lifecycleScope.launch {
+                withStarted { binding.bottomNavigationView.selectedItemId = R.id.challenge }
+            }
         }
     }
 

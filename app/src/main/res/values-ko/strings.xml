@@ -124,5 +124,7 @@
     <!-- 상태바 알림 -->
     <string name="notification_title_app_update">앱 업데이트 알림</string>
     <string name="notification_contents_app_update">%1$s 버전이 릴리즈 되었습니다. 클릭 하여 확인해주세요.</string>
+    <string name="notification_title_new_challenge">새 도전 알림</string>
+    <string name="notification_contents_new_challenge">새로운 도전이 추가 되었습니다! 알림을 클릭하여 기록을 세워 보세요.</string>
     <!-- -->
 </resources>
