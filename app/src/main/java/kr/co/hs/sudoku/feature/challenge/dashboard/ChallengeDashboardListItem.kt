@@ -3,13 +3,14 @@ package kr.co.hs.sudoku.feature.challenge.dashboard
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.rank.RankerEntity
+import java.util.Date
 
 sealed class ChallengeDashboardListItem {
     abstract val id: String
     abstract val order: Int
 
-    object TitleItem : ChallengeDashboardListItem() {
-        override val id = "TitleItem"
+    data class TitleItem(var date: Date?) : ChallengeDashboardListItem() {
+        override val id = "TitleItem_${date?.time}"
         override val order = 0
     }
 

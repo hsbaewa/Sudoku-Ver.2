@@ -31,6 +31,8 @@ import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import java.util.Date
+import kotlin.math.abs
 import kotlin.random.Random
 
 class MessagingManager(private val app: App) {
@@ -61,6 +63,15 @@ class MessagingManager(private val app: App) {
                             ?.toLongOrNull()
                             ?: throw Exception("version_name is null")
                         AppUpdate(versionName, versionCode)
+                    }.getOrNull()
+
+                    "new_challenge" -> runCatching {
+                        val createdAt = data
+                            .takeIf { it.containsKey("created_at") }
+                            ?.get("created_at")
+                            ?.toLongOrNull()
+                            ?: throw Exception("created_at is null")
+                        NewChallenge(Date(createdAt))
                     }.getOrNull()
 
                     else -> null
@@ -181,6 +192,54 @@ class MessagingManager(private val app: App) {
         }
     }
 
+    data class NewChallenge(val createdAt: Date) : Action {
+        override fun toJsonObject() = JsonObject().apply {
+            addProperty("action", "new_challenge")
+            addProperty("created_at", createdAt.time.toString())
+        }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        private fun NotificationManager.createNotificationChannel(context: Context) {
+            val channelId = context.getString(R.string.channel_id_new_challenge)
+            val channelName = context.getString(R.string.channel_name_new_challenge)
+            createNotificationChannel(
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+            )
+        }
+
+        override fun showNotification(context: Context) {
+            val notificationManager =
+                context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                notificationManager.createNotificationChannel(context)
+            }
+
+            val channelId = context.getString(R.string.channel_id_new_challenge)
+            val title = context.getString(R.string.notification_title_new_challenge)
+            val contentText = context.getString(R.string.notification_contents_new_challenge)
+            val requestCode = abs(Random.nextInt())
+            val largeIcon = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+            val contentIntent = MainActivity.newIntentForNewChallenge(context)
+            val pIntent = PendingIntent.getActivity(
+                context, requestCode, contentIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+            )
+            notificationManager.notify(
+                requestCode,
+                NotificationCompat.Builder(context, channelId)
+                    .setContentTitle(title)
+                    .setTicker(contentText)
+                    .setContentText(contentText)
+                    .setColor(context.getColorCompat(R.color.gray_700))
+                    .setStyle(NotificationCompat.BigTextStyle().bigText(contentText))
+                    .setSmallIcon(R.drawable.ic_stat_name)
+                    .setLargeIcon(largeIcon)
+                    .setAutoCancel(true)
+                    .setContentIntent(pIntent)
+                    .build()
+            )
+        }
+    }
 
     private interface NetworkInterface {
         @Headers("Content-Type: application/json")

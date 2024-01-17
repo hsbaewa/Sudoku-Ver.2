@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
@@ -21,6 +22,8 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicato
 import kr.co.hs.sudoku.feature.ad.ChallengeRetryRewardAdManager
 import kr.co.hs.sudoku.feature.challenge.play.ChallengePlayActivity
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
+import java.util.Calendar
+import java.util.Date
 
 class ChallengeDashboardFragment : Fragment() {
     companion object {
@@ -45,11 +48,14 @@ class ChallengeDashboardFragment : Fragment() {
         with(binding.recyclerViewRankList) {
             layoutManager = LinearLayoutManager(context)
             addVerticalDivider(thickness = 10.dp)
-            adapter = ChallengeDashboardListItemAdapter { startChallenge(it) }
+            adapter = ChallengeDashboardListItemAdapter(
+                onClickStart = { startChallenge(it) },
+                onClickSelectDate = { showChallengeSelectDialog() }
+            )
         }
 
         with(binding.recyclerViewRankList.adapter as ChallengeDashboardListItemAdapter) {
-            submitList(listOf(ChallengeDashboardListItem.TitleItem))
+            submitList(listOf(ChallengeDashboardListItem.TitleItem(null)))
         }
 
         viewModel.dashboardItemList.observe(viewLifecycleOwner) {
@@ -60,7 +66,7 @@ class ChallengeDashboardFragment : Fragment() {
 
 
         with(binding.swipeRefreshLayout) {
-            setOnRefreshListener { viewModel.requestChallengeDashboard() }
+            setOnRefreshListener { viewModel.setDashboard() }
             viewModel.isRunningProgress.observe(viewLifecycleOwner) {
                 if (isRefreshing) {
                     if (!it) {
@@ -74,7 +80,7 @@ class ChallengeDashboardFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.requestChallengeDashboard() }
+            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.setDashboard() }
         }
 
     }
@@ -123,4 +129,34 @@ class ChallengeDashboardFragment : Fragment() {
     }
 
     private class InvalidRewardedException(message: String?) : Exception(message)
+
+    private fun showChallengeSelectDialog() = viewLifecycleOwner.lifecycleScope.launch {
+        val dialog = DatePickerDialog.newInstance(
+            { _, year, monthOfYear, dayOfMonth ->
+                viewModel.challengeList.value
+                    ?.find {
+                        val c = it.createdAt?.let {
+                            Calendar.getInstance().apply { time = it }
+                        } ?: return@find false
+
+                        val y = c.get(Calendar.YEAR)
+                        val m = c.get(Calendar.MONTH)
+                        val d = c.get(Calendar.DAY_OF_MONTH)
+
+                        y == year && m == monthOfYear && d == dayOfMonth
+                    }
+                    ?.let { viewModel.setDashboard(it) }
+            },
+            Calendar.getInstance()
+                .apply { time = viewModel.selected.value?.createdAt ?: Date() }
+        )
+        dialog.selectableDays = viewModel.challengeList.value
+            ?.mapNotNull {
+                it.createdAt?.let { c -> Calendar.getInstance().apply { time = c } }
+            }
+            ?.toTypedArray()
+
+        dialog.vibrate(false)
+        dialog.show(childFragmentManager, "DatePickerDialog")
+    }
 }

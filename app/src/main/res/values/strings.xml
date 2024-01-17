@@ -100,6 +100,7 @@
     <string name="rank_format_second" translatable="false">2nd</string>
     <string name="rank_format_third" translatable="false">3rd</string>
     <string name="rank_format" translatable="false">%1$dth</string>
+    <string name="challenge_select_date_format" translatable="false">%1$s ▼</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">Congratulation!\nClear sudoku!!</string>
@@ -139,10 +140,14 @@
     <string name="channel_name_multi_play_joined_participant" translatable="false">Multi Play Joined Notification</string>
     <string name="channel_id_app_update" translatable="false">channel_id_app_update</string>
     <string name="channel_name_app_update" translatable="false">App Update Notification</string>
+    <string name="channel_id_new_challenge" translatable="false">channel_id_new_challenge</string>
+    <string name="channel_name_new_challenge" translatable="false">New Challenge Notification</string>
 
 
     <!-- 상태바 알림 -->
     <string name="notification_title_app_update">App update notification</string>
     <string name="notification_contents_app_update">Version %1$s has been released. Please click to confirm.</string>
+    <string name="notification_title_new_challenge">New Challenge notification</string>
+    <string name="notification_contents_new_challenge">A new challenge has been updated!!. Click on the notification to set a record.</string>
     <!-- -->
 </resources>

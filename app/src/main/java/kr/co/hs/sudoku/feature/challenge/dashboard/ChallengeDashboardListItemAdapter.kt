@@ -12,7 +12,8 @@ import kr.co.hs.sudoku.databinding.LayoutListItemChallengeTitleBinding
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
 class ChallengeDashboardListItemAdapter(
-    private val onClickStart: (ChallengeEntity) -> Unit
+    private val onClickStart: (ChallengeEntity) -> Unit,
+    private val onClickSelectDate: () -> Unit
 ) : ListAdapter<ChallengeDashboardListItem, ChallengeDashboardListItemViewHolder<out ChallengeDashboardListItem>>(
     ChallengeDashboardListItemDiffCallback()
 ) {
@@ -34,7 +35,9 @@ class ChallengeDashboardListItemAdapter(
         return when (viewType) {
             VT_TITLE -> ChallengeDashboardListItemViewHolder.Title(
                 LayoutListItemChallengeTitleBinding.inflate(inflater, parent, false)
-            )
+            ).apply {
+                binding.btnSelectDate.setOnClickListener { onClickSelectDate() }
+            }
 
             VT_MATRIX_HEADER -> ChallengeDashboardListItemViewHolder.MatrixHeader(
                 LayoutListItemChallengeHeaderBinding.inflate(inflater, parent, false)

@@ -7,6 +7,7 @@ import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
+import java.util.Date
 
 class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource {
 
@@ -54,4 +55,20 @@ class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource
 
     override suspend fun getChallengeIds() =
         challengeCollection.get().await().documents.map { it.id }
+
+    override suspend fun getChallenge(createdAt: Date) =
+        challengeCollection.whereEqualTo("createdAt", createdAt)
+            .get()
+            .await()
+            .documents
+            .first()
+            .toObject(ChallengeModel::class.java)
+            ?: throw Exception("not found")
+
+    override suspend fun getChallenges(startAt: Date) = challengeCollection
+        .whereGreaterThan("createdAt", startAt)
+        .get()
+        .await()
+        .documents
+        .mapNotNull { it.toObject(ChallengeModel::class.java) }
 }
