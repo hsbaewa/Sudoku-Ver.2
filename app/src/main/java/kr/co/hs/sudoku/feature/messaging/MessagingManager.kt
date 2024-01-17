@@ -302,4 +302,9 @@ class MessagingManager(private val app: App) {
         "sudoku.user.all",
         appUpdate.toJsonObject()
     )
+
+    suspend fun sendNotification(newChallenge: NewChallenge) = sendData(
+        "sudoku.user.all",
+        newChallenge.toJsonObject()
+    )
 }

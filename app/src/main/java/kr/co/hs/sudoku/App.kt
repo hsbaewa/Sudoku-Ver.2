@@ -15,6 +15,8 @@ import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
 import kr.co.hs.sudoku.repository.RegistrationRepositoryImpl
+import kr.co.hs.sudoku.repository.admin.AdminPermissionRepository
+import kr.co.hs.sudoku.repository.admin.AdminPermissionRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
@@ -77,4 +79,10 @@ class App : Application() {
         registrationRepositoryRef?.get()
             ?: RegistrationRepositoryImpl(dataStore)
                 .apply { registrationRepositoryRef = SoftReference(this) }
+
+    private var adminPermissionRepositoryRef: Reference<AdminPermissionRepository>? = null
+    fun getAdminPermissionRepository(): AdminPermissionRepository =
+        adminPermissionRepositoryRef?.get()
+            ?: AdminPermissionRepositoryImpl()
+                .apply { adminPermissionRepositoryRef = SoftReference(this) }
 }

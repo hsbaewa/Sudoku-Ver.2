@@ -149,5 +149,16 @@
     <string name="notification_contents_app_update">Version %1$s has been released. Please click to confirm.</string>
     <string name="notification_title_new_challenge">New Challenge notification</string>
     <string name="notification_contents_new_challenge">A new challenge has been updated!!. Click on the notification to set a record.</string>
+    <string name="notification_request_permission_alert_title">Permission Request</string>
+    <string name="notification_request_permission_alert_message">Request permission to display game-related notifications, such as multiplayer and challenge updates, in the status bar. If you do not accept permission, features may not operate properly.</string>
+
+
+    <!-- 도전 관리 -->
+    <string name="admin_challenge_title" translatable="false">Manage Challenge</string>
+    <string name="admin_challenge_delete_alert_title" translatable="false">Delete Challenge</string>
+    <string name="admin_challenge_delete_alert_message" translatable="false">Do you want delete this challenge?</string>
+    <string name="admin_challenge_create_title" translatable="false">Create Challenge</string>
+    <string name="admin_challenge_create_label_generate_sudoku" translatable="false">Generate Sudoku</string>
+    <string name="admin_challenge_create_label_confirm" translatable="false">Create</string>
     <!-- -->
 </resources>

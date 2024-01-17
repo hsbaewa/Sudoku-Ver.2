@@ -9,4 +9,5 @@ interface ChallengeReaderRepository {
     suspend fun getChallengeIds(): List<String>
     suspend fun getChallenge(createdAt: Date): ChallengeEntity
     suspend fun getChallenges(startAt: Date): List<ChallengeEntity>
+    suspend fun getChallenges(count: Long): List<ChallengeEntity>
 }
