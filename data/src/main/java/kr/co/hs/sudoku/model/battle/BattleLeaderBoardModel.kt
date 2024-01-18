@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.model.battle
 
-class BattleStatisticsModel {
+class BattleLeaderBoardModel {
+    var ranking: Long = 0
     var uid: String = ""
     var winCount: Long = 0
     var playCount: Long = 0

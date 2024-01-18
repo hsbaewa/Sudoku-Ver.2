@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.repository.battle
 
 import kr.co.hs.sudoku.model.battle.BattleEntity
+import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 
@@ -76,5 +77,9 @@ interface BattleRepository {
     suspend fun getStatistics(): BattleStatisticsEntity
     suspend fun getStatistics(uid: String): BattleStatisticsEntity
 
-
+    /**
+     * 리더보드
+     */
+    suspend fun getLeaderBoard(limit: Long): List<BattleLeaderBoardEntity>
+    suspend fun getLeaderBoard(uid: String): BattleLeaderBoardEntity
 }

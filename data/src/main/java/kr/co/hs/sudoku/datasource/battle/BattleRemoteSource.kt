@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.datasource.battle
 
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.Transaction
+import kr.co.hs.sudoku.model.battle.BattleLeaderBoardModel
 import kr.co.hs.sudoku.model.battle.BattleModel
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
@@ -11,6 +12,7 @@ interface BattleRemoteSource {
     fun getBattleCollectionRef(): CollectionReference
     fun getParticipantCollectionRef(): CollectionReference
     fun getBattleRecordCollectionRef(battleId: String): CollectionReference
+    fun getBattleLeaderBoardCollectionRef(): CollectionReference
 
     fun createBattle(transaction: Transaction, battleModel: BattleModel): String
 
@@ -48,4 +50,8 @@ interface BattleRemoteSource {
     fun deleteBattle(transaction: Transaction, battleId: String)
     fun deleteParticipant(transaction: Transaction, participant: BattleParticipantModel)
     fun deleteParticipant(transaction: Transaction, uid: String)
+
+    suspend fun registerLeaderBoard(uid: String)
+    suspend fun getLeaderBoard(limit: Long): List<BattleLeaderBoardModel>
+    suspend fun getLeaderBoardModel(uid: String): BattleLeaderBoardModel
 }

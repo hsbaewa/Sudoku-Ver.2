@@ -19,7 +19,7 @@ object BattleMapper {
 
     fun BattleStatisticsModel.toDomain() = BattleStatisticsEntity(
         uid = uid,
-        clearedCount = clearCount,
+        playCount = playCount,
         winCount = winCount
     )
 

@@ -11,11 +11,13 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.liveData
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
+import kr.co.hs.sudoku.feature.multi.dashboard.leaderboard.LeaderBoardItem
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
@@ -43,6 +45,10 @@ class MultiDashboardViewModel(
 
     private val _currentMultiPlay = MutableLiveData<BattleEntity?>()
     val currentMultiPlay: LiveData<BattleEntity?> by this::_currentMultiPlay
+
+    private val currentUserUid: String?
+        get() = FirebaseAuth.getInstance().currentUser?.uid
+
 
     val multiPlayPagingData: LiveData<PagingData<MultiDashboardListItem>>
         get() = Pager(
@@ -118,6 +124,27 @@ class MultiDashboardViewModel(
             battleRepository.runCatching { getParticipating() }.getOrNull()
         }
         _currentMultiPlay.value = entity
+        setProgress(false)
+    }
+
+
+    private val _leaderBoard = MutableLiveData<List<LeaderBoardItem>>()
+    val leaderBoard: LiveData<List<LeaderBoardItem>> by this::_leaderBoard
+
+    fun requestLeaderBoard(limit: Long) = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val leaderBoard: MutableList<LeaderBoardItem> =
+            withContext(Dispatchers.IO) { battleRepository.getLeaderBoard(limit) }
+                .map { LeaderBoardItem.ListItem(it, it.uid == currentUserUid) }
+                .toMutableList()
+
+        if (leaderBoard.find { it.entity.uid == currentUserUid } == null) {
+            currentUserUid
+                ?.runCatching { battleRepository.getLeaderBoard(this) }?.getOrNull()
+                ?.run { leaderBoard.add(LeaderBoardItem.MyItem(this)) }
+        }
+
+        _leaderBoard.value = leaderBoard
         setProgress(false)
     }
 }

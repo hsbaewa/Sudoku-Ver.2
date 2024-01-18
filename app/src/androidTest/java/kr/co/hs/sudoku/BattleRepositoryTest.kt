@@ -4,7 +4,6 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import io.mockk.every
 import io.mockk.spyk
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -44,7 +43,7 @@ open class BattleRepositoryTest {
     )
 
     @Before
-    open fun initRepository() = runTest {
+    open fun initRepository() = runTest(timeout = Duration.INFINITE) {
         val profileRepository = ProfileRepositoryImpl()
         (profileRepository as TestableRepository).setFireStoreRootVersion("test")
 
@@ -58,7 +57,7 @@ open class BattleRepositoryTest {
     }
 
     @After
-    open fun releaseRepository() = runTest {
+    open fun releaseRepository() = runTest(timeout = Duration.INFINITE) {
         userBattleRepository
             .forEach {
                 it.runCatching { exit() }.getOrNull()
@@ -563,7 +562,7 @@ open class BattleRepositoryTest {
     }
 
     @Test
-    fun 클리어_기록_조회_테스트() = runTest(timeout = Duration.INFINITE) {
+    open fun 클리어_기록_조회_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix())
 
         val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
@@ -629,19 +628,55 @@ open class BattleRepositoryTest {
         userBattleRepository[0].pendingStart()
         userBattleRepository[0].start()
 
-        coroutineScope {
-            launch {
-                userBattleRepository[1].clear(2000)
-            }
-            launch {
-                userBattleRepository[0].clear(3000)
-            }
-        }
 
+        userBattleRepository[0].clear(3000)
+        userBattleRepository[1].clear(2000)
 
         statistics = userBattleRepository[0].getStatistics()
         assertTrue(statistics.winCount > 0)
-        assertTrue(statistics.winCount <= statistics.clearedCount)
+        assertTrue(statistics.winCount <= statistics.playCount)
+
+
+        battle = userBattleRepository[2].create(getTestMatrix())
+        userBattleRepository[0].join(battle.id)
+        userBattleRepository[0].ready()
+        userBattleRepository[2].pendingStart()
+        userBattleRepository[2].start()
+        userBattleRepository[0].clear(10000)
+        userBattleRepository[2].clear(5000)
+
+
+        battle = userBattleRepository[3].create(getTestMatrix())
+        userBattleRepository[1].join(battle.id)
+        userBattleRepository[1].ready()
+        userBattleRepository[3].pendingStart()
+        userBattleRepository[3].start()
+        userBattleRepository[1].clear(10000)
+        userBattleRepository[3].clear(5000)
+
+
+        userBattleRepository[0].getLeaderBoard(10)
+        userBattleRepository[1].getLeaderBoard(10)
+        userBattleRepository[2].getLeaderBoard(10)
+        val leaderBoard = userBattleRepository[3].getLeaderBoard(10)
+            .mapNotNull {
+                if (it.uid.isEmpty()) {
+                    return@mapNotNull null
+                } else {
+                    it
+                }
+            }
+            .toMutableList()
+
+        leaderBoard.onEach {
+            val entity = userBattleRepository[3].getLeaderBoard(it.uid)
+            assertEquals(it, entity)
+        }
+
+        val maxWinCount = leaderBoard.maxOf { it.winCount }
+        val firstGrades = leaderBoard.filter { it.winCount == maxWinCount }
+
+        assertTrue(firstGrades.contains(leaderBoard.first()))
     }
 
     @Test

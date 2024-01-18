@@ -26,7 +26,7 @@ import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Locale
 
 class UserProfileViewModel(
-    private val profileRepository: ProfileRepository,
+    val profileRepository: ProfileRepository,
     private val gamesSignInClient: GamesSignInClient,
     private val defaultWebClientId: String
 ) : ViewModel() {
@@ -205,5 +205,16 @@ class UserProfileViewModel(
 
     fun setIconUrl(iconUrl: String) {
         _profile.value?.iconUrl = iconUrl
+    }
+
+    inline fun requestProfile(
+        uid: String,
+        crossinline onStatus: (RequestStatus<ProfileEntity>) -> Unit
+    ) = viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+        onStatus(OnError(throwable))
+    }) {
+        onStatus(OnStart())
+        val entity = withContext(Dispatchers.IO) { profileRepository.getProfile(uid) }
+        onStatus(OnFinish(entity))
     }
 }
