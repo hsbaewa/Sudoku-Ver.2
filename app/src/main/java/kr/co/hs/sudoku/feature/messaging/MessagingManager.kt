@@ -293,18 +293,13 @@ class MessagingManager(private val app: App) {
         }
     }
 
-    suspend fun sendNotification(action: JoinedMultiPlayer) = sendData(
-        "sudoku.multi.${action.battleId}",
+    suspend fun sendNotification(action: Action) = sendData(
+        when (action) {
+            is AppUpdate -> "sudoku.user.all"
+            is JoinedMultiPlayer -> "sudoku.multi.${action.battleId}"
+            is NewChallenge -> "sudoku.user.all"
+        },
         action.toJsonObject()
     )
 
-    suspend fun sendNotification(appUpdate: AppUpdate) = sendData(
-        "sudoku.user.all",
-        appUpdate.toJsonObject()
-    )
-
-    suspend fun sendNotification(newChallenge: NewChallenge) = sendData(
-        "sudoku.user.all",
-        newChallenge.toJsonObject()
-    )
 }

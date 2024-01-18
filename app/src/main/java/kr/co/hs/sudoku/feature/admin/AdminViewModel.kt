@@ -33,7 +33,10 @@ class AdminViewModel(
     val adminPermission: LiveData<AdminPermissionEntity> by this::_adminPermission
 
     init {
-        _adminPermission.value = AdminPermissionEntity(false)
+        _adminPermission.value = AdminPermissionEntity(
+            hasPermissionCreateChallenge = false,
+            hasPermissionAppUpdatePush = false
+        )
     }
 
     fun requestAdminPermission(uid: String) =

@@ -58,6 +58,7 @@ import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.admin.AdminViewModel
 import kr.co.hs.sudoku.feature.admin.ChallengeManageActivity
+import kr.co.hs.sudoku.feature.admin.UpdatePushActivity
 import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardFragment
 import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardFragment
@@ -211,7 +212,6 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
      * @author hsbaewa@gmail.com
      * @since 2023/04/04
      * @comment Content Fragment 교체
-     * @param fragment 교체할 Fragment
      **/
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
@@ -365,9 +365,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         }
 
         // 관리 권한이 있는 경우 메뉴 표시
-        adminViewModel.adminPermission.value?.hasPermissionCreateChallenge
-            ?.takeIf { it }
-            ?.apply {
+        adminViewModel.adminPermission.value?.apply {
+            if (hasPermissionCreateChallenge) {
                 menu?.add(0, 10, 0, R.string.admin_challenge_title)?.let { menuItem ->
                     menuItem.setOnMenuItemClickListener {
                         ChallengeManageActivity.start(this@MainActivity)
@@ -375,7 +374,15 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                     }
                 }
             }
-
+            if (hasPermissionAppUpdatePush) {
+                menu?.add(0, 20, 0, R.string.admin_update_push_title)?.let { menuItem ->
+                    menuItem.setOnMenuItemClickListener {
+                        UpdatePushActivity.start(this@MainActivity)
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+            }
+        }
 
         return super.onCreateOptionsMenu(menu)
     }

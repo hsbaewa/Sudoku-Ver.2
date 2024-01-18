@@ -160,5 +160,13 @@
     <string name="admin_challenge_create_title" translatable="false">Create Challenge</string>
     <string name="admin_challenge_create_label_generate_sudoku" translatable="false">Generate Sudoku</string>
     <string name="admin_challenge_create_label_confirm" translatable="false">Create</string>
+
+    <!-- 버전 업데이트 알림 푸쉬 -->
+    <string name="admin_update_push_title" translatable="false">App Update Notification</string>
+    <string name="admin_update_push_label_version_name" translatable="false">Version Name</string>
+    <string name="admin_update_push_label_version_code" translatable="false">Version Code</string>
+    <string name="admin_update_push_label_send" translatable="false">Send</string>
+    <string name="admin_update_push_alert_title" translatable="false">App Update Notification</string>
+    <string name="admin_update_push_alert_message" translatable="false">Are you sure send this notification?</string>
     <!-- -->
 </resources>

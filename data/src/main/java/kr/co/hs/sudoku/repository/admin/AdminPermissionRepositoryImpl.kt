@@ -11,7 +11,8 @@ class AdminPermissionRepositoryImpl(
         adminRemoteSource.getAdminModel(uid)
             .run {
                 AdminPermissionEntity(
-                    hasPermissionCreateChallenge = enabledCreateChallenge
+                    hasPermissionCreateChallenge = enabledCreateChallenge,
+                    hasPermissionAppUpdatePush = enabledAppUpdatePush
                 )
             }
 }

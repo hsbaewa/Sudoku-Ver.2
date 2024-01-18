@@ -6,19 +6,12 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityManageChallengeCreateBinding
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
-import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.messaging.MessagingManager
-import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
 class ChallengeCreateActivity : Activity() {
     companion object {
@@ -32,9 +25,13 @@ class ChallengeCreateActivity : Activity() {
             by lazy {
                 DataBindingUtil.setContentView(this, R.layout.activity_manage_challenge_create)
             }
+    private val app: App by lazy { applicationContext as App }
     private val viewModel: ChallengeManageViewModel by viewModels {
-        val app = applicationContext as App
         ChallengeManageViewModel.ProviderFactory(app.getChallengeRepository())
+    }
+    private val messagingViewModel: MessagingViewModel by viewModels {
+        val messagingManager = MessagingManager(app)
+        MessagingViewModel.ProviderFactory(messagingManager)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,23 +40,31 @@ class ChallengeCreateActivity : Activity() {
         setSupportActionBar(binding.toolBar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        viewModel.error.observe(this) { it.showErrorAlert() }
-        viewModel.isRunningProgress.observe(this) { isShowProgressIndicator = it }
-        viewModel.generatedSudoku.observe(this) {
-            binding.matrix.matrix = it
-            binding.matrix.invalidate()
-        }
+        viewModel
+            .let { vm ->
+                vm.error.observe(this) { it.showErrorAlert() }
+                vm.isRunningProgress.observe(this) { isShowProgressIndicator = it }
+                vm.generatedSudoku.observe(this) {
+                    with(binding.matrix) {
+                        matrix = it
+                        invalidate()
+                    }
+                }
+            }
+
+        messagingViewModel
+            .let { vm ->
+                vm.error.observe(this) { it.showErrorAlert() }
+                vm.isRunningProgress.observe(this) { isShowProgressIndicator = it }
+            }
 
         binding.btnGenerate.setOnClickListener { viewModel.generateChallengeSudoku() }
         binding.btnCreate.setOnClickListener {
             viewModel.createChallenge {
-                lifecycleScope.launch {
-                    showProgressIndicator()
-                    if (it != null) {
-                        withContext(Dispatchers.IO) { sendPush(it) }
-                        navigateUpToParent()
-                    }
-                    dismissProgressIndicator()
+                it?.run {
+                    createdAt
+                        ?.run { MessagingManager.NewChallenge(this) }
+                        ?.run { messagingViewModel.send(this) { navigateUpToParent() } }
                 }
             }
 
@@ -76,12 +81,4 @@ class ChallengeCreateActivity : Activity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-    private suspend fun sendPush(challenge: ChallengeEntity?) = challenge?.createdAt
-        ?.run { MessagingManager.NewChallenge(this) }
-        ?.run {
-            MessagingManager(applicationContext as App).sendNotification(this)
-            true
-        }
-        ?: false
 }
