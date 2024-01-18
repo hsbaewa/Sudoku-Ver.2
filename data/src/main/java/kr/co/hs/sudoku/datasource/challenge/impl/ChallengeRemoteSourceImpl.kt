@@ -47,6 +47,23 @@ class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource
             true
         }
 
+    override suspend fun createChallenge(challengeModel: ChallengeModel, createdAt: Date) =
+        with(
+            challengeModel.id.takeIf { it != null }
+                ?.run { challengeCollection.document(this) }
+                ?: challengeCollection.document()
+        ) {
+            challengeModel.id = id
+            set(
+                challengeModel
+                    .also { it.id = id }
+                    .asMutableMap()
+                    .also { it["createdAt"] = createdAt }
+            ).await()
+
+            true
+        }
+
     override suspend fun removeChallenge(id: String) =
         with(challengeCollection.document(id)) {
             delete().await()
@@ -67,6 +84,14 @@ class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource
 
     override suspend fun getChallenges(startAt: Date) = challengeCollection
         .whereGreaterThan("createdAt", startAt)
+        .get()
+        .await()
+        .documents
+        .mapNotNull { it.toObject(ChallengeModel::class.java) }
+
+    override suspend fun getChallenges(count: Long) = challengeCollection
+        .orderBy("createdAt", Query.Direction.DESCENDING)
+        .limit(count)
         .get()
         .await()
         .documents

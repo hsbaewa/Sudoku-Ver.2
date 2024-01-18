@@ -127,6 +127,33 @@
 
         </activity>
 
+        <activity
+            android:name=".feature.admin.ChallengeManageActivity"
+            android:label="@string/admin_challenge_title"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".feature.admin.ChallengeCreateActivity"
+            android:label="@string/admin_challenge_create_title"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.admin.ChallengeManageActivity" />
+        </activity>
+
+        <activity
+            android:name=".feature.admin.UpdatePushActivity"
+            android:label="@string/admin_update_push_title"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+        </activity>
+
         <service
             android:name=".core.MessagingService"
             android:exported="false">

@@ -64,6 +64,9 @@ class ChallengeReaderRepositoryImpl(
     override suspend fun getChallenges(startAt: Date) =
         remoteSource.getChallenges(startAt).mapNotNull { it.toDomain() }
 
+    override suspend fun getChallenges(count: Long) =
+        remoteSource.getChallenges(count).mapNotNull { it.toDomain() }
+
     override fun setFireStoreRootVersion(versionName: String) {
         (remoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()
             .collection("version")

@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.feature
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +11,7 @@ import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.DrawableWrapper
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -17,6 +19,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBar
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -53,6 +56,9 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicato
 import kr.co.hs.sudoku.extension.platform.Bitmap.toCropCircle
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
+import kr.co.hs.sudoku.feature.admin.AdminViewModel
+import kr.co.hs.sudoku.feature.admin.ChallengeManageActivity
+import kr.co.hs.sudoku.feature.admin.UpdatePushActivity
 import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardFragment
 import kr.co.hs.sudoku.feature.challenge.dashboard.ChallengeDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardFragment
@@ -113,6 +119,10 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         }
     private var hasUpdate = false
 
+    private val adminViewModel: AdminViewModel by viewModels {
+        AdminViewModel.ProviderFactory(app.getAdminPermissionRepository())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.lifecycleOwner = this
@@ -143,6 +153,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             profile.observe(this@MainActivity) {
                 supportActionBar?.setUIProfile(it)
                 invalidateOptionsMenu()
+                it?.uid?.run { adminViewModel.requestAdminPermission(this) }
             }
             // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
             lifecycleScope.launch { withStarted { requestCurrentUserProfile() } }
@@ -177,6 +188,14 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         }
 
         checkUpdate()
+
+        with(adminViewModel) {
+            adminPermission.observe(this@MainActivity) { invalidateOptionsMenu() }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkPermission()
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -193,7 +212,6 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
      * @author hsbaewa@gmail.com
      * @since 2023/04/04
      * @comment Content Fragment 교체
-     * @param fragment 교체할 Fragment
      **/
     override fun onNavigationItemSelected(item: MenuItem) = with(item) {
         when (itemId) {
@@ -343,6 +361,26 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             } else {
                 menuItem.title = getString(R.string.version_format, versionName)
                 menuItem.isEnabled = false
+            }
+        }
+
+        // 관리 권한이 있는 경우 메뉴 표시
+        adminViewModel.adminPermission.value?.apply {
+            if (hasPermissionCreateChallenge) {
+                menu?.add(0, 10, 0, R.string.admin_challenge_title)?.let { menuItem ->
+                    menuItem.setOnMenuItemClickListener {
+                        ChallengeManageActivity.start(this@MainActivity)
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+            }
+            if (hasPermissionAppUpdatePush) {
+                menu?.add(0, 20, 0, R.string.admin_update_push_title)?.let { menuItem ->
+                    menuItem.setOnMenuItemClickListener {
+                        UpdatePushActivity.start(this@MainActivity)
+                        return@setOnMenuItemClickListener true
+                    }
+                }
             }
         }
 
@@ -528,4 +566,27 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             }
             )
         }
+
+
+    private val launcherForRequestPostNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun checkPermission() {
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+            return
+
+        lifecycleScope.launch {
+            withStarted {
+                showConfirm(
+                    R.string.notification_request_permission_alert_title,
+                    R.string.notification_request_permission_alert_message
+                ) {
+                    if (it) {
+                        launcherForRequestPostNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+            }
+        }
+    }
 }

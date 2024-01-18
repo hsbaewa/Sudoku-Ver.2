@@ -8,7 +8,9 @@ class ChallengeWriterRepositoryImpl(
     private val remoteSource: ChallengeRemoteSource
 ) : ChallengeWriterRepository {
     override suspend fun createChallenge(entity: ChallengeEntity) =
-        remoteSource.createChallenge(entity.toData())
+        entity.createdAt.takeIf { it != null }
+            ?.run { remoteSource.createChallenge(entity.toData(), this) }
+            ?: run { remoteSource.createChallenge(entity.toData()) }
 
     private fun ChallengeEntity.toData() = ChallengeModel(
         boxSize = matrix.boxSize,
@@ -20,8 +22,6 @@ class ChallengeWriterRepositoryImpl(
 
     override suspend fun removeChallenge(entity: ChallengeEntity) =
         entity.challengeId
-            .takeIf { it != null }
-            ?.run { remoteSource.removeChallenge(this) }
-            ?: false
+            .run { remoteSource.removeChallenge(this) }
 
 }

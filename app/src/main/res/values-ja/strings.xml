@@ -125,5 +125,7 @@
     <string name="notification_contents_app_update">%1$s バージョンがリリースされました。クリックして確認してください。</string>
     <string name="notification_title_new_challenge">新しいチャレンジ通知</string>
     <string name="notification_contents_new_challenge">新しい挑戦が追加されました！通知をクリックして履歴を作成します。</string>
+    <string name="notification_request_permission_alert_title">権限要求</string>
+    <string name="notification_request_permission_alert_message">マルチプレイ、チャレンジアップデートなど、ゲーム関連の通知をステータスバーに表示する権限を要求します。権限を受け入れないと、機能が正常に動作しない可能性があります。</string>
     <!-- -->
 </resources>
