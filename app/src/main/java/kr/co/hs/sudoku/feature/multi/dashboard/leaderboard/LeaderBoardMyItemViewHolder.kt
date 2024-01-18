@@ -1,6 +1,5 @@
 package kr.co.hs.sudoku.feature.multi.dashboard.leaderboard
 
-import coil.load
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiLeaderboardMyRankBinding
 import kr.co.hs.sudoku.feature.UserProfileViewModel
@@ -31,7 +30,7 @@ class LeaderBoardMyItemViewHolder(
     private fun setProfile(profileEntity: ProfileEntity?) = with(binding) {
         tvDisplayName.text = profileEntity?.displayName ?: "-"
         profileEntity?.iconUrl
-            ?.run { ivProfileIcon.load(this) { crossfade(true) } }
+            ?.run { ivProfileIcon.loadProfileImage(this) }
             ?: ivProfileIcon.setImageDrawable(null)
     }
 

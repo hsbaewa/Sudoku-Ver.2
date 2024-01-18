@@ -12,6 +12,7 @@ import kr.co.hs.sudoku.databinding.LayoutListItemChallengeMyRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeTitleBinding
 import kr.co.hs.sudoku.extension.CoilExt.load
+import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -89,9 +90,9 @@ sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem
                         )
                     }
 
-                    disposableIcon = ivProfileIcon.load(
+                    disposableIcon = ivProfileIcon.loadProfileImage(
                         rankEntity.iconUrl,
-                        errorIcon = getDrawableCompat(R.drawable.ic_person)
+                        R.drawable.ic_person
                     )
 
                     with(tvDisplayName) {
