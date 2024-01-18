@@ -52,6 +52,7 @@
     <string name="loading_participants">loading participants…</string>
     <string name="error_statistics">statistics load failed</string>
     <string name="error_participants">participants load failed</string>
+    <string name="empty_guest">empty</string>
     <string name="format_statistics">%2$d wins of %1$d matches</string>
     <string name="multi_list_error_already_full">The number of participants is already full.</string>
     <string name="multi_list_not_found">This game does not currently exist. Please refresh and check again.</string>
