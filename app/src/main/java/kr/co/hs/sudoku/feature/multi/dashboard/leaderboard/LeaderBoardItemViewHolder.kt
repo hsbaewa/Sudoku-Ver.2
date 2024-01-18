@@ -1,9 +1,12 @@
 package kr.co.hs.sudoku.feature.multi.dashboard.leaderboard
 
 import android.view.View
+import android.widget.ImageView
+import coil.request.Disposable
 import kotlinx.coroutines.Job
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.ViewHolder
+import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 
 abstract class LeaderBoardItemViewHolder<T : LeaderBoardItem>(itemView: View) :
@@ -11,6 +14,7 @@ abstract class LeaderBoardItemViewHolder<T : LeaderBoardItem>(itemView: View) :
     abstract fun onBind(item: T)
     fun onRecycled() {
         requestProfileJob?.cancel()
+        disposableProfileIcon?.dispose()
     }
 
     protected fun getRankingText(ranking: Long) = when (ranking) {
@@ -28,4 +32,9 @@ abstract class LeaderBoardItemViewHolder<T : LeaderBoardItem>(itemView: View) :
         )
 
     protected var requestProfileJob: Job? = null
+    protected fun ImageView.loadProfileImage(data: String?) =
+        loadProfileImage(data, R.drawable.ic_person)
+            .apply { disposableProfileIcon = this }
+
+    protected var disposableProfileIcon: Disposable? = null
 }

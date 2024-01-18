@@ -2,7 +2,7 @@ package kr.co.hs.sudoku.feature.multi.dashboard
 
 import android.view.View
 import androidx.core.view.isVisible
-import coil.load
+import coil.request.Disposable
 import kotlinx.coroutines.Job
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.ViewHolder
@@ -11,6 +11,7 @@ import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
+import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
 import kr.co.hs.sudoku.viewmodel.ViewModel
@@ -40,6 +41,8 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
         private var requestProfileJob: Job? = null
         private var requestHostGradeJob: Job? = null
         private var requestGuestGradeJob: Job? = null
+        private var disposableHostIcon: Disposable? = null
+        private var disposableGuestIcon: Disposable? = null
 
         private val onResultParticipant: (ViewModel.RequestStatus<BattleEntity>) -> Unit = {
             when (it) {
@@ -68,7 +71,8 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
 
                         hostEntity
                             ?.run {
-                                ivHostIcon.load(iconUrl) { crossfade(true) }
+                                disposableHostIcon =
+                                    ivHostIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
                                 ivHostIcon.isVisible = true
                                 tvHostName.text = displayName
                                 requestHostGradeJob =
@@ -82,7 +86,8 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
 
                         guestEntity
                             ?.run {
-                                ivGuestIcon.load(iconUrl) { crossfade(true) }
+                                disposableGuestIcon =
+                                    ivGuestIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
                                 ivGuestIcon.isVisible = true
                                 tvGuestName.text = displayName
                                 requestGuestGradeJob =
@@ -152,6 +157,8 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
             requestProfileJob?.cancel()
             requestHostGradeJob?.cancel()
             requestGuestGradeJob?.cancel()
+            disposableHostIcon?.dispose()
+            disposableGuestIcon?.dispose()
         }
     }
 

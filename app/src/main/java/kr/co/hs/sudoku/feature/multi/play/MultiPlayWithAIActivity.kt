@@ -26,14 +26,13 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
-import kr.co.hs.sudoku.extension.CoilExt.load
+import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.UserProfileViewModel
 import kr.co.hs.sudoku.feature.single.play.SinglePlayControlStageFragment
 import kr.co.hs.sudoku.feature.single.play.SinglePlayViewModel
@@ -100,7 +99,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         recordViewModel.timer.observe(this) { binding.tvTimer.text = it }
 
         with(binding) {
-            ivEnemyIcon.load(getDrawableCompat(R.drawable.ic_computer))
+            ivEnemyIcon.loadProfileImage("", R.drawable.ic_computer)
             tvEnemyDisplayName.text = getString(R.string.caption_cpu)
             tvEnemyMessage.isVisible = false
         }
@@ -114,7 +113,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
                     ?.run { setUserProfile(this) }
                     ?: run {
                         with(binding) {
-                            ivUserIcon.load(getDrawableCompat(R.drawable.ic_person))
+                            ivUserIcon.loadProfileImage("", R.drawable.ic_person)
                             tvUserDisplayName.text = getString(R.string.me)
                             tvUserMessage.isVisible = false
                         }
@@ -235,10 +234,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         profile.takeIf { it != lastKnownUserProfile }
             ?.run {
                 profile.run {
-                    binding.ivUserIcon.load(
-                        iconUrl,
-                        errorIcon = getDrawableCompat(R.drawable.ic_person)
-                    )
+                    binding.ivUserIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
                     binding.tvUserDisplayName.text = displayName
                     binding.tvUserMessage.isVisible = message?.isNotEmpty() == true
                     binding.tvUserMessage.text = message
