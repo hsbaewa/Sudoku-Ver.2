@@ -23,8 +23,8 @@ abstract class LeaderBoardItemViewHolder<T : LeaderBoardItem>(itemView: View) :
     protected fun getStatisticsText(entity: BattleLeaderBoardEntity) =
         itemView.context.getString(
             R.string.format_statistics,
-            entity.playCount,
-            entity.winCount
+            entity.winCount,
+            entity.playCount - entity.winCount
         )
 
     protected var requestProfileJob: Job? = null
