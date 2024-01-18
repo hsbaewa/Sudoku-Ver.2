@@ -101,8 +101,8 @@ object CoilExt {
     private val ImageView.onStartLoadProfileImage: (Drawable?) -> Unit
         get() = { _ ->
             val drawable = object : CircularProgressDrawable(context) {
-                override fun getIntrinsicWidth() = 20.dp.toInt()
-                override fun getIntrinsicHeight() = 20.dp.toInt()
+                override fun getIntrinsicWidth() = measuredWidth
+                override fun getIntrinsicHeight() = measuredHeight
                 override fun getStrokeWidth() = 2.dp
                 override fun getColorSchemeColors() =
                     intArrayOf(ContextCompat.getColor(context, R.color.gray_500))
@@ -115,13 +115,18 @@ object CoilExt {
         get() = { icon ->
             val bitmapIcon = (icon as BitmapDrawable).bitmap.toCropCircle()
             val bitmap =
-                Bitmap.createScaledBitmap(bitmapIcon, 20.dp.toInt(), 20.dp.toInt(), true)
+                Bitmap.createScaledBitmap(bitmapIcon, measuredWidth, measuredHeight, true)
             val canvas = Canvas(bitmap)
             val paint = Paint()
             paint.color = context.getColorCompat(R.color.gray_600)
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = 1.dp
-            canvas.drawCircle(10.dp, 10.dp, 9.5f.dp, paint)
+            canvas.drawCircle(
+                measuredWidth.toFloat().div(2),
+                measuredHeight.toFloat().div(2),
+                measuredWidth.toFloat().div(2).minus(0.5f.dp),
+                paint
+            )
             val bitmap2 = BitmapDrawable(resources, bitmap)
             setImageDrawable(bitmap2)
         }
@@ -129,8 +134,8 @@ object CoilExt {
     private val ImageView.onErrorLoadProfileImage: (Drawable?) -> Unit
         get() = { error ->
             val d = object : DrawableWrapper(error) {
-                override fun getIntrinsicWidth() = 20.dp.toInt()
-                override fun getIntrinsicHeight() = 20.dp.toInt()
+                override fun getIntrinsicWidth() = measuredWidth
+                override fun getIntrinsicHeight() = measuredHeight
             }
             setImageDrawable(d)
         }

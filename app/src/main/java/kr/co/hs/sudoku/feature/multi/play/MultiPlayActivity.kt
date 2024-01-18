@@ -24,14 +24,13 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
-import kr.co.hs.sudoku.extension.CoilExt.load
+import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.unsubscribeBattle
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
-import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 import kr.co.hs.sudoku.feature.ad.NativeAdFragment
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
@@ -290,10 +289,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
         profile.takeIf { it.uid != lastKnownUserProfile?.uid }
             ?.run {
                 profile.run {
-                    binding.ivUserIcon.load(
-                        iconUrl,
-                        errorIcon = getDrawableCompat(R.drawable.ic_person)
-                    )
+                    binding.ivUserIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
                     binding.tvUserDisplayName.text = displayName
                     binding.tvUserMessage.isVisible = message?.isNotEmpty() == true
                     binding.tvUserMessage.text = message
@@ -315,10 +311,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             .takeIf { it.uid != lastKnownOpponentProfile?.uid }
             ?.run {
                 profile.run {
-                    binding.ivEnemyIcon.load(
-                        iconUrl,
-                        errorIcon = getDrawableCompat(R.drawable.ic_person)
-                    )
+                    binding.ivEnemyIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
                     binding.tvEnemyDisplayName.text = displayName
                     binding.tvEnemyMessage.text = message
                     binding.tvEnemyMessage.isVisible = message?.isNotEmpty() == true
