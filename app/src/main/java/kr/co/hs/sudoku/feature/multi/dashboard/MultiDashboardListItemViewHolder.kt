@@ -34,43 +34,64 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
                 invalidate()
             }
 
-            requestParticipantJob =
-                viewModel.requestParticipant(item.battleEntity, onResultParticipant)
-
+            requestProfileJob = viewModel.requestParticipant(item.battleEntity, onResultParticipant)
         }
 
-        private var requestParticipantJob: Job? = null
-        private var requestStatisticsJob: Job? = null
+        private var requestProfileJob: Job? = null
+        private var requestHostGradeJob: Job? = null
+        private var requestGuestGradeJob: Job? = null
 
         private val onResultParticipant: (ViewModel.RequestStatus<BattleEntity>) -> Unit = {
             when (it) {
                 is ViewModel.OnStart -> with(binding) {
                     val ctx = itemView.context
-                    tvDisplayName.text = ctx.getString(R.string.loading_participants)
-                    tvMessage.isVisible = false
+                    ivHostIcon.isVisible = false
+                    ivGuestIcon.isVisible = false
+                    tvHostName.text = ctx.getString(R.string.loading_participants)
+                    tvGuestName.text = ctx.getString(R.string.loading_participants)
+                    tvHostGrade.isVisible = false
+                    tvGuestGrade.isVisible = false
                 }
 
-                is ViewModel.OnError -> with(binding.tvDisplayName) {
-                    text = context.getString(R.string.error_participants)
+                is ViewModel.OnError -> with(binding) {
+                    val ctx = itemView.context
+                    tvHostName.text = ctx.getString(R.string.error_participants)
+                    tvGuestName.text = ctx.getString(R.string.error_participants)
+                    ivHostIcon.isVisible = false
+                    ivGuestIcon.isVisible = false
                 }
 
                 is ViewModel.OnFinish -> with(binding) {
                     with(it.d) {
-                        participants
-                            .find { participant -> participant.uid == host }
-                            ?.let { owner ->
-                                ivProfileIcon.load(owner.iconUrl) { crossfade(true) }
-                                tvDisplayName.text = owner.displayName
-                                owner.message
-                                    ?.takeIf { it.isNotEmpty() }
-                                    ?.run {
-                                        tvMessage.text = this
-                                        tvMessage.isVisible = true
-                                    }
-                                    ?: run { tvMessage.isVisible = false }
+                        val hostEntity = participants.find { it.uid == host }
+                        val guestEntity = participants.filter { it.uid != host }.firstOrNull()
 
-                                requestStatisticsJob =
-                                    viewModel.requestStatistics(owner, onResultStatistics)
+                        hostEntity
+                            ?.run {
+                                ivHostIcon.load(iconUrl) { crossfade(true) }
+                                ivHostIcon.isVisible = true
+                                tvHostName.text = displayName
+                                requestHostGradeJob =
+                                    viewModel.requestStatistics(this, onResultHostGrade)
+                            }
+                            ?: run {
+                                ivHostIcon.setImageDrawable(null)
+                                ivHostIcon.isVisible = false
+                                tvHostName.setText(R.string.empty_guest)
+                            }
+
+                        guestEntity
+                            ?.run {
+                                ivGuestIcon.load(iconUrl) { crossfade(true) }
+                                ivGuestIcon.isVisible = true
+                                tvGuestName.text = displayName
+                                requestGuestGradeJob =
+                                    viewModel.requestStatistics(this, onResultGuestGrade)
+                            }
+                            ?: run {
+                                ivGuestIcon.setImageDrawable(null)
+                                ivGuestIcon.isVisible = false
+                                tvGuestName.setText(R.string.empty_guest)
                             }
                     }
                 }
@@ -78,31 +99,59 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
 
         }
 
-        private val onResultStatistics: (ViewModel.RequestStatus<BattleStatisticsEntity>) -> Unit =
+        private val onResultHostGrade: (ViewModel.RequestStatus<BattleStatisticsEntity>) -> Unit =
             {
                 when (it) {
-                    is ViewModel.OnStart -> with(binding.tvStatistics) {
+                    is ViewModel.OnStart -> with(binding.tvHostGrade) {
                         text = context.getString(R.string.loading_statistics)
+                        isVisible = false
                     }
 
-                    is ViewModel.OnError -> with(binding.tvStatistics) {
+                    is ViewModel.OnError -> with(binding.tvHostGrade) {
                         text = context.getString(R.string.error_statistics)
+                        isVisible = false
                     }
 
-                    is ViewModel.OnFinish -> with(binding.tvStatistics) {
+                    is ViewModel.OnFinish -> with(binding.tvHostGrade) {
                         text = context.getString(
                             R.string.format_statistics,
                             it.d.playCount,
                             it.d.winCount
                         )
+                        isVisible = true
+                    }
+                }
+            }
+
+        private val onResultGuestGrade: (ViewModel.RequestStatus<BattleStatisticsEntity>) -> Unit =
+            {
+                when (it) {
+                    is ViewModel.OnStart -> with(binding.tvGuestGrade) {
+                        text = context.getString(R.string.loading_statistics)
+                        isVisible = false
+                    }
+
+                    is ViewModel.OnError -> with(binding.tvGuestGrade) {
+                        text = context.getString(R.string.error_statistics)
+                        isVisible = false
+                    }
+
+                    is ViewModel.OnFinish -> with(binding.tvGuestGrade) {
+                        text = context.getString(
+                            R.string.format_statistics,
+                            it.d.clearedCount,
+                            it.d.winCount
+                        )
+                        isVisible = true
                     }
                 }
 
             }
 
         fun onRecycled() {
-            requestParticipantJob?.cancel()
-            requestStatisticsJob?.cancel()
+            requestProfileJob?.cancel()
+            requestHostGradeJob?.cancel()
+            requestGuestGradeJob?.cancel()
         }
     }
 
