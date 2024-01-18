@@ -115,8 +115,8 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
                     is ViewModel.OnFinish -> with(binding.tvHostGrade) {
                         text = context.getString(
                             R.string.format_statistics,
-                            it.d.playCount,
-                            it.d.winCount
+                            it.d.winCount,
+                            it.d.playCount - it.d.winCount
                         )
                         isVisible = true
                     }
