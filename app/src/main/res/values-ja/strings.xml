@@ -51,6 +51,7 @@
     <string name="error_statistics">完全検索の失敗</string>
     <string name="error_participants">参加者情報の検索に失敗しました</string>
     <string name="empty_guest">空です。</string>
+    <string name="format_statistics_with_ranking">%1$d勝%2$d敗（順位：%3$s位）</string>
     <string name="format_statistics">%1$d勝%2$d敗</string>
     <string name="multi_list_error_already_full">参加者はすでにいっぱいです。</string>
     <string name="multi_list_not_found">現在存在しないゲームです。更新後にもう一度確認してください。</string>

@@ -573,8 +573,7 @@ class BattleRepositoryImpl(
 
     override suspend fun getLeaderBoard(limit: Long) = with(battleRemoteSource) {
         registerLeaderBoard(currentUserUid)
-        var current: BattleLeaderBoardEntity? = null
-        this.getLeaderBoard(limit)
+        val leaderBoard = this.getLeaderBoard(limit)
             .mapIndexed { idx, item ->
                 BattleLeaderBoardEntity(
                     item.uid,
@@ -583,6 +582,9 @@ class BattleRepositoryImpl(
                     idx.toLong() + 1
                 )
             }
+        var current: BattleLeaderBoardEntity? = null
+        leaderBoard
+            .sortedByDescending { it.ranking }
             .onEach {
                 if (it.playCount == current?.playCount && it.winCount == current?.winCount) {
                     current?.ranking?.run { it.ranking = this }
@@ -590,16 +592,36 @@ class BattleRepositoryImpl(
                     current = it
                 }
             }
-            .let {
-                List(limit.toInt()) { idx ->
-                    it.runCatching { get(idx) }
-                        .getOrElse { BattleLeaderBoardEntity("", 0, 0, idx.toLong() + 1) }
-                }
+        leaderBoard.let {
+            List(limit.toInt()) { idx ->
+                it.runCatching { get(idx) }
+                    .getOrElse { BattleLeaderBoardEntity("", 0, 0, idx.toLong() + 1) }
             }
+        }
     }
 
-    override suspend fun getLeaderBoard(uid: String) =
-        with(battleRemoteSource.getLeaderBoardModel(uid)) {
-            BattleLeaderBoardEntity(uid, playCount, winCount, ranking)
+    override suspend fun getLeaderBoard(uid: String): BattleLeaderBoardEntity {
+        val statistics = battleRemoteSource.getStatistics(uid)
+        return battleRemoteSource.runCatching {
+            getLeaderBoardModel(uid).run {
+                BattleLeaderBoardEntity(
+                    uid,
+                    statistics.playCount,
+                    statistics.winCount,
+                    ranking
+                )
+            }
+        }.getOrElse {
+            BattleLeaderBoardEntity(
+                uid,
+                statistics.playCount,
+                statistics.winCount,
+                0
+            )
         }
+    }
+
+    override suspend fun syncLeaderBoard() {
+        battleRemoteSource.registerLeaderBoard(currentUserUid)
+    }
 }

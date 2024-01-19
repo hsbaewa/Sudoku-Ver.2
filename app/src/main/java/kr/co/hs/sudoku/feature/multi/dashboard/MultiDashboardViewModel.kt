@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.feature.multi.dashboard.leaderboard.LeaderBoardItem
 import kr.co.hs.sudoku.model.battle.BattleEntity
-import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
+import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
@@ -49,6 +49,13 @@ class MultiDashboardViewModel(
     private val currentUserUid: String?
         get() = FirebaseAuth.getInstance().currentUser?.uid
 
+    init {
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            setProgress(true)
+            battleRepository.syncLeaderBoard()
+            setProgress(false)
+        }
+    }
 
     val multiPlayPagingData: LiveData<PagingData<MultiDashboardListItem>>
         get() = Pager(
@@ -109,12 +116,12 @@ class MultiDashboardViewModel(
 
     inline fun requestStatistics(
         entity: ParticipantEntity,
-        crossinline onStatus: (RequestStatus<BattleStatisticsEntity>) -> Unit
+        crossinline onStatus: (RequestStatus<BattleLeaderBoardEntity>) -> Unit
     ) = viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
         onStatus(OnError(throwable))
     }) {
         onStatus(OnStart())
-        val stat = withContext(Dispatchers.IO) { battleRepository.getStatistics(entity.uid) }
+        val stat = withContext(Dispatchers.IO) { battleRepository.getLeaderBoard(entity.uid) }
         onStatus(OnFinish(stat))
     }
 
