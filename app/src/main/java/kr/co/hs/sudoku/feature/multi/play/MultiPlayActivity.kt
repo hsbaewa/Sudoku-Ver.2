@@ -9,7 +9,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.activity.viewModels
-import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -32,6 +31,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.ad.NativeAdFragment
+import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
@@ -41,6 +41,7 @@ import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.timer.BattleTimer
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
+import kr.co.hs.sudoku.viewmodel.ViewModel
 import org.jetbrains.annotations.TestOnly
 
 class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
@@ -76,6 +77,11 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
     @TestOnly
     var isShowErrorDialog = true
+
+    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
+        val app = applicationContext as App
+        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -290,17 +296,26 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             ?.run {
                 profile.run {
                     binding.ivUserIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
-                    binding.tvUserDisplayName.text = displayName
-                    binding.tvUserMessage.isVisible = message?.isNotEmpty() == true
-                    binding.tvUserMessage.text = message
+                    binding.tvUserName.text = displayName
+                    multiDashboardViewModel.requestStatistics(uid) {
+                        binding.tvUserGrade.text = when (it) {
+                            is ViewModel.OnStart -> getString(R.string.loading_statistics)
+                            is ViewModel.OnError -> getString(R.string.error_statistics)
+                            is ViewModel.OnFinish -> getString(
+                                R.string.format_statistics,
+                                it.d.winCount,
+                                it.d.playCount - it.d.winCount
+                            )
+                        }
+                    }
                 }
                 lastKnownUserProfile = this
             }
     } else {
         with(binding) {
             ivUserIcon.setImageDrawable(null)
-            tvUserDisplayName.text = null
-            tvUserMessage.text = null
+            tvUserName.text = null
+            binding.tvUserGrade.text = null
         }
 
         lastKnownUserProfile = null
@@ -312,9 +327,18 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             ?.run {
                 profile.run {
                     binding.ivEnemyIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
-                    binding.tvEnemyDisplayName.text = displayName
-                    binding.tvEnemyMessage.text = message
-                    binding.tvEnemyMessage.isVisible = message?.isNotEmpty() == true
+                    binding.tvEnemyName.text = displayName
+                    multiDashboardViewModel.requestStatistics(uid) {
+                        binding.tvEnemyGrade.text = when (it) {
+                            is ViewModel.OnStart -> getString(R.string.loading_statistics)
+                            is ViewModel.OnError -> getString(R.string.error_statistics)
+                            is ViewModel.OnFinish -> getString(
+                                R.string.format_statistics,
+                                it.d.winCount,
+                                it.d.playCount - it.d.winCount
+                            )
+                        }
+                    }
                 }
 
                 lastKnownOpponentProfile = this
@@ -322,8 +346,8 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     } else {
         with(binding) {
             ivEnemyIcon.setImageDrawable(null)
-            tvEnemyDisplayName.text = null
-            tvEnemyMessage.text = null
+            tvEnemyName.text = null
+            tvEnemyGrade.text = null
         }
 
         lastKnownOpponentProfile = null

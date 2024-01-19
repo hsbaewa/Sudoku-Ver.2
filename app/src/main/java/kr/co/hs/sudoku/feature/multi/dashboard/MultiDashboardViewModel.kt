@@ -161,6 +161,17 @@ class MultiDashboardViewModel(
         onStatus(OnFinish(stat))
     }
 
+    inline fun requestStatistics(
+        uid: String,
+        crossinline onStatus: (RequestStatus<BattleStatisticsEntity>) -> Unit
+    ) = viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+        onStatus(OnError(throwable))
+    }) {
+        onStatus(OnStart())
+        val stat = withContext(Dispatchers.IO) { battleRepository.getStatistics(uid) }
+        onStatus(OnFinish(stat))
+    }
+
     fun checkCurrentMultiPlay() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
         val entity = withContext(Dispatchers.IO) {
