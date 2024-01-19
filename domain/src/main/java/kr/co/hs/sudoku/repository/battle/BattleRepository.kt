@@ -21,6 +21,8 @@ interface BattleRepository {
      */
     suspend fun search(battleId: String): BattleEntity
     suspend fun list(): List<BattleEntity>
+    // 참여 가능한 게임만 조회
+    suspend fun possibleToJoinList(): List<BattleEntity>
 
     /**
      * 방 참여자 정보 획득

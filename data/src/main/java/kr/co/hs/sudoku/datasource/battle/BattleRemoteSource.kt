@@ -28,6 +28,7 @@ interface BattleRemoteSource {
 
     suspend fun getBattle(battleId: String): BattleModel?
     suspend fun getBattleList(limit: Long, firstCreateTime: Long): List<BattleModel>
+    suspend fun getEmptyBattleList(limit: Long, firstCreateTime: Long): List<BattleModel>
     suspend fun getBattleListCreatedBy(uid: String): List<BattleModel>
     suspend fun getParticipantList(battleId: String): List<BattleParticipantModel>
     suspend fun getParticipant(uid: String): BattleParticipantModel?

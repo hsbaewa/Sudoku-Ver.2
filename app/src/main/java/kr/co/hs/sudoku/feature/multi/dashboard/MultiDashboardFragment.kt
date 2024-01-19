@@ -77,7 +77,11 @@ class MultiDashboardFragment : Fragment() {
                     ?: run { showConfirmJoinMultiPlay(item.battleEntity) }
             },
             onCreateNew = { startCreateMulti() },
-            onClickLeaderBoard = { showLeaderBoard() }
+            onClickLeaderBoard = { showLeaderBoard() },
+            onCheckedOnlyEmpty = {
+                dashboardViewModel.showOnlyPossibleToJoin(it)
+                pagingDataAdapter?.refresh()
+            }
         )
 
         pagingDataAdapter.apply {
@@ -110,6 +114,11 @@ class MultiDashboardFragment : Fragment() {
 
         adapter = pagingDataAdapter.withLoadStateFooter(PagingLoadStateAdapter())
     }
+
+    private val pagingDataAdapter: MultiDashboardListItemAdapter?
+        get() = (binding.recyclerViewMultiPlayList.adapter as ConcatAdapter)
+            .adapters
+            .find { it is MultiDashboardListItemAdapter } as? MultiDashboardListItemAdapter
 
     private fun submitMultiPlayListData() = viewLifecycleOwner.lifecycleScope.launch {
         repeatOnLifecycle(Lifecycle.State.STARTED) {

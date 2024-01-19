@@ -109,6 +109,11 @@ class BattleRepositoryImpl(
         .mapNotNull { it.runCatching { toDomain() }.getOrNull() }
         .filterIsInstance<BattleEntity.Opened>()
 
+    override suspend fun possibleToJoinList() = battleRemoteSource
+        .getEmptyBattleList(10, -1)
+        .mapNotNull { it.runCatching { toDomain() }.getOrNull() }
+        .filterIsInstance<BattleEntity.Opened>()
+
     override suspend fun getParticipants(battleEntity: BattleEntity) {
         val list = battleRemoteSource.getParticipantList(battleEntity.id)
 

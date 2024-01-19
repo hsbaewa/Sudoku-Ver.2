@@ -89,6 +89,23 @@ class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
             .documents
             .mapNotNull { it.toBattleModel() }
 
+    override suspend fun getEmptyBattleList(limit: Long, firstCreateTime: Long) =
+        getBattleCollectionRef()
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(limit)
+            .whereEqualTo("pendingAt", null)
+            .whereEqualTo("participantSize", 1)
+            .let {
+                firstCreateTime
+                    .takeIf { first -> first >= 0 }
+                    ?.run { it.startAfter(Timestamp(Date(this))) }
+                    ?: it
+            }
+            .get()
+            .await()
+            .documents
+            .mapNotNull { it.toBattleModel() }
+
     override suspend fun getBattleListCreatedBy(uid: String) =
         getBattleCollectionRef()
             .orderBy("hostUid")
