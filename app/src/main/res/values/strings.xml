@@ -53,6 +53,7 @@
     <string name="error_statistics">statistics load failed</string>
     <string name="error_participants">participants load failed</string>
     <string name="empty_guest">empty</string>
+    <string name="format_statistics_with_ranking">%1$d wins %2$d losses( Ranking : %3$s )</string>
     <string name="format_statistics">%1$d wins %2$d losses</string>
     <string name="multi_list_error_already_full">The number of participants is already full.</string>
     <string name="multi_list_not_found">This game does not currently exist. Please refresh and check again.</string>
@@ -98,6 +99,7 @@
     <string name="challenge_divider_for_my_rank" translatable="false">.\n.\n.</string>
     <string name="error_challenge_already_record">You have already completed the challenge. You can receive rewards for trying again through advertising. Would you like to try again?</string>
     <string name="error_challenge_retry_rewarded">failed rewarded</string>
+    <string name="rank_format_nan" translatable="false">-</string>
     <string name="rank_format_first" translatable="false">1st</string>
     <string name="rank_format_second" translatable="false">2nd</string>
     <string name="rank_format_third" translatable="false">3rd</string>

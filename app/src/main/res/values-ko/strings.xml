@@ -51,6 +51,7 @@
     <string name="error_statistics">전적 조회 실패</string>
     <string name="error_participants">참가자 정보 조회 실패</string>
     <string name="empty_guest">비어 있음</string>
+    <string name="format_statistics_with_ranking">%1$d승 %2$d패( 순위 : %3$s )</string>
     <string name="format_statistics">%1$d승 %2$d패</string>
     <string name="multi_list_error_already_full">참가자가 이미 가득 차 있습니다.</string>
     <string name="multi_list_not_found">현재 존재하지 않는 게임입니다. 새로고침 후 다시 확인해 주세요.</string>
@@ -94,6 +95,10 @@
     <string name="challenge_dashboard_header_rank">랭킹</string>
     <string name="error_challenge_already_record">이미 도전 완료 하였습니다. 광고를 통해 재 도전의 보상을 받을 수 있습니다. 재 도전 하시겠습니까?</string>
     <string name="error_challenge_retry_rewarded">재 도전 보상을 받지 못하였습니다.</string>
+    <string name="rank_format_first">1위</string>
+    <string name="rank_format_second">2위</string>
+    <string name="rank_format_third">3위</string>
+    <string name="rank_format">%1$d위</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">축하합니다!\n스도쿠를 클리어 했어요!!</string>

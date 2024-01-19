@@ -13,7 +13,7 @@ import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
 import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.model.battle.BattleEntity
-import kr.co.hs.sudoku.model.battle.BattleStatisticsEntity
+import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
 sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
@@ -104,7 +104,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
 
         }
 
-        private val onResultHostGrade: (ViewModel.RequestStatus<BattleStatisticsEntity>) -> Unit =
+        private val onResultHostGrade: (ViewModel.RequestStatus<BattleLeaderBoardEntity>) -> Unit =
             {
                 when (it) {
                     is ViewModel.OnStart -> with(binding.tvHostGrade) {
@@ -119,16 +119,23 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
 
                     is ViewModel.OnFinish -> with(binding.tvHostGrade) {
                         text = context.getString(
-                            R.string.format_statistics,
+                            R.string.format_statistics_with_ranking,
                             it.d.winCount,
-                            it.d.playCount - it.d.winCount
+                            it.d.playCount - it.d.winCount,
+                            when (it.d.ranking) {
+                                0L -> context.getString(R.string.rank_format_nan)
+                                1L -> context.getString(R.string.rank_format_first)
+                                2L -> context.getString(R.string.rank_format_second)
+                                3L -> context.getString(R.string.rank_format_third)
+                                else -> context.getString(R.string.rank_format, it.d.ranking)
+                            }
                         )
                         isVisible = true
                     }
                 }
             }
 
-        private val onResultGuestGrade: (ViewModel.RequestStatus<BattleStatisticsEntity>) -> Unit =
+        private val onResultGuestGrade: (ViewModel.RequestStatus<BattleLeaderBoardEntity>) -> Unit =
             {
                 when (it) {
                     is ViewModel.OnStart -> with(binding.tvGuestGrade) {
@@ -143,9 +150,16 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
 
                     is ViewModel.OnFinish -> with(binding.tvGuestGrade) {
                         text = context.getString(
-                            R.string.format_statistics,
+                            R.string.format_statistics_with_ranking,
                             it.d.winCount,
-                            it.d.playCount - it.d.winCount
+                            it.d.playCount - it.d.winCount,
+                            when (it.d.ranking) {
+                                0L -> context.getString(R.string.rank_format_nan)
+                                1L -> context.getString(R.string.rank_format_first)
+                                2L -> context.getString(R.string.rank_format_second)
+                                3L -> context.getString(R.string.rank_format_third)
+                                else -> context.getString(R.string.rank_format, it.d.ranking)
+                            }
                         )
                         isVisible = true
                     }

@@ -82,4 +82,5 @@ interface BattleRepository {
      */
     suspend fun getLeaderBoard(limit: Long): List<BattleLeaderBoardEntity>
     suspend fun getLeaderBoard(uid: String): BattleLeaderBoardEntity
+    suspend fun syncLeaderBoard()
 }
