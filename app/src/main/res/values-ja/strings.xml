@@ -56,6 +56,7 @@
     <string name="multi_list_error_already_full">参加者はすでにいっぱいです。</string>
     <string name="multi_list_not_found">現在存在しないゲームです。更新後にもう一度確認してください。</string>
     <string name="multi_play_header_leaderboard">リーダーボード</string>
+    <string name="multi_list_filter_possible_to_join">参加可能なゲームのみを表示</string>
 
     <!-- 멀티 플레이 생성 -->
     <string name="multi_create_title">ゲームの作成</string>

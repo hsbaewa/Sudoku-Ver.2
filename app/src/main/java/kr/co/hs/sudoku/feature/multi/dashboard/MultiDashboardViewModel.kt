@@ -61,11 +61,23 @@ class MultiDashboardViewModel(
         get() = Pager(
             config = PagingConfig(pageSize = 1),
             pagingSourceFactory = {
-                BattleListPagingSource(battleRepository, nativeItemAdManager)
+                when (val source = filter) {
+                    is PossibleToJoinPagingSource -> source
+                    is AllPagingSource -> source
+                }
             }
         ).liveData.cachedIn(viewModelScope)
 
-    private class BattleListPagingSource(
+    private var filter: Filter = PossibleToJoinPagingSource(battleRepository, nativeItemAdManager)
+    fun showOnlyPossibleToJoin(on: Boolean) =
+        when (on) {
+            true -> PossibleToJoinPagingSource(battleRepository, nativeItemAdManager)
+            false -> AllPagingSource(battleRepository, nativeItemAdManager)
+        }.apply { filter = this }
+
+    sealed interface Filter
+
+    private abstract class BattleListPagingSource(
         private val battleRepository: BattleRepository,
         private val nativeItemAdManager: NativeItemAdManager?
     ) : PagingSource<Long, MultiDashboardListItem>() {
@@ -83,10 +95,10 @@ class MultiDashboardViewModel(
                     add(MultiDashboardListItem.MultiPlayItem(participating, true))
                 }
                 add(MultiDashboardListItem.HeaderOthersItem)
+                add(getFilterItem())
                 val currentSize = size
 
-                val remain = withContext(Dispatchers.IO) { battleRepository.list() }
-                    .filter { it != participating }
+                val remain = withContext(Dispatchers.IO) { getBattleEntities() }
                 addAll(
                     remain.map { MultiDashboardListItem.MultiPlayItem(it, false) }
                 )
@@ -100,6 +112,30 @@ class MultiDashboardViewModel(
             val nextKey: Long? = null
             LoadResult.Page(list, null, nextKey)
         }.getOrElse { LoadResult.Error(it) }
+
+        protected abstract fun getFilterItem(): MultiDashboardListItem.FilterItem
+        protected abstract suspend fun getBattleEntities(): List<BattleEntity>
+    }
+
+    private class AllPagingSource(
+        private val battleRepository: BattleRepository,
+        nativeItemAdManager: NativeItemAdManager?
+    ) : BattleListPagingSource(battleRepository, nativeItemAdManager), Filter {
+        override fun getFilterItem() = MultiDashboardListItem.FilterItem(false)
+        override suspend fun getBattleEntities() = battleRepository
+            .runCatching { list() }
+            .getOrDefault(emptyList())
+    }
+
+    private class PossibleToJoinPagingSource(
+        private val battleRepository: BattleRepository,
+        nativeItemAdManager: NativeItemAdManager?
+    ) : BattleListPagingSource(battleRepository, nativeItemAdManager), Filter {
+        override fun getFilterItem() = MultiDashboardListItem.FilterItem(true)
+        override suspend fun getBattleEntities() =
+            battleRepository
+                .runCatching { possibleToJoinList() }
+                .getOrDefault(emptyList())
     }
 
 

@@ -9,13 +9,15 @@ import androidx.recyclerview.widget.RecyclerView
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAdBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
+import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayFilterBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
 
 class MultiDashboardListItemAdapter(
     private val onItemClick: (MultiDashboardListItem.MultiPlayItem) -> Unit,
     private val onCreateNew: () -> Unit,
-    private val onClickLeaderBoard: () -> Unit
+    private val onClickLeaderBoard: () -> Unit,
+    private val onCheckedOnlyEmpty: (Boolean) -> Unit
 ) : PagingDataAdapter<MultiDashboardListItem, MultiDashboardListItemViewHolder<out MultiDashboardListItem>>(
     MultiDashboardListItemDiffCallback()
 ) {
@@ -26,6 +28,7 @@ class MultiDashboardListItemAdapter(
         const val VT_HEADER_USERS = 1050
         const val VT_HEADER_OTHERS = 1060
         const val VT_AD = 1070
+        const val VT_FILTER = 1080
     }
 
     private lateinit var viewModel: MultiDashboardViewModel
@@ -76,6 +79,12 @@ class MultiDashboardListItemAdapter(
                 LayoutListItemMultiPlayAdBinding.inflate(inflater, parent, false)
             )
 
+            VT_FILTER -> MultiDashboardListItemViewHolder.Filter(
+                LayoutListItemMultiPlayFilterBinding.inflate(inflater, parent, false)
+            ).apply {
+                setOnClickListener { onCheckedOnlyEmpty(binding.checkboxShowOnlyEmpty.isChecked) }
+            }
+
             else -> throw Exception("invalid type")
         }
     }
@@ -103,6 +112,9 @@ class MultiDashboardListItemAdapter(
             is MultiDashboardListItem.AdItem ->
                 (holder as MultiDashboardListItemViewHolder.AdItemView).onBind(item)
 
+            is MultiDashboardListItem.FilterItem ->
+                (holder as MultiDashboardListItemViewHolder.Filter).onBind(item)
+
             null -> {}
         }
     }
@@ -115,6 +127,7 @@ class MultiDashboardListItemAdapter(
             MultiDashboardListItem.HeaderOthersItem -> VT_HEADER_OTHERS
             MultiDashboardListItem.HeaderUsersItem -> VT_HEADER_USERS
             is MultiDashboardListItem.AdItem -> VT_AD
+            is MultiDashboardListItem.FilterItem -> VT_FILTER
             null -> -1
         }
     }

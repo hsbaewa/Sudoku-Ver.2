@@ -33,6 +33,11 @@ sealed class MultiDashboardListItem {
             get() = "HeaderOthersItem"
     }
 
+    data class FilterItem(val isOnlyEmpty: Boolean) : MultiDashboardListItem() {
+        override val id: String
+            get() = "FilterItem"
+    }
+
     data class AdItem(val nativeAd: NativeAd) : MultiDashboardListItem() {
         override val id: String
             get() = "AdItem"

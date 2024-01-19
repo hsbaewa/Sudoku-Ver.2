@@ -9,6 +9,7 @@ import kr.co.hs.sudoku.core.ViewHolder
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAdBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
+import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayFilterBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayTitleBinding
 import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
@@ -205,6 +206,15 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
             with(binding.tvHeader) {
                 text = context.getString(R.string.multi_play_header_others)
             }
+    }
+
+    class Filter(val binding: LayoutListItemMultiPlayFilterBinding) :
+        MultiDashboardListItemViewHolder<MultiDashboardListItem.FilterItem>(binding.root) {
+        override val clickableView: View by lazy { binding.checkboxShowOnlyEmpty }
+
+        override fun onBind(item: MultiDashboardListItem.FilterItem) {
+            binding.checkboxShowOnlyEmpty.isChecked = item.isOnlyEmpty
+        }
     }
 
     class AdItemView(private val binding: LayoutListItemMultiPlayAdBinding) :

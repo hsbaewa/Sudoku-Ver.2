@@ -56,6 +56,7 @@
     <string name="multi_list_error_already_full">참가자가 이미 가득 차 있습니다.</string>
     <string name="multi_list_not_found">현재 존재하지 않는 게임입니다. 새로고침 후 다시 확인해 주세요.</string>
     <string name="multi_play_header_leaderboard">리더보드</string>
+    <string name="multi_list_filter_possible_to_join">참여 가능한 게임만 보기</string>
 
     <!-- 멀티 플레이 생성 -->
     <string name="multi_create_title">게임 생성</string>
