@@ -34,6 +34,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndica
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
 import kr.co.hs.sudoku.feature.UserProfileViewModel
+import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.single.play.SinglePlayControlStageFragment
 import kr.co.hs.sudoku.feature.single.play.SinglePlayViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment
@@ -49,6 +50,7 @@ import kr.co.hs.sudoku.repository.timer.TimerImpl
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
+import kr.co.hs.sudoku.viewmodel.ViewModel
 
 class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
@@ -88,6 +90,9 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             getString(R.string.default_web_client_id)
         )
     }
+    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
+        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,8 +105,8 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
 
         with(binding) {
             ivEnemyIcon.loadProfileImage("", R.drawable.ic_computer)
-            tvEnemyDisplayName.text = getString(R.string.caption_cpu)
-            tvEnemyMessage.isVisible = false
+            tvEnemyName.text = getString(R.string.caption_cpu)
+            tvEnemyGrade.isVisible = false
         }
 
 
@@ -110,12 +115,14 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             isRunningProgress.observe(this@MultiPlayWithAIActivity) { isShowProgressIndicator = it }
             profile.observe(this@MultiPlayWithAIActivity) { profile ->
                 profile
-                    ?.run { setUserProfile(this) }
+                    ?.run {
+                        setUserProfile(this)
+                    }
                     ?: run {
                         with(binding) {
                             ivUserIcon.loadProfileImage("", R.drawable.ic_person)
-                            tvUserDisplayName.text = getString(R.string.me)
-                            tvUserMessage.isVisible = false
+                            tvUserName.text = getString(R.string.me)
+                            tvUserGrade.isVisible = false
                         }
                     }
             }
@@ -235,17 +242,33 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             ?.run {
                 profile.run {
                     binding.ivUserIcon.loadProfileImage(iconUrl, R.drawable.ic_person)
-                    binding.tvUserDisplayName.text = displayName
-                    binding.tvUserMessage.isVisible = message?.isNotEmpty() == true
-                    binding.tvUserMessage.text = message
+                    binding.tvUserName.text = displayName
+                    multiDashboardViewModel.requestStatistics(uid) {
+                        binding.tvUserGrade.text = when (it) {
+                            is ViewModel.OnError -> getString(R.string.loading_statistics)
+                            is ViewModel.OnStart -> getString(R.string.loading_statistics)
+                            is ViewModel.OnFinish -> getString(
+                                R.string.format_statistics_with_ranking,
+                                it.d.winCount,
+                                it.d.playCount - it.d.winCount,
+                                when (it.d.ranking) {
+                                    0L -> getString(R.string.rank_format_nan)
+                                    1L -> getString(R.string.rank_format_first)
+                                    2L -> getString(R.string.rank_format_second)
+                                    3L -> getString(R.string.rank_format_third)
+                                    else -> getString(R.string.rank_format, it.d.ranking)
+                                }
+                            )
+                        }
+                        binding.tvUserGrade.isVisible = true
+                    }
                 }
                 lastKnownUserProfile = this
             }
     } else {
         with(binding) {
             ivUserIcon.setImageDrawable(null)
-            tvUserDisplayName.text = null
-            tvUserMessage.text = null
+            tvUserName.text = null
         }
 
         lastKnownUserProfile = null
