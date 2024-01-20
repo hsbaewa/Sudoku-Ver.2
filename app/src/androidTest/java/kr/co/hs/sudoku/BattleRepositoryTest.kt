@@ -447,6 +447,41 @@ open class BattleRepositoryTest {
     }
 
     @Test
+    fun 상대방_강퇴_테스트() = runTest(timeout = Duration.INFINITE) {
+        val battle = userBattleRepository[0].create(getTestMatrix())
+
+        val eventRepository = BattleEventRepositoryImpl(battleId = battle.id)
+        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
+        eventRepository.startMonitoring()
+
+        var count = 0
+        launch {
+            eventRepository.battleFlow.collect {
+                when (it) {
+                    is BattleEntity.Invalid -> cancel()
+                    else -> {
+                        assertEquals(battle.id, it.id)
+                        if (it.participantSize >= count) {
+                            count = it.participantSize
+                        } else {
+                            cancel()
+                        }
+                    }
+                }
+                println(it)
+            }
+        }.invokeOnCompletion { eventRepository.stopMonitoring() }
+
+        userBattleRepository[1].join(battle.id)
+
+        assertTrue(userBattleRepository[1].isParticipating())
+
+        userBattleRepository[0].kick(userBattleRepository[1].currentUserUid)
+
+        assertFalse(userBattleRepository[1].isParticipating())
+    }
+
+    @Test
     open fun 게임_클리어_테스트() = runTest(timeout = Duration.INFINITE) {
         var battle = userBattleRepository[0].create(getTestMatrix())
 

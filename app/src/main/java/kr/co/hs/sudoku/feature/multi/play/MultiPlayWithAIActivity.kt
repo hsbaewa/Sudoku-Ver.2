@@ -107,6 +107,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             ivEnemyIcon.loadProfileImage("", R.drawable.ic_computer)
             tvEnemyName.text = getString(R.string.caption_cpu)
             tvEnemyGrade.isVisible = false
+            toolBarEnemy.isVisible = false
         }
 
 

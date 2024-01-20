@@ -198,4 +198,10 @@ class MultiPlayViewModel(
             ?.find { it.uid == battleRepository.currentUserUid }
 
     fun isClosedBattle() = _battleEntity.value is BattleEntity.Closed
+
+    fun kickPlayer(uid: String) = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        withContext(Dispatchers.IO) { battleRepository.kick(uid) }
+        setProgress(false)
+    }
 }

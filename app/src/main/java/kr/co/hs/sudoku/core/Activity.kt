@@ -122,6 +122,8 @@ abstract class Activity : AppCompatActivity() {
                 BattleRepositoryImpl.RequireReadyAllUsers -> getString(R.string.multi_play_error_require_ready_all_users)
                 BattleRepositoryImpl.AlreadyFull -> getString(R.string.multi_list_error_already_full)
                 BattleRepositoryImpl.NotFound -> getString(R.string.multi_list_not_found)
+                BattleRepositoryImpl.OnlyHost -> getString(R.string.multi_play_error_only_host)
+                BattleRepositoryImpl.AlreadyHasStarted -> getString(R.string.multi_play_error_already_started)
                 else -> t.message.toString()
             }
         }

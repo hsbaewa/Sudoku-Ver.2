@@ -535,6 +535,62 @@ class BattleRepositoryImpl(
         }.await()
     }
 
+    override suspend fun kick(uid: String) = doKickBattle(uid = uid)
+    private suspend fun doKickBattle(battleParamId: String? = null, uid: String) {
+        val battleId = FirebaseFirestore.getInstance().runTransaction { t ->
+            with(battleRemoteSource) {
+                val participant = getParticipant(t, uid)
+                val battleId = battleParamId
+                    ?: participant?.battleId
+                    ?: throw BattleRepositoryException(
+                        "게임에 참여 중이지 않아서 종료가 할 수 없습니다.",
+                        RequireJoinFirst
+                    )
+
+                val battleModel = getBattle(t, battleId)
+                if (battleModel == null || battleModel.id == battleId) {
+                    participant?.run { deleteParticipant(t, this) }
+                }
+
+                if (currentUserUid != uid && currentUserUid != battleModel?.hostUid) {
+                    throw BattleRepositoryException("오직 방장만 강퇴가 가능합니다.", OnlyHost)
+                }
+
+                if (battleModel?.pendingAt != null) {
+                    throw BattleRepositoryException("이미 게임이 시작되었습니다.", AlreadyHasStarted)
+                }
+
+                battleId
+            }
+        }.await()
+
+        // TODO : 외부에서 리스트 호출 없이 transaction 안에서 그냥 확인 하도록 수정 요망
+        val participantList = battleRemoteSource.getParticipantList(battleId)
+
+        FirebaseFirestore.getInstance().runTransaction { t ->
+            participantList.takeIf { it.isNotEmpty() }
+                ?.run {
+                    // 참여자가 존재하는 경우 아무 참여자나 1명을 host 로 변경하여 준다.
+                    val participant = participantList.first()
+                    with(battleRemoteSource) {
+                        val modifyBattle = mapOf(
+                            "hostUid" to participant.uid,
+                            "participantSize" to participantList.size
+                        )
+                        updateBattle(t, battleId, modifyBattle)
+                        setParticipant(t, participant.uid, mapOf("isReady" to true))
+                    }
+                }
+                ?: battleRemoteSource.run {
+                    // 참여자가 비어 있는경우
+                    getBattle(t, battleId)
+                        ?.takeIf { it.winnerUid == null }
+                        // winner uid 정보가 없는경우 필요없는 battle 모델이므로 지운다.
+                        ?.run { deleteBattle(t, battleId) }
+                }
+
+        }.await()
+    }
 
     /**
      *

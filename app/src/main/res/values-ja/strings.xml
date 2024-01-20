@@ -57,6 +57,8 @@
     <string name="multi_list_not_found">現在存在しないゲームです。更新後にもう一度確認してください。</string>
     <string name="multi_play_header_leaderboard">リーダーボード</string>
     <string name="multi_list_filter_possible_to_join">参加可能なゲームのみを表示</string>
+    <string name="multi_play_error_only_host">防錆のみ可能です。</string>
+    <string name="multi_play_error_already_started">すでにゲームが開始されて参加できます。</string>
 
     <!-- 멀티 플레이 생성 -->
     <string name="multi_create_title">ゲームの作成</string>
@@ -85,6 +87,7 @@
     <string name="multi_play_error_empty_participants">対決相手は誰もいません。</string>
     <string name="multi_play_error_require_ready_all_users">相手が準備ができていません。</string>
     <string name="multi_play_notification_joined_participant">私が作成したゲームに%1$sさんが参加しました。通知をクリックして対決を進めます。</string>
+    <string name="multi_play_option_kick_player">このプレイヤーをエクスポート</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">人工知能</string>
