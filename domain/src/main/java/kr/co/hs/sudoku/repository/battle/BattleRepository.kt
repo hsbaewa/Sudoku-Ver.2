@@ -71,7 +71,7 @@ interface BattleRepository {
      * 나가기
      */
     suspend fun exit()
-
+    suspend fun kick(uid: String)
 
     /**
      * 기록 조회

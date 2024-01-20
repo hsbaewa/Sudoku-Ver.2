@@ -59,6 +59,8 @@
     <string name="multi_list_not_found">This game does not currently exist. Please refresh and check again.</string>
     <string name="multi_play_header_leaderboard">LeaderBoard</string>
     <string name="multi_list_filter_possible_to_join">Show only empty</string>
+    <string name="multi_play_error_only_host">Only the host is allowed.</string>
+    <string name="multi_play_error_already_started">You can participate because the game has already started.</string>
 
     <!-- 멀티 플레이 생성 -->
     <string name="multi_create_title">Create Multi Play</string>
@@ -88,6 +90,7 @@
     <string name="multi_play_error_empty_participants">There is no one to play game.</string>
     <string name="multi_play_error_require_ready_all_users">Your opponent is not ready.</string>
     <string name="multi_play_notification_joined_participant">%1$s participated in the game I created. Click the notification to proceed with the match.</string>
+    <string name="multi_play_option_kick_player">Kick this player</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">A.I</string>

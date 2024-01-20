@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -353,6 +354,20 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                             )
                         }
                     }
+
+                    with(binding.toolBarEnemy) {
+                        isVisible = true
+                        setOnMenuItemClickListener {
+                            return@setOnMenuItemClickListener when (it.itemId) {
+                                R.id.kick -> {
+                                    battleViewModel.kickPlayer(uid)
+                                    true
+                                }
+
+                                else -> false
+                            }
+                        }
+                    }
                 }
 
                 lastKnownOpponentProfile = this
@@ -362,6 +377,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             ivEnemyIcon.setImageDrawable(null)
             tvEnemyName.text = null
             tvEnemyGrade.text = null
+            toolBarEnemy.isVisible = false
         }
 
         lastKnownOpponentProfile = null

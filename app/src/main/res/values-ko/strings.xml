@@ -57,6 +57,8 @@
     <string name="multi_list_not_found">현재 존재하지 않는 게임입니다. 새로고침 후 다시 확인해 주세요.</string>
     <string name="multi_play_header_leaderboard">리더보드</string>
     <string name="multi_list_filter_possible_to_join">참여 가능한 게임만 보기</string>
+    <string name="multi_play_error_only_host">방장만 가능한 기능입니다.</string>
+    <string name="multi_play_error_already_started">이미 게임이 시작되서 불가능한 기능입니다.</string>
 
     <!-- 멀티 플레이 생성 -->
     <string name="multi_create_title">게임 생성</string>
@@ -85,6 +87,7 @@
     <string name="multi_play_error_empty_participants">대결 상대가 아무도 없습니다.</string>
     <string name="multi_play_error_require_ready_all_users">상대가 준비가 되어 있지 않습니다.</string>
     <string name="multi_play_notification_joined_participant">내가 생성한 게임에 %1$s 님이 참여 하셨습니다. 알림을 클릭 하여 대결을 진행 하세요.</string>
+    <string name="multi_play_option_kick_player">이 플레이어 내보내기</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">인공지능</string>
