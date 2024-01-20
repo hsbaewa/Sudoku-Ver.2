@@ -163,12 +163,12 @@ class MultiDashboardViewModel(
 
     inline fun requestStatistics(
         uid: String,
-        crossinline onStatus: (RequestStatus<BattleStatisticsEntity>) -> Unit
+        crossinline onStatus: (RequestStatus<BattleLeaderBoardEntity>) -> Unit
     ) = viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
         onStatus(OnError(throwable))
     }) {
         onStatus(OnStart())
-        val stat = withContext(Dispatchers.IO) { battleRepository.getStatistics(uid) }
+        val stat = withContext(Dispatchers.IO) { battleRepository.getLeaderBoard(uid) }
         onStatus(OnFinish(stat))
     }
 

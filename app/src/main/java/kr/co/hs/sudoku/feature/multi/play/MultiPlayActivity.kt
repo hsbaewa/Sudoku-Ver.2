@@ -302,9 +302,16 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                             is ViewModel.OnStart -> getString(R.string.loading_statistics)
                             is ViewModel.OnError -> getString(R.string.error_statistics)
                             is ViewModel.OnFinish -> getString(
-                                R.string.format_statistics,
+                                R.string.format_statistics_with_ranking,
                                 it.d.winCount,
-                                it.d.playCount - it.d.winCount
+                                it.d.playCount - it.d.winCount,
+                                when (it.d.ranking) {
+                                    0L -> getString(R.string.rank_format_nan)
+                                    1L -> getString(R.string.rank_format_first)
+                                    2L -> getString(R.string.rank_format_second)
+                                    3L -> getString(R.string.rank_format_third)
+                                    else -> getString(R.string.rank_format, it.d.ranking)
+                                }
                             )
                         }
                     }
@@ -333,9 +340,16 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                             is ViewModel.OnStart -> getString(R.string.loading_statistics)
                             is ViewModel.OnError -> getString(R.string.error_statistics)
                             is ViewModel.OnFinish -> getString(
-                                R.string.format_statistics,
+                                R.string.format_statistics_with_ranking,
                                 it.d.winCount,
-                                it.d.playCount - it.d.winCount
+                                it.d.playCount - it.d.winCount,
+                                when (it.d.ranking) {
+                                    0L -> getString(R.string.rank_format_nan)
+                                    1L -> getString(R.string.rank_format_first)
+                                    2L -> getString(R.string.rank_format_second)
+                                    3L -> getString(R.string.rank_format_third)
+                                    else -> getString(R.string.rank_format, it.d.ranking)
+                                }
                             )
                         }
                     }
