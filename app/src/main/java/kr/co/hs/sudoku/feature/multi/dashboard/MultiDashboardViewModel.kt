@@ -62,8 +62,15 @@ class MultiDashboardViewModel(
             config = PagingConfig(pageSize = 1),
             pagingSourceFactory = {
                 when (val source = filter) {
-                    is PossibleToJoinPagingSource -> source
-                    is AllPagingSource -> source
+                    is PossibleToJoinPagingSource -> PossibleToJoinPagingSource(
+                        source.battleRepository,
+                        source.nativeItemAdManager
+                    )
+
+                    is AllPagingSource -> AllPagingSource(
+                        source.battleRepository,
+                        source.nativeItemAdManager
+                    )
                 }
             }
         ).liveData.cachedIn(viewModelScope)
@@ -78,8 +85,8 @@ class MultiDashboardViewModel(
     sealed interface Filter
 
     private abstract class BattleListPagingSource(
-        private val battleRepository: BattleRepository,
-        private val nativeItemAdManager: NativeItemAdManager?
+        val battleRepository: BattleRepository,
+        val nativeItemAdManager: NativeItemAdManager?
     ) : PagingSource<Long, MultiDashboardListItem>() {
         override fun getRefreshKey(state: PagingState<Long, MultiDashboardListItem>) = null
         override suspend fun load(params: LoadParams<Long>) = runCatching {
@@ -118,7 +125,7 @@ class MultiDashboardViewModel(
     }
 
     private class AllPagingSource(
-        private val battleRepository: BattleRepository,
+        battleRepository: BattleRepository,
         nativeItemAdManager: NativeItemAdManager?
     ) : BattleListPagingSource(battleRepository, nativeItemAdManager), Filter {
         override fun getFilterItem() = MultiDashboardListItem.FilterItem(false)
@@ -128,7 +135,7 @@ class MultiDashboardViewModel(
     }
 
     private class PossibleToJoinPagingSource(
-        private val battleRepository: BattleRepository,
+        battleRepository: BattleRepository,
         nativeItemAdManager: NativeItemAdManager?
     ) : BattleListPagingSource(battleRepository, nativeItemAdManager), Filter {
         override fun getFilterItem() = MultiDashboardListItem.FilterItem(true)
