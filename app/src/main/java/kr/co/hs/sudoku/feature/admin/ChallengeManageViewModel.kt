@@ -91,13 +91,11 @@ class ChallengeManageViewModel(
             matrix = matrix
         )
 
-        val isSuccess =
-            withContext(Dispatchers.IO) { ChallengeRepositoryImpl().createChallenge(entity) }
-
+        val challengeRepository = ChallengeRepositoryImpl()
+        val isSuccess = withContext(Dispatchers.IO) { challengeRepository.createChallenge(entity) }
         setProgress(false)
-
         if (isSuccess) {
-            onComplete(entity)
+            onComplete(withContext(Dispatchers.IO) { challengeRepository.getChallenge(entity.challengeId) })
         } else {
             throw Exception("create failed")
         }
