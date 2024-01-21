@@ -53,9 +53,9 @@ class App : Application() {
     private var challengeRepositoryRef: Reference<ChallengeRepository>? = null
     fun getChallengeRepository(): ChallengeRepository =
         challengeRepositoryRef?.get()
-            ?: ChallengeRepositoryImpl().apply {
-                challengeRepositoryRef = SoftReference(this)
-            }
+            ?: ChallengeRepositoryImpl().apply { challengeRepositoryRef = SoftReference(this) }
+
+    fun clearChallengeRepository() = getChallengeRepository().clearCache()
 
     private var profileRepositoryRef: Reference<ProfileRepository>? = null
     fun getProfileRepository(): ProfileRepository =
