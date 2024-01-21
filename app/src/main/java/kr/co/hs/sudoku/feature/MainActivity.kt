@@ -203,7 +203,10 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         when (intent?.action) {
             ACTION_APP_UPDATE -> checkUpdate()
             ACTION_NEW_CHALLENGE -> lifecycleScope.launch {
-                withStarted { binding.bottomNavigationView.selectedItemId = R.id.challenge }
+                withStarted {
+                    binding.bottomNavigationView.selectedItemId = R.id.challenge
+                    challengeDashboardViewMode.setDashboard(null)
+                }
             }
         }
     }

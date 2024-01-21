@@ -76,4 +76,6 @@ class ChallengeReaderRepositoryImpl(
             .collection("version")
             .document(versionName)
     }
+
+    override fun clearCache() {}
 }

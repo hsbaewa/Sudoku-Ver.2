@@ -78,4 +78,9 @@ class ChallengeRepositoryImpl(
 
         challengeRecordRepository.setFireStoreRootVersion(versionName)
     }
+
+    override fun clearCache() {
+        reader.clearCache()
+        cachedMap.clear()
+    }
 }
