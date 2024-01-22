@@ -27,6 +27,10 @@
     <string name="profile_image_input_hint">input your profile image</string>
     <string name="profile_image_url_invalid">url is invalid</string>
 
+    <!-- 프로필 -->
+    <string name="profile_label_multi_play_rank">Multi Play</string>
+    <string name="profile_label_show_this_user">View Profile</string>
+
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">Single</string>
     <string name="navigation_tab_multi">Multi</string>

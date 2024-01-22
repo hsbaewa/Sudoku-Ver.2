@@ -3,8 +3,5 @@
     <item
         android:id="@+id/profile"
         android:title="@string/profile_label_show_this_user" />
-    <item
-        android:id="@+id/kick"
-        android:title="@string/multi_play_option_kick_player" />
 
 </menu>

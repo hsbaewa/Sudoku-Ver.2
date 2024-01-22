@@ -31,6 +31,7 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
+import kr.co.hs.sudoku.feature.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.ad.NativeAdFragment
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment
@@ -359,11 +360,8 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                         isVisible = true
                         setOnMenuItemClickListener {
                             return@setOnMenuItemClickListener when (it.itemId) {
-                                R.id.kick -> {
-                                    battleViewModel.kickPlayer(uid)
-                                    true
-                                }
-
+                                R.id.profile -> showUserProfile(uid)
+                                R.id.kick -> kickUser(uid)
                                 else -> false
                             }
                         }
@@ -432,5 +430,16 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             return
 
         showErrorAlert()
+    }
+
+
+    private fun showUserProfile(uid: String): Boolean {
+        lifecycleScope.launch { ProfileBottomSheetDialog.show(supportFragmentManager, uid) }
+        return true
+    }
+
+    private fun kickUser(uid: String): Boolean {
+        battleViewModel.kickPlayer(uid)
+        return true
     }
 }

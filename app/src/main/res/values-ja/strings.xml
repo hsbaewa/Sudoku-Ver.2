@@ -28,6 +28,10 @@
     <string name="profile_image_input_hint">画像URL入力</string>
     <string name="profile_image_url_invalid">url が無効です。</string>
 
+    <!-- 프로필 -->
+    <string name="profile_label_multi_play_rank">マルチプレイ</string>
+    <string name="profile_label_show_this_user">プロフィールを見る</string>
+
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">シングル</string>
     <string name="navigation_tab_multi">マルチ</string>

@@ -19,6 +19,7 @@ import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.feature.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.ad.ChallengeRetryRewardAdManager
 import kr.co.hs.sudoku.feature.challenge.play.ChallengePlayActivity
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
@@ -50,7 +51,8 @@ class ChallengeDashboardFragment : Fragment() {
             addVerticalDivider(thickness = 10.dp)
             adapter = ChallengeDashboardListItemAdapter(
                 onClickStart = { startChallenge(it) },
-                onClickSelectDate = { showChallengeSelectDialog() }
+                onClickSelectDate = { showChallengeSelectDialog() },
+                onClickShowProfile = { showUserProfile(it) }
             )
         }
 
@@ -158,5 +160,10 @@ class ChallengeDashboardFragment : Fragment() {
 
         dialog.vibrate(false)
         dialog.show(childFragmentManager, "DatePickerDialog")
+    }
+
+    private fun showUserProfile(uid: String): Boolean {
+        lifecycleScope.launch { ProfileBottomSheetDialog.show(childFragmentManager, uid) }
+        return true
     }
 }
