@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.feature
+package kr.co.hs.sudoku.feature.profile
 
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData

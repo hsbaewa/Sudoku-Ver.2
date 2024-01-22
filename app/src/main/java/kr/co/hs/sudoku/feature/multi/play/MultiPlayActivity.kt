@@ -31,7 +31,7 @@ import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
-import kr.co.hs.sudoku.feature.ProfileBottomSheetDialog
+import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.ad.NativeAdFragment
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment

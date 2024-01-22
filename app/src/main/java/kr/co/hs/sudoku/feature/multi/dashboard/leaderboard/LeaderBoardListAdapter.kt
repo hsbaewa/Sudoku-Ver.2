@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.ListAdapter
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiLeaderboardMyRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiLeaderboardRankBinding
-import kr.co.hs.sudoku.feature.UserProfileViewModel
+import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 
 class LeaderBoardListAdapter(
     private val profileViewModel: UserProfileViewModel,

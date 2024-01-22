@@ -33,7 +33,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.feature.UserProfileViewModel
+import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.single.play.SinglePlayControlStageFragment
 import kr.co.hs.sudoku.feature.single.play.SinglePlayViewModel

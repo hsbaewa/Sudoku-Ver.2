@@ -3,7 +3,7 @@ package kr.co.hs.sudoku.feature.multi.dashboard.leaderboard
 import androidx.core.view.isVisible
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiLeaderboardRankBinding
-import kr.co.hs.sudoku.feature.UserProfileViewModel
+import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.viewmodel.ViewModel
 

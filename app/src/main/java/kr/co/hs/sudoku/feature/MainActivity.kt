@@ -65,6 +65,7 @@ import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardFragment
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.feature.profile.ProfileUpdateActivity
+import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity

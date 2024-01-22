@@ -26,7 +26,6 @@ import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
-import kr.co.hs.sudoku.feature.UserProfileViewModel
 
 class ProfileUpdateActivity : Activity() {
     companion object {

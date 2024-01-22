@@ -14,8 +14,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.databinding.LayoutLeaderboardMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
-import kr.co.hs.sudoku.feature.ProfileBottomSheetDialog
-import kr.co.hs.sudoku.feature.UserProfileViewModel
+import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
+import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 
