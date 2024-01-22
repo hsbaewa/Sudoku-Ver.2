@@ -238,9 +238,9 @@ class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
             .get()
             .await()
             .map { it.toObject(BattleStatisticsModel::class.java) }
-            .count { it.playCount <= model.playCount }
+            .count { it.playCount < model.playCount }
 
-        model.ranking = cnt
+        model.ranking = cnt + 1
         return model
     }
 }

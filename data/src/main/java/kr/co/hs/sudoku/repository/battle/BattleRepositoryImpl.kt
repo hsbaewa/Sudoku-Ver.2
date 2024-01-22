@@ -634,7 +634,8 @@ class BattleRepositoryImpl(
 
     override suspend fun getLeaderBoard(limit: Long) = with(battleRemoteSource) {
         registerLeaderBoard(currentUserUid)
-        val leaderBoard = this.getLeaderBoard(limit)
+        var current: BattleLeaderBoardEntity? = null
+        this.getLeaderBoard(limit)
             .mapIndexed { idx, item ->
                 BattleLeaderBoardEntity(
                     item.uid,
@@ -643,9 +644,6 @@ class BattleRepositoryImpl(
                     idx.toLong() + 1
                 )
             }
-        var current: BattleLeaderBoardEntity? = null
-        leaderBoard
-            .sortedByDescending { it.ranking }
             .onEach {
                 if (it.playCount == current?.playCount && it.winCount == current?.winCount) {
                     current?.ranking?.run { it.ranking = this }
@@ -653,12 +651,12 @@ class BattleRepositoryImpl(
                     current = it
                 }
             }
-        leaderBoard.let {
-            List(limit.toInt()) { idx ->
-                it.runCatching { get(idx) }
-                    .getOrElse { BattleLeaderBoardEntity("", 0, 0, idx.toLong() + 1) }
+            .let {
+                List(limit.toInt()) { idx ->
+                    it.runCatching { get(idx) }
+                        .getOrElse { BattleLeaderBoardEntity("", 0, 0, idx.toLong() + 1) }
+                }
             }
-        }
     }
 
     override suspend fun getLeaderBoard(uid: String): BattleLeaderBoardEntity {
