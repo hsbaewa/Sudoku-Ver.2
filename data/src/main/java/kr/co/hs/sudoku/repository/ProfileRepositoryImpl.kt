@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.repository
 
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kr.co.hs.sudoku.datasource.user.ProfileDataSource
 import kr.co.hs.sudoku.datasource.user.impl.ProfileDataSourceImpl
@@ -43,4 +44,10 @@ class ProfileRepositoryImpl(
             .collection("version")
             .document(versionName)
     }
+
+    override suspend fun check() {
+        FirebaseAuth.getInstance().currentUser?.uid?.let { uid -> remoteSource.setUserCheck(uid) }
+    }
+
+    override suspend fun getCheckedAt(uid: String) = remoteSource.getUserCheckedAt(uid)
 }

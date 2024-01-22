@@ -23,6 +23,7 @@ import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import java.util.Date
 import java.util.Locale
 
 class UserProfileViewModel(
@@ -49,6 +50,9 @@ class UserProfileViewModel(
 
     private val _profile = MutableLiveData<ProfileEntity?>()
     val profile: LiveData<ProfileEntity?> by this::_profile
+
+    private val _lastCheckedAt = MutableLiveData<Date>()
+    val lastCheckedAt: LiveData<Date> by this::_lastCheckedAt
 
     /**
      * Google Games
@@ -120,6 +124,7 @@ class UserProfileViewModel(
                     null
                 }
             }
+        withContext(Dispatchers.IO) { profileRepository.check() }
 
         setProgress(false)
     }
@@ -222,6 +227,15 @@ class UserProfileViewModel(
         setProgress(true)
         val profile = withContext(Dispatchers.IO) { profileRepository.getProfile(uid) }
         _profile.value = profile
+        setProgress(false)
+    }
+
+    fun requestLastChecked(uid: String) = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        profileRepository
+            .runCatching { withContext(Dispatchers.IO) { getCheckedAt(uid) } }
+            .getOrNull()
+            ?.run { _lastCheckedAt.value = this }
         setProgress(false)
     }
 }

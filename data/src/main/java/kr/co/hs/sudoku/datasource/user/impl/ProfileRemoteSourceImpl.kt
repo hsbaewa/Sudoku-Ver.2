@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.datasource.user.impl
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.tasks.await
@@ -28,4 +29,20 @@ class ProfileRemoteSourceImpl : FireStoreRemoteSource(), ProfileRemoteSource {
             .set(profile, SetOptions.merge())
             .await()
     }
+
+    override suspend fun setUserCheck(uid: String) {
+        profileCollection.document(uid)
+            .set(
+                mapOf("checkedAt" to FieldValue.serverTimestamp()),
+                SetOptions.merge()
+            )
+            .await()
+    }
+
+    override suspend fun getUserCheckedAt(uid: String) =
+        profileCollection.document(uid)
+            .get()
+            .await()
+            .getTimestamp("checkedAt")?.toDate()
+            ?: throw Exception()
 }
