@@ -31,6 +31,7 @@
     <!-- 프로필 -->
     <string name="profile_label_multi_play_rank">멀티 플레이</string>
     <string name="profile_label_show_this_user">프로필 보기</string>
+    <string name="profile_label_last_checked">마지막 접속</string>
 
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">싱글</string>

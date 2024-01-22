@@ -67,7 +67,6 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment() {
             viewModel.leaderBoard.observe(viewLifecycleOwner) { itemAdapter.submitList(it) }
         }
 
-        with(binding.btnConfirm) { setOnClickListener { dismiss() } }
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.requestLeaderBoard(10) }
         }

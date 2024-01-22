@@ -16,6 +16,8 @@ import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
     companion object {
@@ -64,8 +66,17 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
 
         profileViewModel.profile.observe(viewLifecycleOwner) {
             it?.iconUrl?.run { binding.ivIcon.loadProfileImage(this, R.drawable.ic_person) }
-            binding.tvDisplayName.text = it?.displayName
-            binding.tvMessage.text = it?.message
+            binding.tvDisplayName.text = it?.displayName?.takeIf { it.isNotEmpty() } ?: "-"
+            binding.tvMessage.text = it?.message?.takeIf { it.isNotEmpty() } ?: "-"
+        }
+
+        binding.tvLastChecked.text = "-"
+        profileViewModel.lastCheckedAt.observe(viewLifecycleOwner) {
+            binding.tvLastChecked.text =
+                SimpleDateFormat(
+                    getString(R.string.profile_last_checked_format),
+                    Locale.getDefault()
+                ).format(it)
         }
 
         arguments?.getString(EXTRA_USER_ID)?.let { uid ->
@@ -90,7 +101,11 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
 
                 }
             }
-            profileViewModel.requestProfile(uid)
+
+            with(profileViewModel) {
+                requestProfile(uid)
+                requestLastChecked(uid)
+            }
         }
     }
 }

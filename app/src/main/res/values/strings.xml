@@ -30,6 +30,8 @@
     <!-- 프로필 -->
     <string name="profile_label_multi_play_rank">Multi Play</string>
     <string name="profile_label_show_this_user">View Profile</string>
+    <string name="profile_label_last_checked">Last Checked</string>
+    <string name="profile_last_checked_format" translatable="false">yyyy-MM-dd HH:mm:ss</string>
 
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">Single</string>

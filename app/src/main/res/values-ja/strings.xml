@@ -31,6 +31,7 @@
     <!-- 프로필 -->
     <string name="profile_label_multi_play_rank">マルチプレイ</string>
     <string name="profile_label_show_this_user">プロフィールを見る</string>
+    <string name="profile_label_last_checked">最後の接続</string>
 
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">シングル</string>

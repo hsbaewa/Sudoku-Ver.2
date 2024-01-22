@@ -23,29 +23,15 @@
             android:id="@+id/recycler_view_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="50dp"
             android:paddingHorizontal="22dp"
             android:paddingVertical="22dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toTopOf="@id/btn_confirm"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_confirm"
-            style="@style/Theme.HSSudoku2.OutlineButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="50dp"
-            android:minWidth="150dp"
-            android:minHeight="50dp"
-            android:text="@string/confirm"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/recycler_view_list" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
