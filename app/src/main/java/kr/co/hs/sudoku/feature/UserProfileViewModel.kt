@@ -217,4 +217,11 @@ class UserProfileViewModel(
         val entity = withContext(Dispatchers.IO) { profileRepository.getProfile(uid) }
         onStatus(OnFinish(entity))
     }
+
+    fun requestProfile(uid: String) = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val profile = withContext(Dispatchers.IO) { profileRepository.getProfile(uid) }
+        _profile.value = profile
+        setProgress(false)
+    }
 }

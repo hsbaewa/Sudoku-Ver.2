@@ -14,6 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.databinding.LayoutLeaderboardMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.feature.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.UserProfileViewModel
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
@@ -47,7 +48,13 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         with(binding.recyclerViewList) {
             this.layoutManager = LinearLayoutManager(context)
             addVerticalDivider(10.dp)
-            val itemAdapter = LeaderBoardListAdapter(profileViewModel)
+            val itemAdapter = LeaderBoardListAdapter(profileViewModel,
+                onClickShowProfile = {
+                    ProfileBottomSheetDialog.show(childFragmentManager, it)
+                    return@LeaderBoardListAdapter true
+                }
+            )
+
             itemAdapter.submitList(
                 List(10) {
                     LeaderBoardItem.ListItem(

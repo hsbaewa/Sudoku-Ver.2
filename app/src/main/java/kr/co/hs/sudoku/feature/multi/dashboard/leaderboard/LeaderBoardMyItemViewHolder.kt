@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.feature.multi.dashboard.leaderboard
 
+import androidx.core.view.isVisible
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiLeaderboardMyRankBinding
 import kr.co.hs.sudoku.feature.UserProfileViewModel
@@ -7,7 +8,7 @@ import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
 class LeaderBoardMyItemViewHolder(
-    private val binding: LayoutListItemMultiLeaderboardMyRankBinding,
+    val binding: LayoutListItemMultiLeaderboardMyRankBinding,
     private val profileViewModel: UserProfileViewModel
 ) : LeaderBoardItemViewHolder<LeaderBoardItem.MyItem>(binding.root) {
     override fun onBind(item: LeaderBoardItem.MyItem) {
@@ -36,9 +37,15 @@ class LeaderBoardMyItemViewHolder(
 
     private val onResultProfile: (ViewModel.RequestStatus<ProfileEntity>) -> Unit = {
         when (it) {
-            is ViewModel.OnStart -> {}
+            is ViewModel.OnStart -> {
+                binding.cardViewProfile.isVisible = false
+            }
+
             is ViewModel.OnError -> {}
-            is ViewModel.OnFinish -> setProfile(it.d)
+            is ViewModel.OnFinish -> {
+                setProfile(it.d)
+                binding.cardViewProfile.isVisible = true
+            }
         }
     }
 }

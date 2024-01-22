@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.feature.challenge.dashboard
 
 import android.view.View
+import androidx.core.view.isVisible
 import coil.request.Disposable
 import com.google.firebase.auth.FirebaseAuth
 import kr.co.hs.sudoku.R
@@ -59,7 +60,7 @@ sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem
 
     class Rank(private val binding: LayoutListItemChallengeRankBinding) :
         ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem.RankItem>(binding.root) {
-        override val clickableView: View by lazy { binding.root }
+        override val clickableView: View by lazy { binding.cardViewProfile }
 
         private var disposableIcon: Disposable? = null
 
@@ -104,6 +105,10 @@ sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem
                                 getColorCompat(R.color.gray_600)
                             }
                         )
+                    }
+
+                    with(cardViewProfile) {
+                        isVisible = rankEntity.clearTime > 0
                     }
                 }
 
