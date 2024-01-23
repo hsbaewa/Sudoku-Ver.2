@@ -42,7 +42,8 @@ class ChallengePlayViewModel(
     fun requestChallenge() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
 
-        val challengeEntity = withContext(Dispatchers.IO) { repository.getChallenge(challengeId) }
+        val challengeEntity =
+            withContext(Dispatchers.IO) { repository.getChallengeDetail(challengeId) }
         _challengeEntity.value = challengeEntity
 
         setProgress(false)

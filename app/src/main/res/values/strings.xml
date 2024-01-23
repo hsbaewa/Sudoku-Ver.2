@@ -174,6 +174,8 @@
     <string name="admin_challenge_create_title" translatable="false">Create Challenge</string>
     <string name="admin_challenge_create_label_generate_sudoku" translatable="false">Generate Sudoku</string>
     <string name="admin_challenge_create_label_confirm" translatable="false">Create</string>
+    <string name="admin_challenge_create_alert_title" translatable="false">Create Challenge</string>
+    <string name="admin_challenge_create_alert_message" translatable="false">Are you sure create this sudoku challenge?</string>
 
     <!-- 버전 업데이트 알림 푸쉬 -->
     <string name="admin_update_push_title" translatable="false">App Update Notification</string>

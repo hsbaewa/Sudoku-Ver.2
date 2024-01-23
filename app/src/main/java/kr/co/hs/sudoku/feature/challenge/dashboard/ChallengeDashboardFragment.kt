@@ -68,7 +68,7 @@ class ChallengeDashboardFragment : Fragment() {
 
 
         with(binding.swipeRefreshLayout) {
-            setOnRefreshListener { viewModel.setDashboard() }
+            setOnRefreshListener { viewModel.refreshChallenge() }
             viewModel.isRunningProgress.observe(viewLifecycleOwner) {
                 if (isRefreshing) {
                     if (!it) {
@@ -82,7 +82,7 @@ class ChallengeDashboardFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.setDashboard() }
+            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.refreshChallenge() }
         }
 
     }
@@ -147,7 +147,7 @@ class ChallengeDashboardFragment : Fragment() {
 
                         y == year && m == monthOfYear && d == dayOfMonth
                     }
-                    ?.let { viewModel.setDashboard(it) }
+                    ?.let { viewModel.selectChallenge(it) }
             },
             Calendar.getInstance()
                 .apply { time = viewModel.selected.value?.createdAt ?: Date() }
