@@ -60,11 +60,18 @@ class ChallengeCreateActivity : Activity() {
 
         binding.btnGenerate.setOnClickListener { viewModel.generateChallengeSudoku() }
         binding.btnCreate.setOnClickListener {
-            viewModel.createChallenge {
-                it?.run {
-                    createdAt
-                        ?.run { MessagingManager.NewChallenge(this) }
-                        ?.run { messagingViewModel.send(this) { navigateUpToParent() } }
+            showConfirm(
+                R.string.admin_challenge_create_alert_title,
+                R.string.admin_challenge_create_alert_message
+            ) {
+                if (it) {
+                    viewModel.createChallenge {
+                        it?.run {
+                            createdAt
+                                ?.run { MessagingManager.NewChallenge(this) }
+                                ?.run { messagingViewModel.send(this) { navigateUpToParent() } }
+                        }
+                    }
                 }
             }
 

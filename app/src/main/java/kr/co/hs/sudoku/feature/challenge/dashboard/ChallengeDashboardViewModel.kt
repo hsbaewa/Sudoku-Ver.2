@@ -12,7 +12,6 @@ import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
-import java.util.Calendar
 
 class ChallengeDashboardViewModel(
     private val repository: ChallengeRepository
@@ -43,68 +42,63 @@ class ChallengeDashboardViewModel(
     private val currentUserUid: String?
         get() = FirebaseAuth.getInstance().currentUser?.uid
 
-    private suspend fun doRequestLastChallengeList() = withContext(Dispatchers.IO) {
-        val latest = repository.getLatestChallenge()
-        latest.createdAt?.run {
-            val calendar = Calendar.getInstance().apply { time = this@run }
-            calendar.add(Calendar.MONTH, -1)
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-            repository.getChallenges(calendar.time)
-        } ?: emptyList()
+    fun initChallengeDashboard() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        val challengeList = withContext(Dispatchers.IO) { repository.getChallengeList(50) }
+        val lastChallengeId = challengeList.first().challengeId
+        val lastChallenge = withContext(Dispatchers.IO) {
+            repository.setChallengeId(lastChallengeId)
+            repository.getChallengeDetail(lastChallengeId)
+        }
+
+        _challengeList.value = challengeList
+        _selected.value = lastChallenge
+        _dashboardItemList.value = createDashboardList(lastChallenge)
+        setProgress(false)
     }
 
-    private suspend fun doRequestDashboard(challenge: ChallengeEntity) =
-        withContext(Dispatchers.IO) {
-            repository.setChallengeId(challenge.challengeId)
-            buildList<ChallengeDashboardListItem> {
-                add(ChallengeDashboardListItem.TitleItem(challenge.createdAt))
-                add(ChallengeDashboardListItem.MatrixHeaderItem)
-                add(ChallengeDashboardListItem.MatrixItem(challenge.matrix))
-                add(ChallengeDashboardListItem.RankHeaderItem)
-
-                val records = repository.getRecords(10)
-                addAll(
-                    List(10) {
-                        ChallengeDashboardListItem.RankItem(
-                            records
-                                .runCatching { get(it) }
-                                .getOrDefault(RankerEntity("", "-", null, null, null, it + 1L, -1))
-                        )
-                    }
-                )
-
-                if (find { it is ChallengeDashboardListItem.RankItem && it.rankEntity.uid == currentUserUid } == null) {
-
-                    val myRecord = currentUserUid?.let { uid ->
-                        repository.runCatching { getRecord(uid) }.getOrNull()
-                    }
-                    myRecord
-                        ?.takeIf { it.clearTime >= 0 }
-                        ?.run { add(ChallengeDashboardListItem.MyRankItem(this)) }
-                }
-
-                add(ChallengeDashboardListItem.ChallengeStartItem(challenge))
-            }
-        }
-
-    fun setDashboard(challenge: ChallengeEntity? = _selected.value) =
+    fun selectChallenge(challenge: ChallengeEntity) =
         viewModelScope.launch(viewModelScopeExceptionHandler) {
             setProgress(true)
-
-            val entity = challenge ?: run {
-                val list = doRequestLastChallengeList()
-                _challengeList.value = list
-                list.last()
+            val selectedChallenge = withContext(Dispatchers.IO) {
+                repository.setChallengeId(challenge.challengeId)
+                repository.getChallengeDetail(challenge.challengeId)
             }
 
-            val dashboard = doRequestDashboard(entity)
-            _dashboardItemList.value = dashboard
-            _selected.value = entity
+            _selected.value = selectedChallenge
+            _dashboardItemList.value = createDashboardList(selectedChallenge)
             setProgress(false)
         }
+
+    fun refreshChallenge() = _selected.value
+        ?.run { selectChallenge(this) }
+        ?: initChallengeDashboard()
+
+    private suspend fun createDashboardList(challenge: ChallengeEntity) = buildList {
+        add(ChallengeDashboardListItem.TitleItem(challenge.createdAt))
+        add(ChallengeDashboardListItem.MatrixHeaderItem)
+        add(ChallengeDashboardListItem.MatrixItem(challenge.matrix))
+        add(ChallengeDashboardListItem.RankHeaderItem)
+
+        val records = withContext(Dispatchers.IO) { repository.getRecords(10) }
+            .run {
+                List(10) {
+                    it.takeIf { it < this.size }
+                        ?.run { get(this) }
+                        ?: RankerEntity("", "-", null, null, null, it + 1L, -1)
+                }
+            }
+
+        addAll(records.map { ChallengeDashboardListItem.RankItem(it) })
+
+        currentUserUid
+            ?.takeIf { myUid -> records.find { it.uid == myUid } == null }
+            ?.let { myUid -> repository.runCatching { getRecord(myUid) }.getOrNull() }
+            ?.takeIf { myRecord -> myRecord.clearTime >= 0 }
+            ?.let { myRecord -> add(ChallengeDashboardListItem.MyRankItem(myRecord)) }
+
+        add(ChallengeDashboardListItem.ChallengeStartItem(challenge))
+    }
 
     suspend fun doDeleteRecord() = withContext(Dispatchers.IO) {
         currentUserUid?.let { repository.deleteRecord(it) }

@@ -206,7 +206,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             ACTION_NEW_CHALLENGE -> lifecycleScope.launch {
                 withStarted {
                     binding.bottomNavigationView.selectedItemId = R.id.challenge
-                    challengeDashboardViewMode.setDashboard(null)
+                    challengeDashboardViewMode.initChallengeDashboard()
                 }
             }
         }

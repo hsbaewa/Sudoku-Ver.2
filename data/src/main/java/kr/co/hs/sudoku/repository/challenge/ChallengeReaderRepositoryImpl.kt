@@ -10,7 +10,6 @@ import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.repository.TestableRepository
-import java.util.Date
 
 class ChallengeReaderRepositoryImpl(
     private val remoteSource: ChallengeRemoteSource = ChallengeRemoteSourceImpl(),
@@ -21,50 +20,25 @@ class ChallengeReaderRepositoryImpl(
         get() = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw Exception("사용자 인증 정보가 없습니다. 게임 진행을 위해서는 먼저 사용자 인증이 필요합니다.")
 
-    override suspend fun getChallenge(challengeId: String) =
-        remoteSource.getChallenge(challengeId).toDomain()?.apply {
-            with(recordRemoteSource) {
-                runCatching { getReservedMyRecord(challengeId, currentUserUid) }
-                    .getOrNull()
-                    ?.run {
-                        startPlayAt = this.startAt?.toDate()
-                        isPlaying = startPlayAt != null
-                        relatedUid = uid
-                    }
-                runCatching { getRecord(challengeId, currentUserUid) }
-                    .getOrNull()
-                    ?.run { isComplete = this.clearTime >= 0 }
+    override suspend fun getChallengeDetail(challengeId: String) =
+        remoteSource.getChallenge(challengeId).toDomain()
+            ?.apply { getChallengeMetadata() }
+            ?: throw Exception("invalid challenge entity")
+
+    private suspend fun ChallengeEntity.getChallengeMetadata() = with(recordRemoteSource) {
+        runCatching { getReservedMyRecord(challengeId, currentUserUid) }
+            .getOrNull()
+            ?.run {
+                startPlayAt = this.startAt?.toDate()
+                isPlaying = startPlayAt != null
+                relatedUid = uid
             }
-        } ?: throw Exception("invalid challenge entity")
-
-    override suspend fun getLatestChallenge() =
-        remoteSource.getLatestChallenge().toDomain()?.apply {
-
-            with(recordRemoteSource) {
-                runCatching { getReservedMyRecord(challengeId, currentUserUid) }
-                    .getOrNull()
-                    ?.run {
-                        startPlayAt = this.startAt?.toDate()
-                        isPlaying = startPlayAt != null
-                        relatedUid = uid
-                    }
-                runCatching { getRecord(challengeId, currentUserUid) }
-                    .getOrNull()
-                    ?.run { isComplete = this.clearTime >= 0 }
-            }
-
-        } ?: throw Exception("invalid challenge entity")
-
-    override suspend fun getChallengeIds() = remoteSource.getChallengeIds()
-
-    override suspend fun getChallenge(createdAt: Date): ChallengeEntity {
-        return remoteSource.getChallenge(createdAt).toDomain() ?: throw Exception("not found")
+        runCatching { getRecord(challengeId, currentUserUid) }
+            .getOrNull()
+            ?.run { isComplete = this.clearTime >= 0 }
     }
 
-    override suspend fun getChallenges(startAt: Date) =
-        remoteSource.getChallenges(startAt).mapNotNull { it.toDomain() }
-
-    override suspend fun getChallenges(count: Long) =
+    override suspend fun getChallengeList(count: Long) =
         remoteSource.getChallenges(count).mapNotNull { it.toDomain() }
 
     override fun setFireStoreRootVersion(versionName: String) {

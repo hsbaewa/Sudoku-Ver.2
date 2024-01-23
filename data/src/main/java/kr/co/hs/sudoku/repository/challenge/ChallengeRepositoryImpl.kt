@@ -41,19 +41,14 @@ class ChallengeRepositoryImpl(
         return true
     }
 
-    override suspend fun getChallenge(challengeId: String): ChallengeEntity {
+    override suspend fun getChallengeDetail(challengeId: String): ChallengeEntity {
         return cachedMap.takeIf { it.containsKey(challengeId) }
             ?.run { cachedMap[challengeId] }
-            ?: reader.getChallenge(challengeId)
+            ?: reader.getChallengeDetail(challengeId)
                 .also {
                     cachedMap[it.challengeId] = it
                     setChallengeId(it.challengeId)
                 }
-    }
-
-    override suspend fun getLatestChallenge(): ChallengeEntity {
-        return reader.getLatestChallenge()
-            .also { setChallengeId(it.challengeId) }
     }
 
     override suspend fun deleteRecord(uid: String): Boolean {

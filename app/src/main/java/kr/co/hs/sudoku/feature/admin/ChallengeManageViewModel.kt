@@ -45,7 +45,7 @@ class ChallengeManageViewModel(
 
     fun getChallengeList() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
-        val list = withContext(Dispatchers.IO) { repository.getChallenges(50) }
+        val list = withContext(Dispatchers.IO) { repository.getChallengeList(50) }
         _challengeList.value = list
         setProgress(false)
     }
@@ -95,7 +95,7 @@ class ChallengeManageViewModel(
         val isSuccess = withContext(Dispatchers.IO) { challengeRepository.createChallenge(entity) }
         setProgress(false)
         if (isSuccess) {
-            onComplete(withContext(Dispatchers.IO) { challengeRepository.getChallenge(entity.challengeId) })
+            onComplete(withContext(Dispatchers.IO) { challengeRepository.getChallengeDetail(entity.challengeId) })
         } else {
             throw Exception("create failed")
         }
