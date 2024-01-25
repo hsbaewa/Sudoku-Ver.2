@@ -112,10 +112,19 @@ class UserProfileViewModel(
     fun requestCurrentUserProfile() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
 
-        _profile.value = firebaseAuth.currentUser?.uid
-            ?.let { uid ->
-                withContext(Dispatchers.IO) { profileRepository.getProfile(uid) }
-                    .apply { FirebaseMessaging.getInstance().subscribeUser(uid).await() }
+        _profile.value = firebaseAuth.currentUser
+            ?.let { currentUser ->
+                with(profileRepository) {
+                    runCatching {
+                        getProfile(currentUser.uid)
+                    }.getOrElse {
+                        currentUser
+                            .toProfile()
+                            .apply { setProfile(this) }
+                    }
+                }.apply {
+                    FirebaseMessaging.getInstance().subscribeUser(uid).await()
+                }
             }
             ?: run {
                 if (gamesSignInClient.isAuthenticatedGames()) {
