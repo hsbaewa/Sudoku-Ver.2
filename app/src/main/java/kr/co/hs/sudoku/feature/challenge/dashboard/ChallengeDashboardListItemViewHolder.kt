@@ -12,7 +12,6 @@ import kr.co.hs.sudoku.databinding.LayoutListItemChallengeMatrixBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeMyRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeTitleBinding
-import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
 import java.text.SimpleDateFormat
@@ -110,6 +109,8 @@ sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem
                     with(cardViewProfile) {
                         isVisible = rankEntity.clearTime > 0
                     }
+
+                    tvFlag.text = rankEntity.locale?.getLocaleFlag() ?: ""
                 }
 
 
@@ -129,28 +130,35 @@ sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem
         private var disposableIcon: Disposable? = null
         override fun onBind(item: ChallengeDashboardListItem.MyRankItem) {
             with(binding) {
-                tvRank.text = when (val rank = item.rankEntity.rank) {
-                    1L -> itemView.context.getString(R.string.rank_format_first)
-                    2L -> itemView.context.getString(R.string.rank_format_second)
-                    3L -> itemView.context.getString(R.string.rank_format_third)
-                    else -> itemView.context.getString(R.string.rank_format, rank)
-                }
+                item.rankEntity.let { rankEntity ->
+                    tvRank.text = when (val rank = rankEntity.rank) {
+                        1L -> itemView.context.getString(R.string.rank_format_first)
+                        2L -> itemView.context.getString(R.string.rank_format_second)
+                        3L -> itemView.context.getString(R.string.rank_format_third)
+                        else -> itemView.context.getString(R.string.rank_format, rank)
+                    }
+                    with(tvRecord) {
+                        text = rankEntity.clearTime.takeIf { it >= 0 }
+                            ?.run { toTimerFormat() }
+                            ?: 0L.toTimerFormat()
+                        setTextColor(getColorCompat(R.color.black))
+                    }
 
-                with(tvRecord) {
-                    text = item.rankEntity.clearTime.takeIf { it >= 0 }
-                        ?.run { toTimerFormat() }
-                        ?: 0L.toTimerFormat()
-                    setTextColor(getColorCompat(R.color.black))
-                }
-                disposableIcon = ivProfileIcon.load(
-                    item.rankEntity.iconUrl,
-                    errorIcon = getDrawableCompat(R.drawable.ic_person)
-                )
+                    disposableIcon = ivProfileIcon.loadProfileImage(
+                        rankEntity.iconUrl,
+                        R.drawable.ic_person
+                    )
 
-                tvDisplayName.text = item.rankEntity.displayName
-                with(tvDisplayName) {
-                    text = item.rankEntity.displayName
-                    setTextColor(getColorCompat(R.color.black))
+                    with(tvDisplayName) {
+                        text = rankEntity.displayName
+                        setTextColor(getColorCompat(R.color.black))
+                    }
+
+                    with(cardViewProfile) {
+                        isVisible = rankEntity.clearTime > 0
+                    }
+
+                    tvFlag.text = rankEntity.locale?.getLocaleFlag() ?: ""
                 }
             }
         }

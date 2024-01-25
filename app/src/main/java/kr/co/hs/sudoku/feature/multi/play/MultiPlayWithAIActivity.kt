@@ -108,6 +108,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             tvEnemyName.text = getString(R.string.caption_cpu)
             tvEnemyGrade.isVisible = false
             toolBarEnemy.isVisible = false
+            tvEnemyFlag.isVisible = false
         }
 
 
@@ -124,6 +125,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
                             ivUserIcon.loadProfileImage("", R.drawable.ic_person)
                             tvUserName.text = getString(R.string.me)
                             tvUserGrade.isVisible = false
+                            tvUserFlag.isVisible = false
                         }
                     }
             }
@@ -263,6 +265,15 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
                         }
                         binding.tvUserGrade.isVisible = true
                     }
+
+                    with(binding.tvUserFlag) {
+                        locale?.getLocaleFlag()
+                            ?.let { flag ->
+                                text = flag
+                                isVisible = true
+                            }
+                            ?: run { isVisible = false }
+                    }
                 }
                 lastKnownUserProfile = this
             }
@@ -270,6 +281,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         with(binding) {
             ivUserIcon.setImageDrawable(null)
             tvUserName.text = null
+            tvUserFlag.isVisible = false
         }
 
         lastKnownUserProfile = null

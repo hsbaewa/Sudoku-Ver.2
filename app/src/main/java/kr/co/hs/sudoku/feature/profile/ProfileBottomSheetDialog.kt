@@ -68,6 +68,7 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
             it?.iconUrl?.run { binding.ivIcon.loadProfileImage(this, R.drawable.ic_person) }
             binding.tvDisplayName.text = it?.displayName?.takeIf { it.isNotEmpty() } ?: "-"
             binding.tvMessage.text = it?.message?.takeIf { it.isNotEmpty() } ?: "-"
+            binding.tvNation.text = it?.locale?.getLocaleFlag() ?: ""
         }
 
         binding.tvLastChecked.text = "-"

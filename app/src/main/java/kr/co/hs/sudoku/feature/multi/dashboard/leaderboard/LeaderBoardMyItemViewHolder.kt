@@ -34,6 +34,8 @@ class LeaderBoardMyItemViewHolder(
         profileEntity?.iconUrl
             ?.run { ivProfileIcon.loadProfileImage(this) }
             ?: ivProfileIcon.setImageDrawable(null)
+
+        tvFlag.text = profileEntity?.locale?.getLocaleFlag() ?: ""
     }
 
     private val onResultProfile: (ViewModel.RequestStatus<ProfileEntity>) -> Unit = {

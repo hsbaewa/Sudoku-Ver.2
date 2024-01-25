@@ -12,10 +12,46 @@
             android:layout_height="100dp"
             android:layout_marginTop="30dp"
             android:importantForAccessibility="no"
-            app:layout_constraintBottom_toTopOf="@id/tv_display_name"
+            app:layout_constraintBottom_toTopOf="@id/tv_nation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/tv_label_nation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:minWidth="100dp"
+            android:text="@string/profile_label_nation"
+            android:textColor="@color/gray_500"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@id/tv_nation"
+            app:layout_constraintEnd_toStartOf="@id/tv_nation"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_nation" />
+
+        <TextView
+            android:id="@+id/tv_nation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:fontFamily="@font/goreyong_ddalgi"
+            android:gravity="center"
+            android:textColor="@color/gray_700"
+            android:textSize="16sp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toTopOf="@id/tv_display_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tv_label_nation"
+            app:layout_constraintTop_toBottomOf="@id/iv_icon" />
+
 
         <TextView
             android:id="@+id/tv_label_display_name"
@@ -49,7 +85,7 @@
             app:layout_constraintBottom_toTopOf="@id/tv_message"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/tv_label_display_name"
-            app:layout_constraintTop_toBottomOf="@id/iv_icon" />
+            app:layout_constraintTop_toBottomOf="@id/tv_nation" />
 
 
         <TextView

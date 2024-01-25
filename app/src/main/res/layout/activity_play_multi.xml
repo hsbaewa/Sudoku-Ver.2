@@ -61,10 +61,22 @@
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_vibration"
                 app:layout_constraintBottom_toBottomOf="@id/tv_enemy_name"
-                app:layout_constraintEnd_toStartOf="@id/tv_enemy_name"
+                app:layout_constraintEnd_toStartOf="@id/tv_enemy_flag"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tv_enemy_name" />
+
+            <TextView
+                android:id="@+id/tv_enemy_flag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:textSize="12dp"
+                app:layout_constraintBottom_toBottomOf="@id/tv_enemy_name"
+                app:layout_constraintEnd_toStartOf="@id/tv_enemy_name"
+                app:layout_constraintStart_toEndOf="@id/iv_enemy_icon"
+                app:layout_constraintTop_toTopOf="@id/tv_enemy_name"
+                tools:ignore="SpUsage" />
 
             <TextView
                 android:id="@+id/tv_enemy_name"
@@ -79,7 +91,7 @@
                 app:layout_constrainedWidth="true"
                 app:layout_constraintBottom_toTopOf="@id/tv_enemy_grade"
                 app:layout_constraintEnd_toStartOf="@id/tool_bar_enemy"
-                app:layout_constraintStart_toEndOf="@id/iv_enemy_icon"
+                app:layout_constraintStart_toEndOf="@id/tv_enemy_flag"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_chainStyle="packed"
                 tools:ignore="SpUsage" />
@@ -181,10 +193,22 @@
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_vibration"
                 app:layout_constraintBottom_toBottomOf="@id/tv_user_name"
-                app:layout_constraintEnd_toStartOf="@id/tv_user_name"
+                app:layout_constraintEnd_toStartOf="@id/tv_user_flag"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tv_user_name" />
+
+            <TextView
+                android:id="@+id/tv_user_flag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:textSize="12dp"
+                app:layout_constraintBottom_toBottomOf="@id/tv_user_name"
+                app:layout_constraintEnd_toStartOf="@id/tv_user_name"
+                app:layout_constraintStart_toEndOf="@id/iv_user_icon"
+                app:layout_constraintTop_toTopOf="@id/tv_user_name"
+                tools:ignore="SpUsage" />
 
             <TextView
                 android:id="@+id/tv_user_name"
@@ -199,7 +223,7 @@
                 app:layout_constrainedWidth="true"
                 app:layout_constraintBottom_toTopOf="@id/tv_user_grade"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/iv_user_icon"
+                app:layout_constraintStart_toEndOf="@id/tv_user_flag"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_chainStyle="packed"
                 tools:ignore="SpUsage" />
