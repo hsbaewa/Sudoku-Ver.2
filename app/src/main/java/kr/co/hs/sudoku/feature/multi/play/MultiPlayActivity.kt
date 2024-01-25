@@ -317,6 +317,17 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                             )
                         }
                     }
+
+                    with(binding.tvUserFlag) {
+                        locale?.getLocaleFlag()
+                            ?.let { flag ->
+                                text = flag
+                                isVisible = true
+                            }
+                            ?: run { isVisible = false }
+                    }
+
+
                 }
                 lastKnownUserProfile = this
             }
@@ -325,6 +336,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             ivUserIcon.setImageDrawable(null)
             tvUserName.text = null
             binding.tvUserGrade.text = null
+            binding.tvUserFlag.isVisible = false
         }
 
         lastKnownUserProfile = null
@@ -356,6 +368,16 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
                         }
                     }
 
+                    with(binding.tvEnemyFlag) {
+                        locale?.getLocaleFlag()
+                            ?.let { flag ->
+                                text = flag
+                                isVisible = true
+                            }
+                            ?: run { isVisible = false }
+                    }
+
+
                     with(binding.toolBarEnemy) {
                         isVisible = true
                         setOnMenuItemClickListener {
@@ -376,6 +398,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             tvEnemyName.text = null
             tvEnemyGrade.text = null
             toolBarEnemy.isVisible = false
+            binding.tvEnemyFlag.isVisible = false
         }
 
         lastKnownOpponentProfile = null
