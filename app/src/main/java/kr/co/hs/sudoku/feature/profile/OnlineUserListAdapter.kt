@@ -7,12 +7,12 @@ import kr.co.hs.sudoku.databinding.LayoutListItemUserBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemUserHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemUserLabelEmptyBinding
 
-class UserListAdapter :
-    ListAdapter<UserListItem, UserListItemViewHolder<*>>(UserListDiffItemCallback()) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserListItemViewHolder<*> {
+class OnlineUserListAdapter :
+    ListAdapter<OnlineUserListItem, OnlineUserListItemViewHolder<*>>(OnlineUserListDiffItemCallback()) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OnlineUserListItemViewHolder<*> {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            1 -> UserListHeaderItemViewHolder(
+            1 -> OnlineUserListHeaderItemViewHolder(
                 LayoutListItemUserHeaderBinding.inflate(
                     inflater,
                     parent,
@@ -20,7 +20,7 @@ class UserListAdapter :
                 )
             )
 
-            2 -> UserListProfileItemViewHolder(
+            2 -> OnlineUserListProfileItemViewHolder(
                 LayoutListItemUserBinding.inflate(
                     inflater,
                     parent,
@@ -28,7 +28,7 @@ class UserListAdapter :
                 )
             )
 
-            3 -> UserListEmptyItemViewHolder(
+            3 -> OnlineUserListEmptyItemViewHolder(
                 LayoutListItemUserLabelEmptyBinding.inflate(
                     inflater,
                     parent,
@@ -40,27 +40,27 @@ class UserListAdapter :
         }
     }
 
-    override fun onBindViewHolder(holder: UserListItemViewHolder<*>, position: Int) {
+    override fun onBindViewHolder(holder: OnlineUserListItemViewHolder<*>, position: Int) {
         when (holder) {
-            is UserListHeaderItemViewHolder -> (getItem(position) as? UserListItem.Header)
+            is OnlineUserListHeaderItemViewHolder -> (getItem(position) as? OnlineUserListItem.Header)
                 ?.run { holder.onBind(this) }
 
-            is UserListProfileItemViewHolder -> (getItem(position) as? UserListItem.User)
+            is OnlineUserListProfileItemViewHolder -> (getItem(position) as? OnlineUserListItem.User)
                 ?.run { holder.onBind(this) }
         }
 
     }
 
     override fun getItemViewType(position: Int) = when (getItem(position)) {
-        is UserListItem.Header -> 1
-        is UserListItem.User -> 2
-        is UserListItem.EmptyMessage -> 3
+        is OnlineUserListItem.Header -> 1
+        is OnlineUserListItem.User -> 2
+        is OnlineUserListItem.EmptyMessage -> 3
     }
 
-    override fun onViewRecycled(holder: UserListItemViewHolder<*>) {
+    override fun onViewRecycled(holder: OnlineUserListItemViewHolder<*>) {
         super.onViewRecycled(holder)
         when (holder) {
-            is UserListProfileItemViewHolder -> holder.onRecycled()
+            is OnlineUserListProfileItemViewHolder -> holder.onRecycled()
         }
     }
 }

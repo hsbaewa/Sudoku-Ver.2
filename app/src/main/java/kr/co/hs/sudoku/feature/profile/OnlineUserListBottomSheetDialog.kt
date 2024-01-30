@@ -13,12 +13,13 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutUserListBinding
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.model.user.ProfileEntity
 
-class UserListBottomSheetDialog : BottomSheetDialogFragment() {
+class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment() {
     companion object {
         fun show(fragmentManager: FragmentManager) =
-            UserListBottomSheetDialog()
-                .show(fragmentManager, UserListBottomSheetDialog::class.java.name)
+            OnlineUserListBottomSheetDialog()
+                .show(fragmentManager, OnlineUserListBottomSheetDialog::class.java.name)
     }
 
     private lateinit var binding: LayoutUserListBinding
@@ -40,37 +41,37 @@ class UserListBottomSheetDialog : BottomSheetDialogFragment() {
         with(binding.recyclerViewList) {
             layoutManager = LinearLayoutManager(context)
             addVerticalDivider(thickness = 5.dp)
-            val itemAdapter = UserListAdapter()
+            val itemAdapter = OnlineUserListAdapter()
             adapter = itemAdapter
             viewModel.onlineUserList.observe(viewLifecycleOwner) {
-                val list = buildList {
-                    it.toMutableList()
-                        .also { mutableList ->
-                            mutableList
-                                .find { it.uid == FirebaseAuth.getInstance().currentUser?.uid }
-                                ?.let { pick ->
-                                    mutableList.remove(pick)
-                                    add(UserListItem.Header(getString(R.string.user_list_label_header_my_info)))
-                                    add(UserListItem.User(pick))
-                                }
-                        }
-                        .let {
-                            if (it.isEmpty()) {
-                                add(UserListItem.Header(getString(R.string.user_list_label_header_others)))
-                                add(UserListItem.EmptyMessage)
-                            } else {
-                                add(UserListItem.Header(getString(R.string.user_list_label_header_others)))
-                                addAll(it.map { UserListItem.User(it) })
-                            }
-                        }
-                }
-
-                itemAdapter.submitList(list)
+                itemAdapter.submitList(it.toOnlineUserList())
             }
         }
 
         viewModel.requestOnlineUserList()
     }
 
+    private fun List<ProfileEntity.OnlineUserEntity>.toOnlineUserList() =
+        ArrayList<OnlineUserListItem>().also { output ->
+            toMutableList()
+                .also { mutableList ->
+                    mutableList
+                        .find { it.uid == FirebaseAuth.getInstance().currentUser?.uid }
+                        ?.let { pick ->
+                            mutableList.remove(pick)
+                            output.add(OnlineUserListItem.Header(getString(R.string.user_list_label_header_my_info)))
+                            output.add(OnlineUserListItem.User(pick))
+                        }
+                }
+                .let {
+                    if (it.isEmpty()) {
+                        output.add(OnlineUserListItem.Header(getString(R.string.user_list_label_header_others)))
+                        output.add(OnlineUserListItem.EmptyMessage)
+                    } else {
+                        output.add(OnlineUserListItem.Header(getString(R.string.user_list_label_header_others)))
+                        output.addAll(it.map { OnlineUserListItem.User(it) })
+                    }
+                }
+        }
 
 }

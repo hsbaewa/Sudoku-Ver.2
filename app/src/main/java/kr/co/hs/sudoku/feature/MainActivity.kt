@@ -64,7 +64,7 @@ import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardFragment
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.feature.profile.ProfileUpdateActivity
-import kr.co.hs.sudoku.feature.profile.UserListBottomSheetDialog
+import kr.co.hs.sudoku.feature.profile.OnlineUserListBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
@@ -193,9 +193,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             checkPermission()
         }
 
-        with(binding.btnUserList) {
-            setOnClickListener { UserListBottomSheetDialog.show(supportFragmentManager) }
-        }
+        binding.btnOnlineUserList.setOnClickListener { showOnlineUserList() }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -601,5 +599,9 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onStop() {
         super.onStop()
         userProfileViewModel.checkOut()
+    }
+
+    private fun showOnlineUserList() = lifecycleScope.launch {
+        OnlineUserListBottomSheetDialog.show(supportFragmentManager)
     }
 }
