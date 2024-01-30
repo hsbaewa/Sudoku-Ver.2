@@ -8,7 +8,7 @@ import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.LocaleModel
-import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
+import kr.co.hs.sudoku.repository.user.ProfileRepositoryImpl
 import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRecordRepository
 import java.util.Locale

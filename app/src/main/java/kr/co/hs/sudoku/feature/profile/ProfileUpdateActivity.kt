@@ -13,7 +13,6 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
-import com.google.android.gms.games.PlayGames
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -38,13 +37,8 @@ class ProfileUpdateActivity : Activity() {
     private val binding: ActivityProfileUpdateBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_profile_update) }
     private val app: App by lazy { applicationContext as App }
-    private val viewModel: UserProfileViewModel by viewModels {
-        UserProfileViewModel.ProviderFactory(
-            app.getProfileRepository(),
-            PlayGames.getGamesSignInClient(this),
-            getString(R.string.default_web_client_id)
-        )
-    }
+    private val viewModel: UserProfileViewModel
+            by viewModels { getUserProfileProviderFactory() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

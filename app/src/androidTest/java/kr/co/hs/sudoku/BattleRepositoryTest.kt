@@ -13,7 +13,7 @@ import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
-import kr.co.hs.sudoku.repository.ProfileRepositoryImpl
+import kr.co.hs.sudoku.repository.user.ProfileRepositoryImpl
 import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.battle.BattleEventRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository

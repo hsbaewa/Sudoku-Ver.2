@@ -54,6 +54,9 @@ class UserProfileViewModel(
     private val _lastCheckedAt = MutableLiveData<Date>()
     val lastCheckedAt: LiveData<Date> by this::_lastCheckedAt
 
+    private val _onlineUserList = MutableLiveData<List<ProfileEntity.OnlineUserEntity>>()
+    val onlineUserList: LiveData<List<ProfileEntity.OnlineUserEntity>> by this::_onlineUserList
+
     /**
      * Google Games
      */
@@ -101,7 +104,7 @@ class UserProfileViewModel(
     private fun FirebaseUser.toProfile() = ProfileEntityImpl(
         uid = uid,
         displayName = displayName ?: "",
-        message = "",
+        message = null,
         iconUrl = photoUrl?.toString() ?: "",
         locale = LocaleEntityImpl(
             Locale.getDefault().language,
@@ -116,7 +119,7 @@ class UserProfileViewModel(
             ?.let { currentUser ->
                 with(profileRepository) {
                     runCatching {
-                        getProfile(currentUser.uid)
+                        withContext(Dispatchers.IO) { getProfile(currentUser.uid) }
                     }.getOrElse {
                         currentUser
                             .toProfile()
@@ -133,7 +136,6 @@ class UserProfileViewModel(
                     null
                 }
             }
-        withContext(Dispatchers.IO) { profileRepository.check() }
 
         setProgress(false)
     }
@@ -163,7 +165,10 @@ class UserProfileViewModel(
                         else -> throw AuthenticationException.InvalidRepositoryException(it.message)
                     }
                 }
-                .apply { user.updateFirebaseUser(this) }
+                .apply {
+                    checkIn(this)
+                    user.updateFirebaseUser(this)
+                }
         }
     }
 
@@ -239,12 +244,27 @@ class UserProfileViewModel(
         setProgress(false)
     }
 
-    fun requestLastChecked(uid: String) = viewModelScope.launch(viewModelScopeExceptionHandler) {
+    fun requestOnlineUserList() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
-        profileRepository
-            .runCatching { withContext(Dispatchers.IO) { getCheckedAt(uid) } }
-            .getOrNull()
-            ?.run { _lastCheckedAt.value = this }
+        with(profileRepository) {
+            runCatching { withContext(Dispatchers.IO) { getOnlineUserList() } }
+                .getOrNull()
+                ?.run { _onlineUserList.value = this }
+        }
         setProgress(false)
+    }
+
+    fun checkIn() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        with(profileRepository) {
+            FirebaseAuth.getInstance().currentUser
+                ?.run { withContext(Dispatchers.IO) { getProfile(uid) } }
+                ?.let { withContext(Dispatchers.IO) { checkIn(it) } }
+        }
+    }
+
+    fun checkOut() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        FirebaseAuth.getInstance().currentUser?.run {
+            withContext(Dispatchers.IO) { profileRepository.checkOut(uid) }
+        }
     }
 }

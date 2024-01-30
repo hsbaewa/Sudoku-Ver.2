@@ -185,5 +185,13 @@
     <string name="admin_update_push_label_send" translatable="false">Send</string>
     <string name="admin_update_push_alert_title" translatable="false">App Update Notification</string>
     <string name="admin_update_push_alert_message" translatable="false">Are you sure send this notification?</string>
+
+    <!-- 유저리스트 -->
+    <string name="user_list_title">Online Users</string>
+    <string name="user_list_label_status_in">Connected</string>
+    <string name="user_list_label_status_out">Disconnected</string>
+    <string name="user_list_label_empty">empty online users</string>
+    <string name="user_list_label_header_my_info">Me</string>
+    <string name="user_list_label_header_others">Others</string>
     <!-- -->
 </resources>

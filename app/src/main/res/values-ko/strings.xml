@@ -145,5 +145,13 @@
     <string name="notification_contents_new_challenge">새로운 도전이 추가 되었습니다! 알림을 클릭하여 기록을 세워 보세요.</string>
     <string name="notification_request_permission_alert_title">권한 요청</string>
     <string name="notification_request_permission_alert_message">멀티플레이, 도전 업데이트 등 게임 관련 알림을 상태바에 표시하기 위한 권한을 요청합니다. 권한을 수락 하지 않으면 기능이 정상적으로 동작 하지 않을 수 있습니다.</string>
+
+    <!-- 유저리스트 -->
+    <string name="user_list_title">접속자 정보</string>
+    <string name="user_list_label_status_in">접속중</string>
+    <string name="user_list_label_status_out">접속 해제</string>
+    <string name="user_list_label_empty">온라인 상태인 유저가 없습니다.</string>
+    <string name="user_list_label_header_my_info">내 정보</string>
+    <string name="user_list_label_header_others">온라인 사용자</string>
     <!-- -->
 </resources>

@@ -44,6 +44,18 @@
         <item name="fontFamily">@font/goreyong_ddalgi</item>
     </style>
 
+    <style name="Theme.HSSudoku2.SlidingButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.HSSudoku2.SlidingButton</item>
+        <item name="android:background">@drawable/ripple_sliding_button</item>
+        <item name="backgroundTint">@color/gray_500</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="fontFamily">@font/goreyong_ddalgi</item>
+    </style>
+
+    <style name="ThemeOverlay.HSSudoku2.SlidingButton" parent="">
+        <item name="colorPrimary">@color/gray_500</item>
+    </style>
+
     <style name="Theme.HSSudoku2.BottomNavigation.TextAppearance" parent="TextAppearance.AppCompat">
         <item name="android:textSize">15sp</item>
     </style>

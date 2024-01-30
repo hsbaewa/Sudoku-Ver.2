@@ -11,7 +11,7 @@ data class RankerEntity(
     override var locale: LocaleEntity?,
     var rank: Long,
     val clearTime: Long
-) : ProfileEntity, Comparable<RankerEntity> {
+) : ProfileEntity.UserEntity, Comparable<RankerEntity> {
     constructor(profile: ProfileEntity, clearTime: Long) : this(
         profile.uid,
         profile.displayName,
