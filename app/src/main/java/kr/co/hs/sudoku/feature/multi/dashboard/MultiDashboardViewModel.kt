@@ -49,14 +49,6 @@ class MultiDashboardViewModel(
     private val currentUserUid: String?
         get() = FirebaseAuth.getInstance().currentUser?.uid
 
-    init {
-        viewModelScope.launch(viewModelScopeExceptionHandler) {
-            setProgress(true)
-            battleRepository.syncLeaderBoard()
-            setProgress(false)
-        }
-    }
-
     val multiPlayPagingData: LiveData<PagingData<MultiDashboardListItem>>
         get() = Pager(
             config = PagingConfig(pageSize = 1),
@@ -206,6 +198,12 @@ class MultiDashboardViewModel(
         }
 
         _leaderBoard.value = leaderBoard
+        setProgress(false)
+    }
+
+    fun registerRank() = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        battleRepository.runCatching { syncLeaderBoard() }.getOrNull()
         setProgress(false)
     }
 }
