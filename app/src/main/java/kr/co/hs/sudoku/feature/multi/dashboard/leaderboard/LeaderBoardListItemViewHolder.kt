@@ -18,7 +18,20 @@ class LeaderBoardListItemViewHolder(
             item.entity.takeIf { it.uid.isNotEmpty() }
                 ?.let { entity ->
                     tvRecord.text = getStatisticsText(entity)
-                    requestProfileJob = profileViewModel.requestProfile(entity.uid, onResultProfile)
+                    requestProfileJob = profileViewModel.requestProfile(entity.uid) {
+                        when (it) {
+                            is ViewModel.OnStart -> {
+                                binding.cardViewProfile.visibility = View.INVISIBLE
+                            }
+
+                            is ViewModel.OnError -> {}
+                            is ViewModel.OnFinish -> {
+                                setProfile(it.d)
+                                entity.displayName = it.d.displayName
+                                binding.cardViewProfile.isVisible = true
+                            }
+                        }
+                    }
                 }
                 ?: run {
                     tvRecord.text = "-"
@@ -44,19 +57,4 @@ class LeaderBoardListItemViewHolder(
 
         tvFlag.text = profileEntity?.locale?.getLocaleFlag() ?: ""
     }
-
-    private val onResultProfile: (ViewModel.RequestStatus<ProfileEntity>) -> Unit = {
-        when (it) {
-            is ViewModel.OnStart -> {
-                binding.cardViewProfile.visibility = View.INVISIBLE
-            }
-
-            is ViewModel.OnError -> {}
-            is ViewModel.OnFinish -> {
-                setProfile(it.d)
-                binding.cardViewProfile.isVisible = true
-            }
-        }
-    }
-
 }

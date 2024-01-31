@@ -13,6 +13,7 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.databinding.LayoutListChallengeRankBinding
 import kr.co.hs.sudoku.extension.Number.dp
@@ -22,11 +23,13 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicato
 import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.ad.ChallengeRetryRewardAdManager
 import kr.co.hs.sudoku.feature.challenge.play.ChallengePlayActivity
+import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
+import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import java.util.Calendar
 import java.util.Date
 
-class ChallengeDashboardFragment : Fragment() {
+class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
         fun newInstance() = ChallengeDashboardFragment()
     }
@@ -52,7 +55,7 @@ class ChallengeDashboardFragment : Fragment() {
             adapter = ChallengeDashboardListItemAdapter(
                 onClickStart = { startChallenge(it) },
                 onClickSelectDate = { showChallengeSelectDialog() },
-                onClickShowProfile = { showUserProfile(it) }
+                this@ChallengeDashboardFragment
             )
         }
 
@@ -166,4 +169,18 @@ class ChallengeDashboardFragment : Fragment() {
         lifecycleScope.launch { ProfileBottomSheetDialog.show(childFragmentManager, uid) }
         return true
     }
+
+    override fun onClickProfile(uid: String) =
+        ProfileBottomSheetDialog.show(childFragmentManager, uid)
+
+    override fun onClickInviteMultiPlay(uid: String, displayName: String) {
+        val title = getString(R.string.multi_play_invite_confirm_title)
+        val message = getString(R.string.multi_play_invite_confirm_message, displayName)
+        (requireActivity() as Activity).showConfirm(title, message) {
+            if (it) {
+                MultiPlayCreateActivity.start(requireActivity(), uid)
+            }
+        }
+    }
+
 }

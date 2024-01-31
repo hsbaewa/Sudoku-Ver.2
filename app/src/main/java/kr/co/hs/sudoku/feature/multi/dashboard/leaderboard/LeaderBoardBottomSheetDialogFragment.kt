@@ -12,14 +12,19 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
+import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutLeaderboardMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
+import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 
-class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
+    ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
         fun show(fragmentManager: FragmentManager) {
             LeaderBoardBottomSheetDialogFragment().show(
@@ -48,12 +53,8 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         with(binding.recyclerViewList) {
             this.layoutManager = LinearLayoutManager(context)
             addVerticalDivider(10.dp)
-            val itemAdapter = LeaderBoardListAdapter(profileViewModel,
-                onClickShowProfile = {
-                    ProfileBottomSheetDialog.show(childFragmentManager, it)
-                    return@LeaderBoardListAdapter true
-                }
-            )
+            val itemAdapter =
+                LeaderBoardListAdapter(profileViewModel, this@LeaderBoardBottomSheetDialogFragment)
 
             itemAdapter.submitList(
                 List(10) {
@@ -69,6 +70,20 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.requestLeaderBoard(10) }
+        }
+    }
+
+    override fun onClickProfile(uid: String) =
+        ProfileBottomSheetDialog.show(childFragmentManager, uid)
+
+    override fun onClickInviteMultiPlay(uid: String, displayName: String) {
+        val title = getString(R.string.multi_play_invite_confirm_title)
+        val message = getString(R.string.multi_play_invite_confirm_message, displayName)
+        (requireActivity() as Activity).showConfirm(title, message) {
+            if (it) {
+                dismiss()
+                MultiPlayCreateActivity.start(requireActivity(), uid)
+            }
         }
     }
 }

@@ -4,5 +4,6 @@ data class BattleLeaderBoardEntity(
     val uid: String,
     val playCount: Long,
     val winCount: Long,
-    var ranking: Long
+    var ranking: Long,
+    var displayName: String? = null
 )

@@ -98,6 +98,8 @@
     <string name="multi_play_error_require_ready_all_users">Your opponent is not ready.</string>
     <string name="multi_play_notification_joined_participant">%1$s participated in the game I created. Click the notification to proceed with the match.</string>
     <string name="multi_play_option_kick_player">Kick this player</string>
+    <string name="multi_play_invite_confirm_title">@string/user_list_menu_label_invite_multi_play</string>
+    <string name="multi_play_invite_confirm_message">Would you like to challenge \"%1$s\" to a match?</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">A.I</string>
@@ -157,6 +159,8 @@
     <string name="channel_name_app_update" translatable="false">App Update Notification</string>
     <string name="channel_id_new_challenge" translatable="false">channel_id_new_challenge</string>
     <string name="channel_name_new_challenge" translatable="false">New Challenge Notification</string>
+    <string name="channel_id_invite_multi_play" translatable="false">channel_id_invite_multi_play</string>
+    <string name="channel_name_invite_multi_play" translatable="false">Invite MultiPlay Notification</string>
 
 
     <!-- 상태바 알림 -->
@@ -166,7 +170,8 @@
     <string name="notification_contents_new_challenge">A new challenge has been updated!!. Click on the notification to set a record.</string>
     <string name="notification_request_permission_alert_title">Permission Request</string>
     <string name="notification_request_permission_alert_message">Request permission to display game-related notifications, such as multiplayer and challenge updates, in the status bar. If you do not accept permission, features may not operate properly.</string>
-
+    <string name="notification_title_invite_multi_play">Competition Invitation</string>
+    <string name="notification_contents_invite_multi_play">\"%1$s\" has invited you to a competition. Would you like to accept the invitation?</string>
 
     <!-- 도전 관리 -->
     <string name="admin_challenge_title" translatable="false">Manage Challenge</string>
@@ -193,5 +198,6 @@
     <string name="user_list_label_empty">empty online users</string>
     <string name="user_list_label_header_my_info">Me</string>
     <string name="user_list_label_header_others">Others</string>
+    <string name="user_list_menu_label_invite_multi_play">Invite Multi Play</string>
     <!-- -->
 </resources>

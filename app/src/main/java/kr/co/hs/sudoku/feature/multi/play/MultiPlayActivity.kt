@@ -49,14 +49,20 @@ import org.jetbrains.annotations.TestOnly
 class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
         private const val EXTRA_BATTLE_ID = "kr.co.hs.sudoku.EXTRA_BATTLE_ID"
+        private const val EXTRA_IS_PARTICIPATING = "kr.co.hs.sudoku.EXTRA_IS_PARTICIPATING"
         fun newIntent(context: Context, battleId: String) =
             Intent(context, MultiPlayActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .putExtra(EXTRA_BATTLE_ID, battleId)
+                .putExtra(EXTRA_IS_PARTICIPATING, true)
 
-        fun start(context: Context, battleId: String) =
-            context.startActivity(newIntent(context, battleId))
+        fun newIntentWithJoin(context: Context, battleId: String) =
+            Intent(context, MultiPlayActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra(EXTRA_BATTLE_ID, battleId)
+                .putExtra(EXTRA_IS_PARTICIPATING, false)
     }
 
     private val binding: ActivityPlayMultiBinding
@@ -96,7 +102,13 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
             isRunningProgress.observe(this@MultiPlayActivity) { isShowProgressIndicator = it }
             error.observe(this@MultiPlayActivity) { it.showMultiPlayError() }
             battleEntity.observe(this@MultiPlayActivity) { onBattleEntity(it) }
-            intent.getStringExtra(EXTRA_BATTLE_ID)?.run { startEventMonitoring(this) }
+            intent.getStringExtra(EXTRA_BATTLE_ID)?.let { battleId ->
+                if (intent.getBooleanExtra(EXTRA_IS_PARTICIPATING, true)) {
+                    startEventMonitoring(battleId)
+                } else {
+                    join(battleId)
+                }
+            }
         }
 
 

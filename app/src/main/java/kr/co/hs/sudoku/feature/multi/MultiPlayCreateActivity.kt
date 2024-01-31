@@ -15,27 +15,43 @@ import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutCreateMultiPlayBinding
 import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeBattle
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayWithAIActivity
 import kr.co.hs.sudoku.feature.matrixlist.MatrixListViewModel
 import kr.co.hs.sudoku.feature.matrixlist.MatrixSelectBottomSheetFragment
+import kr.co.hs.sudoku.feature.messaging.MessagingManager
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
+import kr.co.hs.sudoku.model.battle.BattleEntity
 
 class MultiPlayCreateActivity : Activity() {
     companion object {
+        private const val EXTRA_OPPONENT_UID = "EXTRA_OPPONENT_UID"
         private fun newIntent(context: Context) =
             Intent(context, MultiPlayCreateActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
 
         fun start(context: Context) = context.startActivity(newIntent(context))
+
+        private fun newIntent(context: Context, uid: String) =
+            Intent(context, MultiPlayCreateActivity::class.java)
+                .putExtra(EXTRA_OPPONENT_UID, uid)
+                .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+
+        fun start(context: Context, uid: String) = context.startActivity(newIntent(context, uid))
     }
 
     private val binding: LayoutCreateMultiPlayBinding by lazy {
@@ -106,15 +122,10 @@ class MultiPlayCreateActivity : Activity() {
             isRunningProgress.observe(this@MultiPlayCreateActivity) { isShowProgressIndicator = it }
             battleEntity.observe(this@MultiPlayCreateActivity) {
                 if (it != null) {
-                    if (binding.checkboxNotificationParticipant.isChecked) {
-                        FirebaseMessaging.getInstance().subscribeBattle(it)
-                    }
-                    startMultiPlay(it.id)
+                    onCreatedBattle(it)
                 }
             }
         }
-
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -128,18 +139,11 @@ class MultiPlayCreateActivity : Activity() {
         }
     }
 
-    private fun startMultiPlay(battleId: String?) = battleId?.let {
-        lifecycleScope
-            .launch { startActivity(MultiPlayActivity.newIntent(this@MultiPlayCreateActivity, it)) }
-    }
-
     private fun startWithAI() = lifecycleScope.launch {
         matrixListViewModel.selection.value?.let { matrix ->
             startActivity(MultiPlayWithAIActivity.newIntent(this@MultiPlayCreateActivity, matrix))
         }
-
     }
-
 
     private fun showParticipateNotificationGuide(onDismiss: (() -> Unit)? = null) {
         TapTargetView.showFor(
@@ -171,5 +175,46 @@ class MultiPlayCreateActivity : Activity() {
             if (!it) {
                 binding.checkboxNotificationParticipant.isChecked = false
             }
+        }
+
+    private fun onCreatedBattle(battleEntity: BattleEntity) =
+        lifecycleScope.launch(CoroutineExceptionHandler { _, t ->
+            dismissProgressIndicator()
+            t.showErrorAlert()
+        }) {
+            showProgressIndicator()
+
+            if (binding.checkboxNotificationParticipant.isChecked) {
+                withContext(Dispatchers.IO) {
+                    FirebaseMessaging.getInstance().subscribeBattle(battleEntity).await()
+                }
+            }
+
+            battleEntity.participants
+                .find { participant -> participant.uid == battleEntity.host }
+                ?.let { host ->
+                    intent?.getStringExtra(EXTRA_OPPONENT_UID)?.let { opponentUid ->
+                        MessagingManager.InviteMultiPlay(
+                            battleEntity.id,
+                            host.uid,
+                            host.displayName,
+                            opponentUid
+                        )
+                    }
+                }
+                ?.let {
+                    val app = applicationContext as App
+                    val messagingManager = MessagingManager(app)
+                    withContext(Dispatchers.IO) { messagingManager.sendNotification(it) }
+                }
+
+            startActivity(
+                MultiPlayActivity.newIntent(
+                    this@MultiPlayCreateActivity,
+                    battleEntity.id
+                )
+            )
+
+            dismissProgressIndicator()
         }
 }

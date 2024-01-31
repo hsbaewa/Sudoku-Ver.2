@@ -28,6 +28,8 @@ class MessagingService : FirebaseMessagingService() {
                 action.showNotification(this)
             }
 
+            is MessagingManager.InviteMultiPlay -> action.showNotification(this)
+
             null -> {}
         }
     }
