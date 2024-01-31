@@ -7,14 +7,15 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
-import com.google.android.gms.games.PlayGames
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutDialogUserProfileBinding
 import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
+import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -30,15 +31,8 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
     }
 
     private lateinit var binding: LayoutDialogUserProfileBinding
-    private val profileViewModel: UserProfileViewModel by viewModels {
-        val app = requireContext().applicationContext as App
-        UserProfileViewModel.ProviderFactory(
-            app.getProfileRepository(),
-            PlayGames.getGamesSignInClient(requireActivity()),
-            getString(R.string.default_web_client_id)
-        )
-    }
-
+    private val profileViewModel: UserProfileViewModel
+            by viewModels { (requireActivity() as Activity).getUserProfileProviderFactory() }
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
         val app = requireContext().applicationContext as App
         MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
@@ -64,20 +58,20 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
             isShowProgressIndicator = it || (profileViewModel.isRunningProgress.value == true)
         }
 
+        binding.tvLastChecked.text = "-"
         profileViewModel.profile.observe(viewLifecycleOwner) {
             it?.iconUrl?.run { binding.ivIcon.loadProfileImage(this, R.drawable.ic_person) }
             binding.tvDisplayName.text = it?.displayName?.takeIf { it.isNotEmpty() } ?: "-"
             binding.tvMessage.text = it?.message?.takeIf { it.isNotEmpty() } ?: "-"
             binding.tvNation.text = it?.locale?.getLocaleFlag() ?: ""
-        }
-
-        binding.tvLastChecked.text = "-"
-        profileViewModel.lastCheckedAt.observe(viewLifecycleOwner) {
-            binding.tvLastChecked.text =
-                SimpleDateFormat(
+            binding.tvLastChecked.text = when (it) {
+                is ProfileEntity.OnlineUserEntity -> SimpleDateFormat(
                     getString(R.string.profile_last_checked_format),
                     Locale.getDefault()
-                ).format(it)
+                ).format(it.checkedAt)
+
+                else -> "-"
+            }
         }
 
         arguments?.getString(EXTRA_USER_ID)?.let { uid ->
@@ -105,7 +99,6 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
 
             with(profileViewModel) {
                 requestProfile(uid)
-                requestLastChecked(uid)
             }
         }
     }

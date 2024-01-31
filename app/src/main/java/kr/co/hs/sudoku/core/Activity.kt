@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.games.PlayGames
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -18,11 +19,13 @@ import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.messaging.MessagingManager
 import kr.co.hs.sudoku.feature.messaging.MessagingManager.Action.Companion.parseAction
+import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 
 abstract class Activity : AppCompatActivity() {
@@ -165,5 +168,9 @@ abstract class Activity : AppCompatActivity() {
             )
         }
 
-
+    fun getUserProfileProviderFactory() = UserProfileViewModel.ProviderFactory(
+        (applicationContext as App).getProfileRepository(),
+        PlayGames.getGamesSignInClient(this),
+        getString(R.string.default_web_client_id)
+    )
 }

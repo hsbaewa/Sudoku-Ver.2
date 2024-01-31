@@ -11,6 +11,4 @@ class ProfileDataSourceImpl(
     override fun setProfile(profile: ProfileModelImpl) {
         map[profile.uid] = profile
     }
-
-    override fun clearAll() = map.clear()
 }

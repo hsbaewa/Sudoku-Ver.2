@@ -140,5 +140,13 @@
     <string name="notification_contents_new_challenge">新しい挑戦が追加されました！通知をクリックして履歴を作成します。</string>
     <string name="notification_request_permission_alert_title">権限要求</string>
     <string name="notification_request_permission_alert_message">マルチプレイ、チャレンジアップデートなど、ゲーム関連の通知をステータスバーに表示する権限を要求します。権限を受け入れないと、機能が正常に動作しない可能性があります。</string>
+
+    <!-- 유저리스트 -->
+    <string name="user_list_title">オンライン ユーザー</string>
+    <string name="user_list_label_status_in">接続済み</string>
+    <string name="user_list_label_status_out">切断されました</string>
+    <string name="user_list_label_empty">オンラインのユーザーがいません。</string>
+    <string name="user_list_label_header_my_info">私の情報</string>
+    <string name="user_list_label_header_others">オンラインユーザー</string>
     <!-- -->
 </resources>

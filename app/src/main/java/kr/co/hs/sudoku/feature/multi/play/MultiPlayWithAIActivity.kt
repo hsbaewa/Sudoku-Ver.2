@@ -14,7 +14,6 @@ import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.games.PlayGames
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -83,13 +82,8 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
     }
     private var lastKnownUserProfile: ProfileEntity? = null
     private val app: App by lazy { applicationContext as App }
-    private val userProfileViewModel: UserProfileViewModel by viewModels {
-        UserProfileViewModel.ProviderFactory(
-            app.getProfileRepository(),
-            PlayGames.getGamesSignInClient(this),
-            getString(R.string.default_web_client_id)
-        )
-    }
+    private val userProfileViewModel: UserProfileViewModel
+            by viewModels { getUserProfileProviderFactory() }
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
         MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
     }

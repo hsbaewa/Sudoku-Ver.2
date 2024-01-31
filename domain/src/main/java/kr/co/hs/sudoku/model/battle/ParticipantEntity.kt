@@ -5,7 +5,7 @@ import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 
-sealed interface ParticipantEntity : ProfileEntity {
+sealed interface ParticipantEntity : ProfileEntity.UserEntity {
 
     data class Host(
         override val uid: String,

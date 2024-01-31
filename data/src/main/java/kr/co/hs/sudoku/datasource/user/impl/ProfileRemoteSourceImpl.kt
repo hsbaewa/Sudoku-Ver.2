@@ -25,24 +25,61 @@ class ProfileRemoteSourceImpl : FireStoreRemoteSource(), ProfileRemoteSource {
         ?: throw NullPointerException("document is null")
 
     override suspend fun updateMyProfile(profile: ProfileModelImpl) {
+        val data = mapOf<String, Any?>(
+            "uid" to profile.uid,
+            "name" to profile.name,
+            "iconUrl" to profile.iconUrl,
+        ).toMutableMap()
+        profile.message?.run { data["message"] = this }
+        profile.locale?.run {
+            data["locale"] = mapOf(
+                "lang" to lang,
+                "region" to region
+            )
+        }
+        profile.checkedAt?.run { data["checkedAt"] = this }
+        profile.status?.run { data["status"] = this }
+
         profileCollection.document(profile.uid)
-            .set(profile, SetOptions.merge())
+            .set(data, SetOptions.merge())
             .await()
     }
 
-    override suspend fun setUserCheck(uid: String) {
+    override suspend fun checkInCommunity(profile: ProfileModelImpl) {
+        val data = mapOf(
+            "uid" to profile.uid,
+            "name" to profile.name,
+            "iconUrl" to profile.iconUrl,
+            "checkedAt" to FieldValue.serverTimestamp(),
+            "status" to "in"
+        ).toMutableMap()
+        profile.message?.run { data["message"] = this }
+        profile.locale?.run {
+            data["locale"] = mapOf(
+                "lang" to lang,
+                "region" to region
+            )
+        }
+
+        profileCollection.document(profile.uid)
+            .set(data, SetOptions.merge())
+            .await()
+    }
+
+    override suspend fun checkOutCommunity(uid: String) {
         profileCollection.document(uid)
             .set(
-                mapOf("checkedAt" to FieldValue.serverTimestamp()),
+                mapOf("status" to "out"),
                 SetOptions.merge()
             )
             .await()
     }
 
-    override suspend fun getUserCheckedAt(uid: String) =
-        profileCollection.document(uid)
+    override suspend fun getCheckedInProfileList() =
+        profileCollection
+            .whereEqualTo("status", "in")
             .get()
             .await()
-            .getTimestamp("checkedAt")?.toDate()
-            ?: throw Exception()
+            .documents
+            .mapNotNull { it.toObject(ProfileModelImpl::class.java) }
 }

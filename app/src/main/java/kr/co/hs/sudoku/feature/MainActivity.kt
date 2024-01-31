@@ -35,7 +35,6 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
-import com.google.android.gms.games.PlayGames
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -65,6 +64,7 @@ import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardFragment
 import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.feature.profile.ProfileUpdateActivity
+import kr.co.hs.sudoku.feature.profile.OnlineUserListBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
@@ -102,13 +102,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels {
         ChallengeDashboardViewModel.ProviderFactory(app.getChallengeRepository())
     }
-    private val userProfileViewModel: UserProfileViewModel by viewModels {
-        UserProfileViewModel.ProviderFactory(
-            app.getProfileRepository(),
-            PlayGames.getGamesSignInClient(this),
-            getString(R.string.default_web_client_id)
-        )
-    }
+    private val userProfileViewModel: UserProfileViewModel
+            by viewModels { getUserProfileProviderFactory() }
     private val gameSettingsViewModel: GameSettingsViewModel by viewModels {
         GameSettingsViewModel.Factory(app.getGameSettingsRepository())
     }
@@ -198,6 +193,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             checkPermission()
         }
+
+        binding.btnOnlineUserList.setOnClickListener { showOnlineUserList() }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -593,5 +590,19 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        userProfileViewModel.checkIn()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        userProfileViewModel.checkOut()
+    }
+
+    private fun showOnlineUserList() = lifecycleScope.launch {
+        OnlineUserListBottomSheetDialog.show(supportFragmentManager)
     }
 }
