@@ -1,26 +1,22 @@
 package kr.co.hs.sudoku.feature.challenge.dashboard
 
-import android.content.Context
 import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.ContextThemeWrapper
-import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.ListAdapter
-import kr.co.hs.sudoku.R
+import com.google.firebase.auth.FirebaseAuth
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeButtonBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeHeaderBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeMatrixBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeMyRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeTitleBinding
+import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
 class ChallengeDashboardListItemAdapter(
     private val onClickStart: (ChallengeEntity) -> Unit,
     private val onClickSelectDate: () -> Unit,
-    private val onClickShowProfile: (uid: String) -> Boolean
+    private val onPopupMenuItemClickListener: ProfilePopupMenu.OnPopupMenuItemClickListener
 ) : ListAdapter<ChallengeDashboardListItem, ChallengeDashboardListItemViewHolder<out ChallengeDashboardListItem>>(
     ChallengeDashboardListItemDiffCallback()
 ) {
@@ -74,8 +70,15 @@ class ChallengeDashboardListItemAdapter(
                 LayoutListItemChallengeRankBinding.inflate(inflater, parent, false)
             ).apply {
                 clickableView.setOnClickListener {
-                    val uid = getItem(bindingAdapterPosition).id
-                    ProfilePopupMenu(it.context, it).show(uid, onClickShowProfile)
+                    with(ProfilePopupMenu(it.context, it, onPopupMenuItemClickListener)) {
+                        (getItem(bindingAdapterPosition) as? ChallengeDashboardListItem.RankItem)
+                            ?.rankEntity
+                            ?.let {
+                                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                                if (currentUserId != it.uid) it else null
+                            }
+                            ?.run { show(this) }
+                    }
                 }
             }
         }
@@ -122,26 +125,5 @@ class ChallengeDashboardListItemAdapter(
     override fun onViewRecycled(holder: ChallengeDashboardListItemViewHolder<out ChallengeDashboardListItem>) {
         super.onViewRecycled(holder)
         holder.onRecycled()
-    }
-
-    private class ProfilePopupMenu(
-        context: Context, anchor: View
-    ) : PopupMenu(ContextThemeWrapper(context, R.style.Theme_HSSudoku2), anchor),
-        PopupMenu.OnMenuItemClickListener {
-        var onClickShowProfile: ((String) -> Boolean)? = null
-        var uid = ""
-
-        fun show(uid: String, onClickShowProfile: (String) -> Boolean) {
-            inflate(R.menu.profile)
-            this.uid = uid
-            this.onClickShowProfile = onClickShowProfile
-            setOnMenuItemClickListener(this)
-            show()
-        }
-
-        override fun onMenuItemClick(item: MenuItem?) = when (item?.itemId) {
-            R.id.profile -> onClickShowProfile?.invoke(uid) ?: false
-            else -> false
-        }
     }
 }

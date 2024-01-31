@@ -1,22 +1,16 @@
 package kr.co.hs.sudoku.feature.multi.dashboard.leaderboard
 
-import android.content.Context
 import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.ContextThemeWrapper
-import androidx.appcompat.widget.PopupMenu
-import androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener
 import androidx.recyclerview.widget.ListAdapter
-import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiLeaderboardMyRankBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiLeaderboardRankBinding
+import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 
 class LeaderBoardListAdapter(
     private val profileViewModel: UserProfileViewModel,
-    private val onClickShowProfile: (uid: String) -> Boolean
+    private val onPopupMenuItemClickListener: ProfilePopupMenu.OnPopupMenuItemClickListener
 ) : ListAdapter<LeaderBoardItem, LeaderBoardItemViewHolder<out LeaderBoardItem>>(
     LeaderBoardItemDiffCallback()
 ) {
@@ -31,8 +25,16 @@ class LeaderBoardListAdapter(
             profileViewModel
         ).apply {
             binding.cardViewProfile.setOnClickListener {
-                val uid = getItem(bindingAdapterPosition).entity.uid
-                ProfilePopupMenu(it.context, it).show(uid, onClickShowProfile)
+                (getItem(bindingAdapterPosition) as? LeaderBoardItem.ListItem)?.let { item ->
+                    if (!item.isMine) {
+                        val uid = item.entity.uid
+                        val displayName = item.entity.displayName
+                        displayName?.let { name ->
+                            ProfilePopupMenu(it.context, it, onPopupMenuItemClickListener)
+                                .show(uid, name)
+                        }
+                    }
+                }
             }
         }
 
@@ -40,12 +42,7 @@ class LeaderBoardListAdapter(
             LayoutListItemMultiLeaderboardMyRankBinding.inflate(
                 LayoutInflater.from(parent.context), parent, false
             ), profileViewModel
-        ).apply {
-            binding.cardViewProfile.setOnClickListener {
-                val uid = getItem(bindingAdapterPosition).entity.uid
-                ProfilePopupMenu(it.context, it).show(uid, onClickShowProfile)
-            }
-        }
+        )
 
         else -> throw Exception()
     }
@@ -67,26 +64,4 @@ class LeaderBoardListAdapter(
         super.onViewRecycled(holder)
         holder.onRecycled()
     }
-
-    private class ProfilePopupMenu(
-        context: Context, anchor: View
-    ) : PopupMenu(ContextThemeWrapper(context, R.style.Theme_HSSudoku2), anchor),
-        OnMenuItemClickListener {
-        var onClickShowProfile: ((String) -> Boolean)? = null
-        var uid = ""
-
-        fun show(uid: String, onClickShowProfile: (String) -> Boolean) {
-            inflate(R.menu.profile)
-            this.uid = uid
-            this.onClickShowProfile = onClickShowProfile
-            setOnMenuItemClickListener(this)
-            show()
-        }
-
-        override fun onMenuItemClick(item: MenuItem?) = when (item?.itemId) {
-            R.id.profile -> onClickShowProfile?.invoke(uid) ?: false
-            else -> false
-        }
-    }
-
 }

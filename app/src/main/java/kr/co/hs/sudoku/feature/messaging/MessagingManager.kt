@@ -74,6 +74,18 @@ class MessagingManager(private val app: App) {
                         NewChallenge(Date(createdAt))
                     }.getOrNull()
 
+                    "invite_multi_play" -> runCatching {
+                        val battleId = data.takeIf { it.containsKey("battle_id") }?.get("battle_id")
+                            ?: throw Exception("battle_id is null")
+                        val challengerUid = data.takeIf { it.containsKey("challenger_uid") }
+                            ?.get("challenger_uid") ?: throw Exception("challenger_uid is null")
+                        val challengerName = data.takeIf { it.containsKey("challenger_name") }
+                            ?.get("challenger_name") ?: throw Exception("challenger_name is null")
+                        val targetUid = data.takeIf { it.containsKey("target_uid") }
+                            ?.get("target_uid") ?: throw Exception("target_uid is null")
+                        InviteMultiPlay(battleId, challengerUid, challengerName, targetUid)
+                    }.getOrNull()
+
                     else -> null
                 }
         }
@@ -241,6 +253,64 @@ class MessagingManager(private val app: App) {
         }
     }
 
+    data class InviteMultiPlay(
+        val battleId: String,
+        val challengerUid: String,
+        val challengerName: String,
+        val targetUid: String
+    ) : Action {
+        override fun toJsonObject() = JsonObject().apply {
+            addProperty("action", "invite_multi_play")
+            addProperty("battle_id", battleId)
+            addProperty("challenger_name", challengerName)
+            addProperty("challenger_uid", challengerUid)
+            addProperty("target_uid", targetUid)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        private fun NotificationManager.createNotificationChannel(context: Context) {
+            val channelId = context.getString(R.string.channel_id_invite_multi_play)
+            val channelName = context.getString(R.string.channel_name_invite_multi_play)
+            createNotificationChannel(
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+            )
+        }
+
+        override fun showNotification(context: Context) {
+            val notificationManager =
+                context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                notificationManager.createNotificationChannel(context)
+            }
+
+            val channelId = context.getString(R.string.channel_id_invite_multi_play)
+            val title = context.getString(R.string.notification_title_invite_multi_play)
+            val contentText =
+                context.getString(R.string.notification_contents_invite_multi_play, challengerName)
+            val requestCode = abs(Random.nextInt())
+            val largeIcon = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+            val contentIntent = MultiPlayActivity.newIntentWithJoin(context, battleId)
+            val pIntent = PendingIntent.getActivity(
+                context, requestCode, contentIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+            )
+            notificationManager.notify(
+                requestCode,
+                NotificationCompat.Builder(context, channelId)
+                    .setContentTitle(title)
+                    .setTicker(contentText)
+                    .setContentText(contentText)
+                    .setColor(context.getColorCompat(R.color.gray_700))
+                    .setStyle(NotificationCompat.BigTextStyle().bigText(contentText))
+                    .setSmallIcon(R.drawable.ic_stat_name)
+                    .setLargeIcon(largeIcon)
+                    .setAutoCancel(true)
+                    .setContentIntent(pIntent)
+                    .build()
+            )
+        }
+    }
+
     private interface NetworkInterface {
         @Headers("Content-Type: application/json")
         @POST("fcm/send")
@@ -298,6 +368,7 @@ class MessagingManager(private val app: App) {
             is AppUpdate -> "sudoku.user.all"
             is JoinedMultiPlayer -> "sudoku.multi.${action.battleId}"
             is NewChallenge -> "sudoku.user.all"
+            is InviteMultiPlay -> "sudoku.user.${action.targetUid}"
         },
         action.toJsonObject()
     )

@@ -3,5 +3,7 @@
     <item
         android:id="@+id/profile"
         android:title="@string/profile_label_show_this_user" />
-
+    <item
+        android:id="@+id/invite_multi_play"
+        android:title="@string/user_list_menu_label_invite_multi_play" />
 </menu>

@@ -94,6 +94,8 @@
     <string name="multi_play_error_require_ready_all_users">相手が準備ができていません。</string>
     <string name="multi_play_notification_joined_participant">私が作成したゲームに%1$sさんが参加しました。通知をクリックして対決を進めます。</string>
     <string name="multi_play_option_kick_player">このプレイヤーをエクスポート</string>
+    <string name="multi_play_invite_confirm_title">@string/user_list_menu_label_invite_multi_play</string>
+    <string name="multi_play_invite_confirm_message">\"%1$s\"に対決を申し込みますか？</string>
 
     <!-- AI와 대결 게임 -->
     <string name="caption_cpu">人工知能</string>
@@ -140,6 +142,8 @@
     <string name="notification_contents_new_challenge">新しい挑戦が追加されました！通知をクリックして履歴を作成します。</string>
     <string name="notification_request_permission_alert_title">権限要求</string>
     <string name="notification_request_permission_alert_message">マルチプレイ、チャレンジアップデートなど、ゲーム関連の通知をステータスバーに表示する権限を要求します。権限を受け入れないと、機能が正常に動作しない可能性があります。</string>
+    <string name="notification_title_invite_multi_play">対決の招待</string>
+    <string name="notification_contents_invite_multi_play">\"%1$s\"さんが対決に招待されました。招待に応じますか？</string>
 
     <!-- 유저리스트 -->
     <string name="user_list_title">オンライン ユーザー</string>
@@ -148,5 +152,6 @@
     <string name="user_list_label_empty">オンラインのユーザーがいません。</string>
     <string name="user_list_label_header_my_info">私の情報</string>
     <string name="user_list_label_header_others">オンラインユーザー</string>
+    <string name="user_list_menu_label_invite_multi_play">対決申請</string>
     <!-- -->
 </resources>

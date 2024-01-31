@@ -55,6 +55,14 @@ class MultiPlayViewModel(
         startEventMonitoring(battleId)
     }
 
+    fun join(battleId: String) = viewModelScope.launch(viewModelScopeExceptionHandler) {
+        setProgress(true)
+        withContext(Dispatchers.IO) { battleRepository.join(battleId) }
+        stopEventMonitoring()
+        monitoringJob = launch(viewModelScopeExceptionHandler) { doStartEventMonitoring(battleId) }
+        setProgress(false)
+    }
+
     suspend fun doJoin(eventRepository: BattleEventRepository) {
         withContext(Dispatchers.IO) { battleRepository.join(eventRepository.battleId) }
         startEventMonitoring(eventRepository)

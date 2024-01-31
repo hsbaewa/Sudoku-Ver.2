@@ -5,8 +5,8 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemUserBinding
 import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 
-class OnlineUserListProfileItemViewHolder(val binding: LayoutListItemUserBinding) :
-    OnlineUserListItemViewHolder<OnlineUserListItem.User>(binding.root) {
+class OnlineUserListMyProfileItemViewHolder(val binding: LayoutListItemUserBinding) :
+    OnlineUserListItemViewHolder<OnlineUserListItem.UserForMe>(binding.root) {
 
     private var disposableIcon: Disposable? = null
 
@@ -14,7 +14,7 @@ class OnlineUserListProfileItemViewHolder(val binding: LayoutListItemUserBinding
         disposableIcon?.dispose()
     }
 
-    override fun onBind(item: OnlineUserListItem.User) {
+    override fun onBind(item: OnlineUserListItem.UserForMe) {
         with(binding) {
             tvDisplayName.text = item.profile.displayName
             disposableIcon = ivProfileIcon.loadProfileImage(

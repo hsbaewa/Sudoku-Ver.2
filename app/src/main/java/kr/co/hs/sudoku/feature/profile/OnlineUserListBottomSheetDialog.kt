@@ -13,9 +13,11 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutUserListBinding
 import kr.co.hs.sudoku.extension.Number.dp
+import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 
-class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment() {
+class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment(),
+    ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
         fun show(fragmentManager: FragmentManager) =
             OnlineUserListBottomSheetDialog()
@@ -41,7 +43,7 @@ class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment() {
         with(binding.recyclerViewList) {
             layoutManager = LinearLayoutManager(context)
             addVerticalDivider(thickness = 5.dp)
-            val itemAdapter = OnlineUserListAdapter()
+            val itemAdapter = OnlineUserListAdapter(this@OnlineUserListBottomSheetDialog)
             adapter = itemAdapter
             viewModel.onlineUserList.observe(viewLifecycleOwner) {
                 itemAdapter.submitList(it.toOnlineUserList())
@@ -60,7 +62,7 @@ class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment() {
                         ?.let { pick ->
                             mutableList.remove(pick)
                             output.add(OnlineUserListItem.Header(getString(R.string.user_list_label_header_my_info)))
-                            output.add(OnlineUserListItem.User(pick))
+                            output.add(OnlineUserListItem.UserForMe(pick))
                         }
                 }
                 .let {
@@ -74,4 +76,17 @@ class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment() {
                 }
         }
 
+    override fun onClickProfile(uid: String) =
+        ProfileBottomSheetDialog.show(childFragmentManager, uid)
+
+    override fun onClickInviteMultiPlay(uid: String, displayName: String) {
+        val title = getString(R.string.multi_play_invite_confirm_title)
+        val message = getString(R.string.multi_play_invite_confirm_message, displayName)
+        (requireActivity() as Activity).showConfirm(title, message) {
+            if (it) {
+                dismiss()
+                MultiPlayCreateActivity.start(requireActivity(), uid)
+            }
+        }
+    }
 }

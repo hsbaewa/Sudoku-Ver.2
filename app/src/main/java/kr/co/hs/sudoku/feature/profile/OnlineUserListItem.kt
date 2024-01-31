@@ -10,6 +10,11 @@ sealed class OnlineUserListItem {
             get() = header.hashCode()
     }
 
+    data class UserForMe(val profile: ProfileEntity) : OnlineUserListItem() {
+        override val id: Int
+            get() = profile.uid.hashCode()
+    }
+
     data class User(val profile: ProfileEntity) : OnlineUserListItem() {
         override val id: Int
             get() = profile.uid.hashCode()
