@@ -1,5 +1,5 @@
-name: Signed Apk 배포
-run-name: 버전 ${{ inputs.versionName }}(${{ github.run_number }}) 배포
+name: Firebase App Distribution
+run-name: 버전 ${{ inputs.versionName }}(${{ github.run_number }}) 을 Firebase App Distribution 으로 배포
 
 on:
   workflow_dispatch:
@@ -29,11 +29,11 @@ on:
 #        default: false
       testers:
         description: 'firebase app distribution 테스터 gmail 주소 (ex : a@gmail.com, anyone@gmail.com)'
-        required: false
+        required: true
         default: ''
       releaseNote:
         description: '릴리즈 정보'
-        required: false
+        required: true
         default: ''
 
 jobs:
