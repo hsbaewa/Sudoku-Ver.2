@@ -46,7 +46,7 @@ class ChallengeCreateActivity : Activity() {
                 vm.isRunningProgress.observe(this) { isShowProgressIndicator = it }
                 vm.generatedSudoku.observe(this) {
                     with(binding.matrix) {
-                        matrix = it
+                        setFixedCellValues(it)
                         invalidate()
                     }
                 }

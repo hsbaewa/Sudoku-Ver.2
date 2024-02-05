@@ -41,7 +41,7 @@ sealed class MatrixListItemViewHolder<T : MatrixListItem>(itemView: View) : View
         override val clickableView: View by lazy { binding.cardView }
 
         override fun onBind(item: MatrixListItem.MatrixItem) = with(binding.matrix) {
-            matrix = item.matrix
+            setFixedCellValues(item.matrix)
             invalidate()
         }
 

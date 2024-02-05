@@ -7,17 +7,10 @@
         android:layout_height="wrap_content"
         android:padding="20dp">
 
-        <kr.co.hs.sudoku.views.SudokuBoardView
-            android:id="@+id/sudokuBoard"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="0.1dp"
-            android:layout_marginEnd="0.1dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:accentColor="@color/white"
-            app:borderColor="@color/gray_600"
-            app:disabledColor="@color/gray_400"
+        <kr.co.hs.sudoku.views.SudokuView
+            android:id="@+id/sudoku_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="wrap"
@@ -25,9 +18,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
             app:layout_constraintVertical_chainStyle="packed"
-            app:layout_constraintWidth_default="wrap"
-            app:numberColor="@color/gray_600"
-            app:numberDisabledColor="@color/white" />
+            app:layout_constraintWidth_default="wrap" />
 
         <View
             android:id="@+id/viewSilhouette"
@@ -37,10 +28,10 @@
             android:clickable="true"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
-            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
-            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
-            app:layout_constraintTop_toTopOf="@id/sudokuBoard" />
+            app:layout_constraintBottom_toBottomOf="@id/sudoku_view"
+            app:layout_constraintEnd_toEndOf="@id/sudoku_view"
+            app:layout_constraintStart_toStartOf="@id/sudoku_view"
+            app:layout_constraintTop_toTopOf="@id/sudoku_view" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnReadyOrStart"
@@ -49,11 +40,11 @@
             android:fontFamily="@font/goreyong_ddalgi"
             android:textSize="20sp"
             android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
-            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
+            app:layout_constraintBottom_toBottomOf="@id/sudoku_view"
+            app:layout_constraintEnd_toEndOf="@id/sudoku_view"
             app:layout_constraintHeight_default="wrap"
-            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
-            app:layout_constraintTop_toTopOf="@id/sudokuBoard"
+            app:layout_constraintStart_toStartOf="@id/sudoku_view"
+            app:layout_constraintTop_toTopOf="@id/sudoku_view"
             app:layout_constraintWidth_default="wrap" />
 
         <kr.co.hs.sudoku.views.CountDownView
@@ -67,11 +58,11 @@
             android:gravity="center"
             android:lines="1"
             app:fontFamily="@font/goreyong_ddalgi"
-            app:layout_constraintBottom_toBottomOf="@id/sudokuBoard"
-            app:layout_constraintEnd_toEndOf="@id/sudokuBoard"
+            app:layout_constraintBottom_toBottomOf="@id/sudoku_view"
+            app:layout_constraintEnd_toEndOf="@id/sudoku_view"
             app:layout_constraintHeight_default="spread"
-            app:layout_constraintStart_toStartOf="@id/sudokuBoard"
-            app:layout_constraintTop_toTopOf="@id/sudokuBoard"
+            app:layout_constraintStart_toStartOf="@id/sudoku_view"
+            app:layout_constraintTop_toTopOf="@id/sudoku_view"
             app:layout_constraintWidth_default="percent"
             app:layout_constraintWidth_percent="0.5" />
 
