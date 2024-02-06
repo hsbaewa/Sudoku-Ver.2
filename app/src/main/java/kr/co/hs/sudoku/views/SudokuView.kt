@@ -22,6 +22,8 @@ class SudokuView : MatrixItemView {
 
     companion object {
         private const val TAG = "SudokuView"
+
+        @Suppress("unused")
         private fun debug(message: String) = Log.d(TAG, message)
     }
 
@@ -270,8 +272,10 @@ class SudokuView : MatrixItemView {
             ?.getOrNull()
     }
 
+    @Suppress("unused")
     fun clearError() {
         matrixErrorValues?.clear()
     }
 
+    fun getMatrixValue(row: Int, column: Int) = matrixValues[row][column]
 }

@@ -13,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.ViewMatchers.checkCellValue
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewerStageFragment
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
@@ -140,8 +141,6 @@ class ViewerBoardFragmentTest {
         }
         runBlocking { delay(500) }
         onView(withId(R.id.viewSilhouette)).check(matches(not(isDisplayed())))
-        onView(withText("3")).check(matches(isDisplayed()))
-
-
+        onView(withId(R.id.sudoku_view)).check(matches(checkCellValue(0, 2, 3)))
     }
 }
