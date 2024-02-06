@@ -245,7 +245,7 @@ open class MatrixItemView : View {
         }
     }
 
-    fun isFixedCell(row: Int, column: Int) = matrixFixedValues
+    protected fun isFixedCell(row: Int, column: Int) = matrixFixedValues
         ?.runCatching { get(row)[column] }
         ?.getOrDefault(0)
         ?.run { this > 0 }

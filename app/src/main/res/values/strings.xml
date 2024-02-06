@@ -129,6 +129,7 @@
     <string name="memo_status_off" translatable="false">Memo</string>
     <string name="memo_format" translatable="false">Memo %1$s</string>
     <string name="Delete" translatable="false">Del</string>
+    <string name="Clear" translatable="false">×</string>
 
     <!-- 공통 -->
     <string name="start">Start</string>
