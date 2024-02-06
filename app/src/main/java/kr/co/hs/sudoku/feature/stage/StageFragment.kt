@@ -24,7 +24,7 @@ import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
 import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
-import kr.co.hs.sudoku.views.SudokuBoardView
+import kr.co.hs.sudoku.views.SudokuView
 import kotlin.math.sqrt
 
 abstract class StageFragment : Fragment() {
@@ -56,7 +56,7 @@ abstract class StageFragment : Fragment() {
     }
 
 
-    abstract val board: SudokuBoardView
+    abstract val board: SudokuView
     abstract val silhouette: View
 
     private val gameSettingsViewModel: GameSettingsViewModel by viewModels {
@@ -67,16 +67,12 @@ abstract class StageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         with(board) {
             initFixCell()
-            cellTouchDownListener = { row, column ->
-                val cell = stage.getCell(row, column)
-                if (cell.isImmutable()) {
-                    false
-                } else {
-                    onCellTouchDown(row, column)
+            setOnCellValueChangedListener(object : SudokuView.CellValueChangedListener {
+                override fun onChangedCell(row: Int, column: Int, value: Int?) {
+                    onCellValueChangedListener(row, column, value)
                 }
-            }
-            cellValueChangedListener =
-                { row, column, value -> onCellValueChangedListener(row, column, value) }
+
+            })
         }
 
         valueChangedListener?.run { stage.addValueChangedListener(this) }
@@ -89,26 +85,30 @@ abstract class StageFragment : Fragment() {
     /**
      * sudoku board 관련
      */
-    private fun SudokuBoardView.initFixCell() = setRowCount(fixCell.size, fixCell)
+    private fun SudokuView.initFixCell() {
+        setFixedCellValues(fixCell)
+    }
 
     // stage 정보를 뷰에 적용
-    private fun SudokuBoardView.setStage(stage: Stage) = with(stage) {
+    private fun SudokuView.setStage(stage: Stage) = with(stage) {
         List(rowCount * columnCount) {
             it.div(rowCount) to it.rem(columnCount)
         }.forEach {
             runCatching { get(it.first, it.second) }.getOrDefault(0)
                 .takeIf { it > 0 }
-                ?.run { setCellValue(it.first, it.second, this) }
+                ?.run {
+                    setCellValue(it.first, it.second, this)
+                }
         }
-
-        showError(this)
+        isVisibleNumber = true
+        invalidate()
     }
 
     // 마지막으로 알고 있던 오류 셀 정보
     private var lastKnownErrorCell: Set<CellEntity<Int>>? = null
 
     // 오류 셀을 뷰에 보여줌
-    private fun SudokuBoardView.showError(stage: Stage) = with(stage) {
+    private fun SudokuView.showError(stage: Stage) = with(stage) {
         val currentError = getDuplicatedCells().toList().toSet()
         val lastError = lastKnownErrorCell ?: emptySet()
         if (currentError != lastError) {
@@ -120,26 +120,27 @@ abstract class StageFragment : Fragment() {
         }
 
         lastKnownErrorCell = currentError
+        invalidate()
     }
 
     // 이전에 error 였는데 지금은 correct인거 찾기
-    private fun SudokuBoardView.errorToCorrect(
+    private fun SudokuView.errorToCorrect(
         last: Set<CellEntity<Int>>,
         current: Set<CellEntity<Int>>
     ) = last.subtract(current)
         .mapNotNull { it as? IntCoordinateCellEntity }
-        .forEach { setError(it.row, it.column, false) }
+        .forEach { removeError(it.row, it.column) }
 
     // 이전에 correct었는데 지금은 error인거 찾기
-    private fun SudokuBoardView.correctToError(
+    private fun SudokuView.correctToError(
         last: Set<CellEntity<Int>>,
         current: Set<CellEntity<Int>>
     ) = current.subtract(last)
         .mapNotNull { it as? IntCoordinateCellEntity }
-        .forEach { setError(it.row, it.column, true) }
+        .forEach { setError(it.row, it.column) }
 
     // 특정 셀을 view에 채움
-    private fun SudokuBoardView.setValue(row: Int, column: Int, value: Int) =
+    private fun SudokuView.setValue(row: Int, column: Int, value: Int) =
         setCellValue(row, column, value)
 
     abstract fun onCellTouchDown(row: Int, column: Int): Boolean

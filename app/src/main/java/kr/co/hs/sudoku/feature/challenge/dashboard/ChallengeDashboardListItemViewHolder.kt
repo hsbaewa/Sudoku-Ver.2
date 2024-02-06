@@ -52,7 +52,7 @@ sealed class ChallengeDashboardListItemViewHolder<T : ChallengeDashboardListItem
         ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem.MatrixItem>(binding.root) {
         override val clickableView: View by lazy { binding.matrix }
         override fun onBind(item: ChallengeDashboardListItem.MatrixItem) = with(binding.matrix) {
-            matrix = item.matrix
+            setFixedCellValues(item.matrix)
             invalidate()
         }
     }

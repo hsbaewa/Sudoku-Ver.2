@@ -76,7 +76,7 @@ class MultiPlayCreateActivity : Activity() {
         with(binding.matrix) {
             matrixListViewModel.selection.observe(this@MultiPlayCreateActivity) {
                 MatrixSelectBottomSheetFragment.dismiss(supportFragmentManager)
-                matrix = it
+                setFixedCellValues(it)
                 invalidate()
                 if (it != null) {
                     binding.matrix.isVisible = true

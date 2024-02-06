@@ -8,12 +8,12 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import kr.co.hs.sudoku.databinding.LayoutPlayBattleForParticipantBinding
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
-import kr.co.hs.sudoku.views.SudokuBoardView
+import kr.co.hs.sudoku.views.SudokuView
 
 open class ViewerStageFragment : StageFragment() {
 
-    override val board: SudokuBoardView
-        get() = binding.sudokuBoard
+    override val board: SudokuView
+        get() = binding.sudokuView
     override val silhouette: View
         get() = binding.viewSilhouette
     private val statusMessage: TextView

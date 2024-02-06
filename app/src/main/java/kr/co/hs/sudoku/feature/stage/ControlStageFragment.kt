@@ -9,11 +9,11 @@ import com.google.android.material.button.MaterialButton
 import kr.co.hs.sudoku.databinding.LayoutPlayBattleForUserBinding
 import kr.co.hs.sudoku.extension.platform.TextViewExtension.setAutoSizeText
 import kr.co.hs.sudoku.views.CountDownView
-import kr.co.hs.sudoku.views.SudokuBoardView
+import kr.co.hs.sudoku.views.SudokuView
 
 open class ControlStageFragment : StageFragment() {
-    override val board: SudokuBoardView
-        get() = binding.sudokuBoard
+    override val board: SudokuView
+        get() = binding.sudokuView
     override val silhouette: View
         get() = binding.viewSilhouette
     private val countDownView: CountDownView

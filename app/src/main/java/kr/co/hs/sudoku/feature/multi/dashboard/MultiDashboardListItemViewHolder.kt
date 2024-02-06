@@ -32,7 +32,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
         override val clickableView: View by lazy { binding.cardView }
         override fun onBind(item: MultiDashboardListItem.MultiPlayItem) {
             with(binding.matrix) {
-                matrix = item.battleEntity.startingMatrix
+                setFixedCellValues(item.battleEntity.startingMatrix)
                 invalidate()
             }
 

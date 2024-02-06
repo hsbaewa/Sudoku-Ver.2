@@ -17,4 +17,12 @@
     <color name="gray_600">#757575</color>
     <color name="gray_700">#616161</color>
     <color name="gray_800">#424242</color>
+
+    <color name="white_alpha70">#b2FFFFFF</color>
+    <color name="gray_200_alpha70">#b2EEEEEE</color>
+    <color name="gray_700_alpha70">#b2616161</color>
+
+    <color name="error_font_background">#4ce53935</color>
+    <color name="error_font">#e53935</color>
+    <color name="sudoku_cross">#4ca4ffa4</color>
 </resources>

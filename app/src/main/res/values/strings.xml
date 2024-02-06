@@ -125,10 +125,7 @@
     <string name="record">Your Record</string>
 
     <!-- 스도쿠 컨트롤러 -->
-    <string name="memo_status_on" translatable="false">Memo Off</string>
-    <string name="memo_status_off" translatable="false">Memo</string>
-    <string name="memo_format" translatable="false">Memo %1$s</string>
-    <string name="Delete" translatable="false">Del</string>
+    <string name="Clear" translatable="false">×</string>
 
     <!-- 공통 -->
     <string name="start">Start</string>
