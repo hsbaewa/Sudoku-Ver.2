@@ -154,6 +154,10 @@
                 android:value=".feature.MainActivity" />
         </activity>
 
+        <activity
+            android:name=".feature.GuideActivity"
+            android:launchMode="singleTop" />
+
         <service
             android:name=".core.MessagingService"
             android:exported="false">

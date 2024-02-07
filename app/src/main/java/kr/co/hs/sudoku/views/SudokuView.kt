@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
@@ -17,6 +18,7 @@ import androidx.core.content.res.getColorOrThrow
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kotlin.math.ceil
+import kotlin.math.sqrt
 
 class SudokuView : MatrixItemView {
 
@@ -77,7 +79,7 @@ class SudokuView : MatrixItemView {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        currentCellPosition?.run { canvas.drawCross(row, column) }
+        currentCellPosition?.run { canvas.drawGuide(row, column) }
     }
 
     override fun onDrawCell(canvas: Canvas, row: Int, column: Int, value: Int, rectF: RectF) {
@@ -119,24 +121,32 @@ class SudokuView : MatrixItemView {
         ?.getOrDefault(false)
         ?: false
 
-    private fun Canvas.drawCross(row: Int, column: Int) {
+    private fun Canvas.drawGuide(row: Int, column: Int) {
         paint.apply {
             flags = ANTI_ALIAS_FLAG
             style = Paint.Style.FILL
             color = context.getColorCompat(R.color.sudoku_cross)
         }
-        for (x in 0 until getColumnSize()) {
-            if (x == column)
-                continue
-            rectF.setMatrixPosition(row, x)
-            drawRect(rectF, paint)
-        }
+        val rowSqrt = sqrt(getRowSize().toFloat()).toInt()
+        val columnSqrt = sqrt(getColumnSize().toFloat()).toInt()
+        val rowArea = row.div(rowSqrt)
+        val columnArea = column.div(columnSqrt)
 
-        for (y in 0 until getRowSize()) {
-            if (y == row)
-                continue
-            rectF.setMatrixPosition(y, column)
-            drawRect(rectF, paint)
+        (0 until getRowSize()).forEach { r ->
+            (0 until getColumnSize()).forEach { c ->
+                val isVisibleGuide = when {
+                    r == row && c == column -> false
+                    isVisibleBoxGuide && (r.div(rowSqrt) == rowArea && c.div(columnSqrt) == columnArea) -> true
+                    isVisibleRowGuide && (r == row) -> true
+                    isVisibleColumGuide && (c == column) -> true
+                    else -> false
+                }
+
+                if (isVisibleGuide) {
+                    rectF.setMatrixPosition(r, c)
+                    drawRect(rectF, paint)
+                }
+            }
         }
 
         rectF.setMatrixPosition(row, column)
@@ -151,20 +161,22 @@ class SudokuView : MatrixItemView {
                 val y = event.y
                 val cellPosition = getCellPosition(x, y)
 
-                if (isFixedCell(cellPosition.row, cellPosition.column))
+                if (isFixedCell(cellPosition.row, cellPosition.column)) {
+                    selectionWindow.dismiss()
+                    dismissGuide()
                     return false
+                }
 
                 showNumberSelection(event.rawX, event.rawY)
                 performHapticFeedback()
 
                 // 선택한 셀 기준으로 크로스 표시를 위한 갱신
-                currentCellPosition = cellPosition
-                invalidate()
+                showGuide(cellPosition)
                 true
             }
 
             MotionEvent.ACTION_MOVE -> {
-                selectionWindow.touch(event.rawX, event.rawY)
+                selectPosition(event.rawX, event.rawY)
                 true
             }
 
@@ -178,8 +190,7 @@ class SudokuView : MatrixItemView {
                         selectedNumber.takeIf { it > 0 }
                     )
                 }
-                currentCellPosition = null
-                invalidate()
+                dismissGuide()
                 true
             }
 
@@ -210,6 +221,16 @@ class SudokuView : MatrixItemView {
         showAtPosition(x, y)
     }
 
+    fun showNumberSelection(row: Int, column: Int) {
+        val location = IntArray(2)
+        getLocationOnScreen(location)
+        val rectF = RectF().setMatrixPosition(row, column)
+        val x = rectF.centerX() + location[0]
+        val y = rectF.centerY() + location[1]
+
+        showNumberSelection(x, y)
+    }
+
     private fun getNumberSelected() = with(selectionWindow) {
         dismiss()
         when (val action = getCurrentAction()) {
@@ -223,6 +244,7 @@ class SudokuView : MatrixItemView {
             contentView = NumberSelectionView(context).apply {
                 setNumberCount(getRowSize())
                 enabledHapticFeedback = this@SudokuView.enabledHapticFeedback
+                setOnClickListener { dismiss() }
             }
             width = 500
             height = 500
@@ -237,8 +259,14 @@ class SudokuView : MatrixItemView {
 
         fun getCurrentAction() = (contentView as NumberSelectionView).getCurrentAction()
 
-        fun touch(x: Float, y: Float) =
-            (selectionWindow.contentView as? NumberSelectionView)?.touch(x, y)
+        fun selectPosition(x: Float, y: Float) =
+            (selectionWindow.contentView as? NumberSelectionView)?.select(x, y)
+
+        fun selectNumber(number: Int) =
+            (selectionWindow.contentView as? NumberSelectionView)?.selectForce(number)
+
+        fun getNumberBound(number: Int) =
+            (selectionWindow.contentView as? NumberSelectionView)?.getNumberBound(number)
     }
 
 
@@ -278,4 +306,69 @@ class SudokuView : MatrixItemView {
     }
 
     fun getMatrixValue(row: Int, column: Int) = matrixValues[row][column]
+
+    private fun selectPosition(x: Float, y: Float) = selectionWindow.selectPosition(x, y)
+
+    fun setTouchDown(row: Int, column: Int) {
+        val location = IntArray(2)
+        getLocationOnScreen(location)
+        val rectF = RectF().setMatrixPosition(row, column)
+        val x = rectF.centerX() + location[0]
+        val y = rectF.centerY() + location[1]
+
+        selectionWindow.dismiss()
+
+        val cellPosition = getCellPosition(rectF.centerX(), rectF.centerY())
+        showNumberSelection(x, y)
+
+        // 선택한 셀 기준으로 크로스 표시를 위한 갱신
+        showGuide(cellPosition)
+    }
+
+    fun getCellBound(row: Int, column: Int): Rect {
+        val location = IntArray(2)
+        getLocationOnScreen(location)
+        val rectF = RectF().setMatrixPosition(row, column)
+        return Rect(
+            rectF.left.toInt() + location[0],
+            rectF.top.toInt() + location[1],
+            rectF.right.toInt() + location[0],
+            rectF.bottom.toInt() + location[1]
+        )
+    }
+
+    fun getNumberBound(number: Int) = selectionWindow.getNumberBound(number)
+    fun setTouchSelectNumber(number: Int) = selectionWindow.selectNumber(number)
+
+    fun setTouchUpSelectNumber() {
+        val selectedNumber = getNumberSelected()
+        currentCellPosition?.run {
+            matrixValues[row][column] = selectedNumber
+            onCellValueChangedListener?.onChangedCell(
+                row,
+                column,
+                selectedNumber.takeIf { it > 0 }
+            )
+        }
+        dismissGuide()
+    }
+
+    var isVisibleRowGuide = true
+    var isVisibleColumGuide = true
+    var isVisibleBoxGuide = true
+
+    private fun showGuide(cellPosition: CellPosition) {
+        currentCellPosition = cellPosition
+        invalidate()
+    }
+
+    fun showGuide(row: Int, column: Int) {
+        currentCellPosition = CellPosition(row, column)
+        invalidate()
+    }
+
+    fun dismissGuide() {
+        currentCellPosition = null
+        invalidate()
+    }
 }

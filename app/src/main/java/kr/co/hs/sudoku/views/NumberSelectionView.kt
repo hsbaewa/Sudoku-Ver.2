@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.util.Log
 import android.view.HapticFeedbackConstants
@@ -186,7 +187,7 @@ class NumberSelectionView : View {
         )
     }
 
-    fun touch(x: Float, y: Float) {
+    fun select(x: Float, y: Float) {
         val locationOnScreen = IntArray(2)
         getLocationOnScreen(locationOnScreen)
 
@@ -201,6 +202,12 @@ class NumberSelectionView : View {
             currentSelection = it
         }
 
+        invalidate()
+    }
+
+    fun selectForce(number: Int) {
+        val action = getAction(number - 1)
+        currentSelection = action
         invalidate()
     }
 
@@ -231,4 +238,21 @@ class NumberSelectionView : View {
         enabledHapticFeedback
             .takeIf { it }
             ?.run { performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY) }
+
+    fun getNumberBound(number: Int): Rect {
+        val numberCenter = getNumberCenterPosition(center, number.minus(1))
+        val r = numberCircumference.div(2)
+        val centerX = numberCenter.x
+        val centerY = numberCenter.y
+
+        val locationOnScreen = IntArray(2)
+        getLocationOnScreen(locationOnScreen)
+
+        return Rect(
+            centerX.minus(r).toInt() + locationOnScreen[0],
+            centerY.minus(r).toInt() + locationOnScreen[1],
+            centerX.plus(r).toInt() + locationOnScreen[0],
+            centerY.plus(r).toInt() + locationOnScreen[1]
+        )
+    }
 }
