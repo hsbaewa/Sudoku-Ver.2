@@ -15,6 +15,7 @@
     <string name="version_updatable_format">Ver.%1$s(クリックして更新可能)</string>
     <string name="clear_seen_guide">説明文を再表示</string>
     <string name="clear_seen_guide_success">これで、すべての機能固有の説明文を再表示できます。</string>
+    <string name="clear_seen_tutorial">チュートリアルを見る</string>
 
     <!-- 프로필 설정 -->
     <string name="profile_update_title">プロフィールの更新</string>
@@ -121,6 +122,7 @@
     <string name="show_replay">リプレイを表示</string>
     <string name="exit_confirm_for_single">本当にゲームを終了しますか？</string>
     <string name="cancel">キャンセル</string>
+    <string name="next">めくる</string>
     <string name="in_app_update_title">アプリの更新</string>
     <string name="in_app_update_message">最新のアプリアップデートがあります。アップデートを続行しますか？</string>
     <string name="in_app_update_message_canceled">今すぐアプリの更新をキャンセルします。その後、オプションメニューからアップデートを進めることができます。</string>
@@ -133,6 +135,15 @@
     <string name="multi_tab_guide_desc">他のプレイヤーと対戦することができます。\n私は自分の部屋を作成したり、他のプレイヤーが作成したゲームに参加したりできます。</string>
     <string name="challenge_tab_guide_title">挑戦数独</string>
     <string name="challenge_tab_guide_desc">指定された難易度の数独をクリアして自分の記録を誇ります。</string>
+    <string name="sudoku_guide_desc_1">今から数独ルールを学びましょうか？</string>
+    <string name="sudoku_guide_desc_2">数独は、水平、垂直、ボックスのそれぞれに重複しない値で埋められます。</string>
+    <string name="sudoku_guide_desc_3">下に4×4数独パズルが作成されています。</string>
+    <string name="sudoku_guide_desc_4">入力したいセルをタッチすると、数値プロンプトが生成されます。</string>
+    <string name="sudoku_guide_desc_5">希望の値の方向にドラッグした後、手を離すと値が入力されます。</string>
+    <string name="sudoku_guide_desc_6">空のセルに正しい値を入力してみましょう。</string>
+    <string name="sudoku_guide_desc_7">よくできました！以下のチュートリアル終了ボタンをクリックして数独ゲームをお楽しみください！</string>
+    <string name="sudoku_guide_exit_alert">チュートリアルを終了せずに終了しますか？</string>
+    <string name="sudoku_guide_finish">チュートリアルの終了</string>
 
 
     <!-- 상태바 알림 -->

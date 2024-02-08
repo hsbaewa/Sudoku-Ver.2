@@ -121,6 +121,17 @@ open class MatrixItemView : View {
         }
     }
 
+    open fun clearCellValues() {
+        matrixValues.clear()
+        matrixFixedValues = null
+    }
+
+    fun setFixedCellValues(count: Int) {
+        if (matrixValues.size != count) {
+            setMatrixSize(count)
+        }
+    }
+
     fun setCellValue(row: Int, column: Int, value: Int) {
         matrixValues[row][column] = value
         invalidate()

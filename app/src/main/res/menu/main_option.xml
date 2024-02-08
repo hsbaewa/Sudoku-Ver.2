@@ -18,6 +18,11 @@
         <item
             android:id="@+id/clear_seen_guide"
             android:title="@string/clear_seen_guide" />
+
+        <item
+            android:id="@+id/clear_seen_tutorial"
+            android:title="@string/clear_seen_tutorial" />
+
     </group>
 
     <group android:id="@+id/info">

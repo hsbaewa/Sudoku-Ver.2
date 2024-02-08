@@ -154,6 +154,14 @@
                 android:value=".feature.MainActivity" />
         </activity>
 
+        <activity
+            android:name=".feature.GuideActivity"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+        </activity>
+
         <service
             android:name=".core.MessagingService"
             android:exported="false">

@@ -14,6 +14,7 @@
     <string name="version_updatable_format">Ver.%1$s(Click to update)</string>
     <string name="clear_seen_guide">Review description</string>
     <string name="clear_seen_guide_success">You can now see descriptions for every feature again.</string>
+    <string name="clear_seen_tutorial">Watch tutorial</string>
 
     <!-- 프로필 설정 -->
     <string name="profile_update_title">Profile update</string>
@@ -135,6 +136,7 @@
     <string name="show_replay">Show Replay</string>
     <string name="exit_confirm_for_single">Are you sure you want to quit the game?</string>
     <string name="cancel">Cancel</string>
+    <string name="next">Next</string>
     <string name="in_app_update_title">App Update</string>
     <string name="in_app_update_message">There is the latest app update. Would you like to proceed with the update?</string>
     <string name="in_app_update_message_canceled">Cancel app update now. The update can be performed later through the options menu.</string>
@@ -147,6 +149,15 @@
     <string name="multi_tab_guide_desc">You can compete against other players.\nYou can create your own room or participate in a game created by another player.</string>
     <string name="challenge_tab_guide_title">Challenge Sudoku</string>
     <string name="challenge_tab_guide_desc">Boast your record by clearing Sudoku of the specified difficulty level.</string>
+    <string name="sudoku_guide_desc_1">Let\'s learn the rules of Sudoku now?</string>
+    <string name="sudoku_guide_desc_2">Sudoku is filled with non-overlapping values in each horizontal, vertical, and box.</string>
+    <string name="sudoku_guide_desc_3">A 4 X 4 Sudoku puzzle has been created below.</string>
+    <string name="sudoku_guide_desc_4">When you touch the cell you want to enter, a numeric prompt is generated.</string>
+    <string name="sudoku_guide_desc_5">Drag in the direction of the desired value and then release to enter the value.</string>
+    <string name="sudoku_guide_desc_6">Let\'s enter the correct value in an empty cell.</string>
+    <string name="sudoku_guide_desc_7">Good job!! Click the end tutorial button below and enjoy the Sudoku game!!</string>
+    <string name="sudoku_guide_exit_alert">Do you want to exit without finishing the tutorial?</string>
+    <string name="sudoku_guide_finish">Tutorial ends</string>
 
 
     <!-- 알림 채널 ID -->

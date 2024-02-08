@@ -178,10 +178,20 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                     lifecycleScope.launch(Dispatchers.IO) {
                         app.getRegistrationRepository().appOpened()
                     }
+                    checkShowTutorial()
                 }
 
-                false -> AppOpenAdManager(this@MainActivity).showIfAvailable()
+                false -> with(AppOpenAdManager(this@MainActivity)) {
+                    setOnAdDismissedListener(object : AppOpenAdManager.OnAdDismissedListener {
+                        override fun onDismissed() {
+                            checkShowTutorial()
+                        }
+                    })
+                    showIfAvailable()
+                }
             }
+        } else {
+            checkShowTutorial()
         }
 
         checkUpdate()
@@ -419,6 +429,11 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 true
             }
 
+            R.id.clear_seen_tutorial -> {
+                lifecycleScope.launch { GuideActivity.start(this@MainActivity) }
+                true
+            }
+
             R.id.version_info -> if (hasUpdate) {
                 lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
                     dismissProgressIndicator()
@@ -604,5 +619,13 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     private fun showOnlineUserList() = lifecycleScope.launch {
         OnlineUserListBottomSheetDialog.show(supportFragmentManager)
+    }
+
+    private fun checkShowTutorial() = lifecycleScope.launch {
+        val hasSeenTutorial =
+            withContext(Dispatchers.IO) { app.getRegistrationRepository().hasSeenTutorial() }
+        if (!hasSeenTutorial) {
+            GuideActivity.start(this@MainActivity)
+        }
     }
 }
