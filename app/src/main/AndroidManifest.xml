@@ -62,7 +62,7 @@
         <activity
             android:name=".feature.MainActivity"
             android:exported="true"
-            android:launchMode="singleInstance">
+            android:launchMode="singleTop">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
                 <action android:name="android.intent.action.MAIN" />
@@ -156,7 +156,11 @@
 
         <activity
             android:name=".feature.GuideActivity"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".feature.MainActivity" />
+        </activity>
 
         <service
             android:name=".core.MessagingService"
