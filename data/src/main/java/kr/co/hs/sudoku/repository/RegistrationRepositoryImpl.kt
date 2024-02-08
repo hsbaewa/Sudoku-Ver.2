@@ -9,6 +9,7 @@ import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_MULTI_PLAY_GUIDE
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_MULTI_PLAY_PARTICIPANT_NOTIFICATION
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_SINGLE_PLAY_GUIDE
+import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_HAS_SEEN_TUTORIAL
 import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_IS_FIRST_APP_OPEN
 import kr.co.hs.sudoku.mapper.SettingsMapper.getRegistrationEntity
 import kr.co.hs.sudoku.repository.settings.RegistrationRepository
@@ -61,5 +62,12 @@ class RegistrationRepositoryImpl(
             it.remove(PREFERENCE_HAS_SEEN_CHALLENGE_GUIDE)
             it.remove(PREFERENCE_HAS_SEEN_MULTI_PLAY_PARTICIPANT_NOTIFICATION)
         }
+    }
+
+    override suspend fun hasSeenTutorial() =
+        getRegistrationFlow().firstOrNull()?.hasSeenTutorial ?: false
+
+    override suspend fun seenTutorial() {
+        dataStore.edit { it[PREFERENCE_HAS_SEEN_TUTORIAL] = true }
     }
 }

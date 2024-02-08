@@ -13,7 +13,6 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.stage.CellEntity
 import kr.co.hs.sudoku.model.stage.CellValueEntity
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.model.stage.Stage
@@ -104,40 +103,15 @@ abstract class StageFragment : Fragment() {
         invalidate()
     }
 
-    // 마지막으로 알고 있던 오류 셀 정보
-    private var lastKnownErrorCell: Set<CellEntity<Int>>? = null
-
     // 오류 셀을 뷰에 보여줌
     private fun SudokuView.showError(stage: Stage) = with(stage) {
+        val errorValues = List(stage.rowCount) { MutableList(stage.columnCount) { false } }
         val currentError = getDuplicatedCells().toList().toSet()
-        val lastError = lastKnownErrorCell ?: emptySet()
-        if (currentError != lastError) {
-            lastError.takeIf { it.isNotEmpty() }
-                ?.let { errorToCorrect(it, currentError) }
-
-            currentError.takeIf { it.isNotEmpty() }
-                ?.let { correctToError(lastError, it) }
+        currentError.forEach {
+            with(it as IntCoordinateCellEntity) { errorValues[row][column] = true }
         }
-
-        lastKnownErrorCell = currentError
-        invalidate()
+        setError(errorValues)
     }
-
-    // 이전에 error 였는데 지금은 correct인거 찾기
-    private fun SudokuView.errorToCorrect(
-        last: Set<CellEntity<Int>>,
-        current: Set<CellEntity<Int>>
-    ) = last.subtract(current)
-        .mapNotNull { it as? IntCoordinateCellEntity }
-        .forEach { removeError(it.row, it.column) }
-
-    // 이전에 correct었는데 지금은 error인거 찾기
-    private fun SudokuView.correctToError(
-        last: Set<CellEntity<Int>>,
-        current: Set<CellEntity<Int>>
-    ) = current.subtract(last)
-        .mapNotNull { it as? IntCoordinateCellEntity }
-        .forEach { setError(it.row, it.column) }
 
     // 특정 셀을 view에 채움
     private fun SudokuView.setValue(row: Int, column: Int, value: Int) =

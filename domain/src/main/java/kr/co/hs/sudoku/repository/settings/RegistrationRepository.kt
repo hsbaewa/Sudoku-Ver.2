@@ -13,4 +13,7 @@ interface RegistrationRepository {
     suspend fun seenNotificationParticipate()
 
     suspend fun clear()
+
+    suspend fun hasSeenTutorial(): Boolean
+    suspend fun seenTutorial()
 }

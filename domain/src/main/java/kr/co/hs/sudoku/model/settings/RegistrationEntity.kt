@@ -5,5 +5,6 @@ data class RegistrationEntity(
     var hasSeenSinglePlayGuide: Boolean,
     var hasSeenMultiPlayGuide: Boolean,
     var hasSeenChallengeGuide: Boolean,
-    var hasSeenMultiPlayParticipateNotification: Boolean
+    var hasSeenMultiPlayParticipateNotification: Boolean,
+    var hasSeenTutorial: Boolean
 )

@@ -78,10 +78,20 @@ class AppOpenAdManager(
         return if (loadAdError != null || adError != null || adDismissed) {
             // The content is ready. Start drawing.
             splashContent.viewTreeObserver.removeOnPreDrawListener(this)
+            onAdDismissedListener?.onDismissed()
             true
         } else {
             // The content isn't ready. Suspend.
             false
         }
+    }
+
+    interface OnAdDismissedListener {
+        fun onDismissed() {}
+    }
+
+    private var onAdDismissedListener: OnAdDismissedListener? = null
+    fun setOnAdDismissedListener(l: OnAdDismissedListener) {
+        this.onAdDismissedListener = l
     }
 }

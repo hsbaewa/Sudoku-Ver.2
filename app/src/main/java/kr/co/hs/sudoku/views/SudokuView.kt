@@ -68,13 +68,12 @@ class SudokuView : MatrixItemView {
 
     private var currentCellPosition: CellPosition? = null
     var enabledHapticFeedback = true
-    private var matrixErrorValues: MutableList<MutableList<Int>>? = null
+    private var matrixErrorValues: MutableList<MutableList<Boolean>>? = null
     private var onCellValueChangedListener: CellValueChangedListener? = null
 
     override fun setMatrixSize(size: Int) {
         super.setMatrixSize(size)
-        val bufferMatrix = MutableList(size) { MutableList(size) { 0 } }
-        matrixErrorValues = bufferMatrix
+        matrixErrorValues = MutableList(size) { MutableList(size) { false } }
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -117,7 +116,7 @@ class SudokuView : MatrixItemView {
     }
 
     private fun isErrorCell(row: Int, column: Int) = matrixErrorValues
-        ?.runCatching { get(row)[column] == 1 }
+        ?.runCatching { get(row)[column] }
         ?.getOrDefault(false)
         ?: false
 
@@ -156,6 +155,9 @@ class SudokuView : MatrixItemView {
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         return when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
+                if (!isClickable)
+                    return false
+
                 // 셀의 중앙 좌표 값 구하기
                 val x = event.x
                 val y = event.y
@@ -231,6 +233,10 @@ class SudokuView : MatrixItemView {
         showNumberSelection(x, y)
     }
 
+    fun dismissNumberSelection() = with(selectionWindow) {
+        dismiss()
+    }
+
     private fun getNumberSelected() = with(selectionWindow) {
         dismiss()
         when (val action = getCurrentAction()) {
@@ -290,14 +296,22 @@ class SudokuView : MatrixItemView {
 
     fun setError(row: Int, column: Int) {
         matrixErrorValues
-            ?.runCatching { get(row)[column] = 1 }
+            ?.runCatching { get(row)[column] = true }
             ?.getOrNull()
     }
 
     fun removeError(row: Int, column: Int) {
         matrixErrorValues
-            ?.runCatching { get(row)[column] = 0 }
+            ?.runCatching { get(row)[column] = false }
             ?.getOrNull()
+    }
+
+    fun getErrorValues(): List<List<Boolean>> = matrixErrorValues ?: emptyList()
+
+    fun setError(errorValues: List<List<Boolean>>) {
+        matrixErrorValues =
+            MutableList(errorValues.size) { row -> MutableList(errorValues[row].size) { column -> errorValues[row][column] } }
+        invalidate()
     }
 
     @Suppress("unused")
@@ -370,5 +384,10 @@ class SudokuView : MatrixItemView {
     fun dismissGuide() {
         currentCellPosition = null
         invalidate()
+    }
+
+    override fun clearCellValues() {
+        super.clearCellValues()
+        matrixErrorValues?.clear()
     }
 }

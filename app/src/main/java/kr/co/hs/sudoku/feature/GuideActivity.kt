@@ -3,15 +3,25 @@ package kr.co.hs.sudoku.feature
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.addCallback
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import com.getkeepsafe.taptargetview.TapTarget
-import com.getkeepsafe.taptargetview.TapTargetView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityGuideBinding
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
+import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
+import kr.co.hs.sudoku.model.matrix.CustomMatrix
+import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
+import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
 import kr.co.hs.sudoku.views.SudokuView
 
 class GuideActivity : Activity() {
@@ -27,90 +37,286 @@ class GuideActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.lifecycleOwner = this
-        binding.sudokuView.setFixedCellValues(
+        showStep1()
+
+        onBackPressedDispatcher.addCallback {
+            showConfirm(R.string.app_name, R.string.sudoku_guide_exit_alert) {
+                if (it) {
+                    lifecycleScope.launch {
+                        showProgressIndicator()
+                        val app = applicationContext as App
+                        withContext(Dispatchers.IO) {
+                            app.getRegistrationRepository().seenTutorial()
+                        }
+                        dismissProgressIndicator()
+                        finish()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showStep1() = lifecycleScope.launch {
+        with(binding.sudokuView) {
+            setFixedCellValues(4)
+            isVisibleNumber = false
+            isClickable = false
+        }
+
+        binding.tvDescription.setText(R.string.sudoku_guide_desc_1)
+
+        with(binding.btnNext) {
+            setText(R.string.next)
+            setOnClickListener { showStep2() }
+        }
+    }
+
+    private fun showStep2() {
+        val job = Job()
+        lifecycleScope.launch(job) {
+            while (true) {
+                with(binding.sudokuView) {
+                    isVisibleRowGuide = true
+                    isVisibleColumGuide = false
+                    isVisibleBoxGuide = false
+
+                    showGuide(0, 0)
+                    delay(500)
+                    showGuide(1, 0)
+                    delay(500)
+                    showGuide(2, 0)
+                    delay(500)
+                    showGuide(3, 0)
+                    delay(500)
+                }
+
+                with(binding.sudokuView) {
+                    isVisibleRowGuide = false
+                    isVisibleColumGuide = true
+                    isVisibleBoxGuide = false
+
+                    showGuide(0, 0)
+                    delay(500)
+                    showGuide(0, 1)
+                    delay(500)
+                    showGuide(0, 2)
+                    delay(500)
+                    showGuide(0, 3)
+                    delay(500)
+                }
+
+                with(binding.sudokuView) {
+                    isVisibleRowGuide = false
+                    isVisibleColumGuide = false
+                    isVisibleBoxGuide = true
+
+                    showGuide(1, 1)
+                    delay(500)
+                    showGuide(1, 2)
+                    delay(500)
+                    showGuide(2, 1)
+                    delay(500)
+                    showGuide(2, 2)
+                    delay(500)
+                }
+            }
+        }.invokeOnCompletion { binding.sudokuView.dismissGuide() }
+
+        lifecycleScope.launch {
+            with(binding.sudokuView) {
+                setFixedCellValues(4)
+                isVisibleNumber = false
+                isClickable = false
+            }
+
+            binding.tvDescription.setText(R.string.sudoku_guide_desc_2)
+            with(binding.btnNext) {
+                binding.btnNext.setText(R.string.next)
+                setOnClickListener {
+                    job.cancel()
+                    showStep3()
+                }
+            }
+        }
+    }
+
+    private fun showStep3() = lifecycleScope.launch {
+        with(binding.sudokuView) {
+            setFixedCellValues(
+                listOf(
+                    listOf(1, 2, 3, 4),
+                    listOf(3, 0, 1, 2),
+                    listOf(2, 3, 4, 1),
+                    listOf(4, 1, 2, 3)
+                )
+            )
+            isVisibleNumber = true
+            isClickable = false
+        }
+
+        binding.tvDescription.setText(R.string.sudoku_guide_desc_3)
+        with(binding.btnNext) {
+            binding.btnNext.setText(R.string.next)
+            setOnClickListener { showStep4() }
+        }
+    }
+
+    private fun showStep4() = lifecycleScope.launch {
+        with(binding.sudokuView) {
+            setFixedCellValues(
+                listOf(
+                    listOf(1, 2, 3, 4),
+                    listOf(3, 0, 1, 2),
+                    listOf(2, 3, 4, 1),
+                    listOf(4, 1, 2, 3)
+                )
+            )
+            isVisibleNumber = true
+            isClickable = false
+
+            isVisibleBoxGuide = false
+            isVisibleRowGuide = false
+            isVisibleColumGuide = false
+            showGuide(1, 1)
+            showNumberSelection(1, 1)
+        }
+
+        binding.tvDescription.setText(R.string.sudoku_guide_desc_4)
+        with(binding.btnNext) {
+            binding.btnNext.setText(R.string.next)
+            setOnClickListener {
+                with(binding.sudokuView) {
+                    dismissNumberSelection()
+                    dismissGuide()
+                }
+                showStep5()
+            }
+        }
+    }
+
+    private fun showStep5() {
+        val job = Job()
+        lifecycleScope.launch(job) {
+            while (true) {
+                (1..4).forEach { number ->
+                    with(binding.sudokuView) {
+                        isVisibleBoxGuide = false
+                        isVisibleRowGuide = false
+                        isVisibleColumGuide = false
+                        showGuide(1, 1)
+                    }
+                    delay(500)
+
+                    with(binding.sudokuView) {
+                        isVisibleBoxGuide = true
+                        isVisibleRowGuide = true
+                        isVisibleColumGuide = true
+                        showGuide(1, 1)
+                        showNumberSelection(1, 1)
+                    }
+                    delay(500)
+
+                    with(binding.sudokuView) {
+                        isVisibleBoxGuide = true
+                        isVisibleRowGuide = true
+                        isVisibleColumGuide = true
+                        showGuide(1, 1)
+                        setTouchSelectNumber(number)
+                    }
+                    delay(500)
+
+                    with(binding.sudokuView) {
+                        dismissGuide()
+                        setTouchUpSelectNumber()
+                        setCellValue(1, 1, number)
+                    }
+                    delay(500)
+                }
+            }
+        }.invokeOnCompletion {
+            with(binding.sudokuView) {
+                clearCellValues()
+                dismissGuide()
+                dismissNumberSelection()
+            }
+        }
+
+        lifecycleScope.launch {
+            with(binding.sudokuView) {
+                setFixedCellValues(
+                    listOf(
+                        listOf(1, 2, 3, 4),
+                        listOf(3, 0, 1, 2),
+                        listOf(2, 3, 4, 1),
+                        listOf(4, 1, 2, 3)
+                    )
+                )
+                isVisibleNumber = true
+                isClickable = false
+            }
+
+            binding.tvDescription.setText(R.string.sudoku_guide_desc_5)
+            with(binding.btnNext) {
+                setText(R.string.next)
+                setOnClickListener {
+                    job.cancel()
+                    showStep6()
+                }
+            }
+        }
+    }
+
+    private fun showStep6() = lifecycleScope.launch {
+        val matrix = CustomMatrix(
             listOf(
                 listOf(1, 2, 3, 4),
                 listOf(3, 0, 1, 2),
                 listOf(2, 3, 4, 1),
-                listOf(0, 1, 2, 0)
+                listOf(4, 1, 2, 3)
             )
         )
-        binding.sudokuView.isVisibleNumber = true
-
-        lifecycleScope.launch {
-
-            // TODO : 아래 코드는 예시
-            with(binding.sudokuView) {
-                post {
-                    isVisibleBoxGuide = false
-                    isVisibleRowGuide = false
-                    showGuide(1, 1)
-
-
-                    showGuideForCell(1, 1, "제목", "설명") {
-                        lifecycleScope.launch {
-                            setTouchDown(1, 1)
-                            delay(1000)
-
-                            setTouchSelectNumber(3)
-                            delay(1000)
-
-                            showGuideForNumberPad(3, "제목2", "설명2") {}
-                            delay(1000)
+        val stage = BuildSudokuUseCaseImpl(matrix).invoke().last()
+        with(binding.sudokuView) {
+            setFixedCellValues(stage.toValueTable())
+            isVisibleNumber = true
+            isClickable = true
+            setOnCellValueChangedListener(object : SudokuView.CellValueChangedListener {
+                override fun onChangedCell(row: Int, column: Int, value: Int?) {
+                    stage[row, column] = value ?: 0
+                    val errorValues =
+                        List(stage.rowCount) { MutableList(stage.columnCount) { false } }
+                    val currentError = stage.getDuplicatedCells().toList().toSet()
+                    currentError.forEach {
+                        with(it as IntCoordinateCellEntity) {
+                            errorValues[this.row][this.column] = true
                         }
                     }
+                    setError(errorValues)
+
+                    if (stage.isSudokuClear()) {
+                        binding.sudokuView.isClickable = false
+                        binding.tvDescription.text = getString(R.string.sudoku_guide_desc_7)
+                        binding.btnNext.isVisible = true
+                    }
                 }
+            })
+        }
+        binding.tvDescription.text = getString(R.string.sudoku_guide_desc_6)
 
-
+        with(binding.btnNext) {
+            isVisible = false
+            setText(R.string.sudoku_guide_finish)
+            setOnClickListener {
+                lifecycleScope.launch {
+                    showProgressIndicator()
+                    val app = applicationContext as App
+                    withContext(Dispatchers.IO) {
+                        app.getRegistrationRepository().seenTutorial()
+                    }
+                    dismissProgressIndicator()
+                    finish()
+                }
             }
-
         }
     }
-
-    private fun SudokuView.showGuideForCell(
-        row: Int,
-        column: Int,
-        title: String,
-        summary: String,
-        onDismissed: () -> Unit
-    ) {
-        TapTarget.forBounds(getCellBound(row, column), title, summary)
-            .apply {
-                transparentTarget(true)
-                outerCircleColor(R.color.gray_700)
-                outerCircleAlpha(0.5f)
-            }
-            .apply {
-                TapTargetView.showFor(this@GuideActivity, this, object : TapTargetView.Listener() {
-                    override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
-                        super.onTargetDismissed(view, userInitiated)
-                        onDismissed()
-                    }
-                })
-            }
-    }
-
-    private fun SudokuView.showGuideForNumberPad(
-        number: Int,
-        title: String,
-        summary: String,
-        onDismissed: () -> Unit
-    ) {
-        TapTarget.forBounds(getNumberBound(number), title, summary)
-            .apply {
-                transparentTarget(true)
-                outerCircleColor(R.color.gray_700)
-                outerCircleAlpha(0.5f)
-            }
-            .apply {
-                TapTargetView.showFor(this@GuideActivity, this, object : TapTargetView.Listener() {
-                    override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
-                        super.onTargetDismissed(view, userInitiated)
-                        onDismissed()
-                    }
-                })
-            }
-    }
-
-
 }
