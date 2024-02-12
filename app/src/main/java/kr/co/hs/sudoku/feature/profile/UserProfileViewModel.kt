@@ -125,8 +125,6 @@ class UserProfileViewModel(
                             .toProfile()
                             .apply { setProfile(this) }
                     }
-                }.apply {
-                    FirebaseMessaging.getInstance().subscribeUser(uid).await()
                 }
             }
             ?: run {
@@ -136,6 +134,10 @@ class UserProfileViewModel(
                     null
                 }
             }
+
+        _profile.value?.run {
+            FirebaseMessaging.getInstance().subscribeUser(uid).await()
+        }
 
         setProgress(false)
     }
