@@ -182,7 +182,7 @@ abstract class StageFragment : Fragment() {
                     }
                 }
                 board.setStage(stage)
-
+                board.showError(stage)
 
             }
         }
