@@ -19,8 +19,8 @@ import kr.co.hs.sudoku.repository.admin.AdminPermissionRepository
 import kr.co.hs.sudoku.repository.admin.AdminPermissionRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository2
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl2
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.repository.settings.RegistrationRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepository
@@ -50,10 +50,10 @@ class App : Application() {
         FirebaseMessaging.getInstance().subscribeAllUser()
     }
 
-    private var challengeRepositoryRef: Reference<ChallengeRepository>? = null
-    fun getChallengeRepository(): ChallengeRepository =
+    private var challengeRepositoryRef: Reference<ChallengeRepository2>? = null
+    fun getChallengeRepository(): ChallengeRepository2 =
         challengeRepositoryRef?.get()
-            ?: ChallengeRepositoryImpl().apply { challengeRepositoryRef = SoftReference(this) }
+            ?: ChallengeRepositoryImpl2().apply { challengeRepositoryRef = SoftReference(this) }
 
     fun clearChallengeRepository() = getChallengeRepository().clearCache()
 

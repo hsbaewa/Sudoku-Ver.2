@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
-import kr.co.hs.sudoku.feature.multi.dashboard.leaderboard.LeaderBoardItem
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
@@ -177,27 +176,6 @@ class MultiDashboardViewModel(
             battleRepository.runCatching { getParticipating() }.getOrNull()
         }
         _currentMultiPlay.value = entity
-        setProgress(false)
-    }
-
-
-    private val _leaderBoard = MutableLiveData<List<LeaderBoardItem>>()
-    val leaderBoard: LiveData<List<LeaderBoardItem>> by this::_leaderBoard
-
-    fun requestLeaderBoard(limit: Long) = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        setProgress(true)
-        val leaderBoard: MutableList<LeaderBoardItem> =
-            withContext(Dispatchers.IO) { battleRepository.getLeaderBoard(limit) }
-                .map { LeaderBoardItem.ListItem(it, it.uid == currentUserUid) }
-                .toMutableList()
-
-        if (leaderBoard.find { it.entity.uid == currentUserUid } == null) {
-            currentUserUid
-                ?.runCatching { battleRepository.getLeaderBoard(this) }?.getOrNull()
-                ?.run { leaderBoard.add(LeaderBoardItem.MyItem(this)) }
-        }
-
-        _leaderBoard.value = leaderBoard
         setProgress(false)
     }
 

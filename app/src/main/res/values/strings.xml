@@ -141,6 +141,7 @@
     <string name="in_app_update_message">There is the latest app update. Would you like to proceed with the update?</string>
     <string name="in_app_update_message_canceled">Cancel app update now. The update can be performed later through the options menu.</string>
     <string name="in_app_update_message_confirm">Proceed with updating the app now.</string>
+    <string name="empty">Empty</string>
 
     <!-- 가이드 -->
     <string name="single_tab_guide_title">Single Play</string>

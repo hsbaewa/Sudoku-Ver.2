@@ -1,42 +1,59 @@
-package kr.co.hs.sudoku.feature.multi.dashboard.leaderboard
+package kr.co.hs.sudoku.feature.leaderboard
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutLeaderboardMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
-import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
-import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
-import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 
 class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
     ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
-        fun show(fragmentManager: FragmentManager) {
-            LeaderBoardBottomSheetDialogFragment().show(
-                fragmentManager,
-                LeaderBoardBottomSheetDialogFragment::class.java.name
-            )
-        }
+        private const val EXTRA_TYPE = "kr.co.hs.sudoku.feature.leaderboard.EXTRA_TYPE"
+        private const val TYPE_BATTLE = "TYPE_BATTLE"
+        private const val TYPE_CHALLENGE = "TYPE_CHALLENGE"
+        private const val EXTRA_ID = "kr.co.hs.sudoku.feature.leaderboard.EXTRA_ID"
+
+        fun showBattleLeaderBoard(fragmentManager: FragmentManager) =
+            LeaderBoardBottomSheetDialogFragment()
+                .apply { arguments = bundleOf(EXTRA_TYPE to TYPE_BATTLE) }
+                .show(fragmentManager, LeaderBoardBottomSheetDialogFragment::class.java.name)
+
+        fun showChallengeLeaderBoard(fragmentManager: FragmentManager, challengeId: String) =
+            LeaderBoardBottomSheetDialogFragment()
+                .apply {
+                    arguments = bundleOf(
+                        EXTRA_TYPE to TYPE_CHALLENGE,
+                        EXTRA_ID to challengeId
+                    )
+                }
+                .show(fragmentManager, LeaderBoardBottomSheetDialogFragment::class.java.name)
     }
 
     private lateinit var binding: LayoutLeaderboardMultiPlayBinding
-    private val viewModel: MultiDashboardViewModel by activityViewModels()
-    private val profileViewModel: UserProfileViewModel by activityViewModels()
+    private val app: App by lazy { requireContext().applicationContext as App }
+    private val viewModel: LeaderBoardListViewModel by viewModels {
+        LeaderBoardListViewModel.ProviderFactory(
+            app.getBattleRepository(),
+            app.getChallengeRepository()
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,23 +70,24 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
         with(binding.recyclerViewList) {
             this.layoutManager = LinearLayoutManager(context)
             addVerticalDivider(10.dp)
-            val itemAdapter =
-                LeaderBoardListAdapter(profileViewModel, this@LeaderBoardBottomSheetDialogFragment)
-
-            itemAdapter.submitList(
-                List(10) {
-                    LeaderBoardItem.ListItem(
-                        BattleLeaderBoardEntity("", 0, 0, it.toLong() + 1),
-                        false
-                    )
-                }
+            val itemAdapter = LeaderBoardListAdapter(
+                app.getProfileRepository(),
+                this@LeaderBoardBottomSheetDialogFragment
             )
             this.adapter = itemAdapter
-            viewModel.leaderBoard.observe(viewLifecycleOwner) { itemAdapter.submitList(it) }
+            viewModel.leaderBoardList.observe(viewLifecycleOwner) { itemAdapter.submitList(it) }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.requestLeaderBoard(10) }
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                when (arguments?.getString(EXTRA_TYPE)) {
+                    TYPE_BATTLE -> viewModel.requestBattleLeaderBoard()
+                    TYPE_CHALLENGE ->
+                        viewModel.requestChallengeLeaderBoard(arguments?.getString(EXTRA_ID) ?: "")
+
+                    else -> {}
+                }
+            }
         }
     }
 

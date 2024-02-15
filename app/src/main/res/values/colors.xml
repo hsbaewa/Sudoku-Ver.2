@@ -25,4 +25,8 @@
     <color name="error_font_background">#4ce53935</color>
     <color name="error_font">#e53935</color>
     <color name="sudoku_cross">#4ca4ffa4</color>
+
+    <color name="gold">#d4af37</color>
+    <color name="silver">#aaa9ad</color>
+    <color name="bronze">#b08d57</color>
 </resources>

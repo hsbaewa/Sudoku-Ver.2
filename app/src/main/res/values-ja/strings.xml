@@ -127,6 +127,7 @@
     <string name="in_app_update_message">最新のアプリアップデートがあります。アップデートを続行しますか？</string>
     <string name="in_app_update_message_canceled">今すぐアプリの更新をキャンセルします。その後、オプションメニューからアップデートを進めることができます。</string>
     <string name="in_app_update_message_confirm">今すぐアプリを更新します。</string>
+    <string name="empty">空</string>
 
     <!-- 가이드 -->
     <string name="single_tab_guide_title">シングルプレイ</string>

@@ -56,13 +56,17 @@ class ChallengeRecordRemoteSourceImpl : FireStoreRemoteSource(), RecordRemoteSou
             .await()
             .toObject(ClearTimeRecordModel::class.java)
             ?.apply {
-                rank = getRankingCollection(id)
-                    .orderBy("clearTime")
-                    .whereLessThan("clearTime", clearTime)
-                    .count()
-                    .get(AggregateSource.SERVER)
-                    .await()
-                    .count + 1
+                rank = if (clearTime > 0) {
+                    getRankingCollection(id)
+                        .orderBy("clearTime")
+                        .whereLessThan("clearTime", clearTime)
+                        .count()
+                        .get(AggregateSource.SERVER)
+                        .await()
+                        .count + 1
+                } else {
+                    throw NullPointerException("cannot parse to ClearTimeRecordModel")
+                }
             }
             ?: throw NullPointerException("cannot parse to ClearTimeRecordModel")
 

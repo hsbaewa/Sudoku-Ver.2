@@ -131,6 +131,7 @@
     <string name="in_app_update_message">최신 앱 업데이트가 있습니다. 업데이트를 진행 하시겠습니까?</string>
     <string name="in_app_update_message_canceled">지금 앱 업데이트를 취소합니다. 이후에 옵션 메뉴를 통해 업데이트 진행이 가능합니다.</string>
     <string name="in_app_update_message_confirm">지금 앱 업데이트를 진행합니다.</string>
+    <string name="empty">비어있음</string>
 
 
     <!-- 가이드 -->
