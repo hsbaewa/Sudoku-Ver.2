@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.datasource.record
 
+import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.record.ReserveRecordModel
 
@@ -10,4 +11,5 @@ interface RecordRemoteSource {
     suspend fun getRecord(id: String, uid: String): ClearTimeRecordModel
     suspend fun getReservedMyRecord(id: String, uid: String): ReserveRecordModel
     suspend fun deleteRecord(id: String, uid: String): Boolean
+    suspend fun getChallengeMetadata(challengeEntity: ChallengeEntity, uid: String): Boolean
 }

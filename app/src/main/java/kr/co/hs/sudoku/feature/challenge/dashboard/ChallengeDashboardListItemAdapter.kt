@@ -2,128 +2,85 @@ package kr.co.hs.sudoku.feature.challenge.dashboard
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.ListAdapter
-import com.google.firebase.auth.FirebaseAuth
-import kr.co.hs.sudoku.databinding.LayoutListItemChallengeButtonBinding
-import kr.co.hs.sudoku.databinding.LayoutListItemChallengeHeaderBinding
-import kr.co.hs.sudoku.databinding.LayoutListItemChallengeMatrixBinding
-import kr.co.hs.sudoku.databinding.LayoutListItemChallengeMyRankBinding
-import kr.co.hs.sudoku.databinding.LayoutListItemChallengeRankBinding
+import androidx.paging.PagingDataAdapter
+import kr.co.hs.sudoku.databinding.LayoutListItemChallengeItemBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeTitleBinding
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 
 class ChallengeDashboardListItemAdapter(
+    private val repository: ChallengeRepository,
+    private val onClickLeaderBoard: (challengeId: String) -> Unit,
     private val onClickStart: (ChallengeEntity) -> Unit,
-    private val onClickSelectDate: () -> Unit,
     private val onPopupMenuItemClickListener: ProfilePopupMenu.OnPopupMenuItemClickListener
-) : ListAdapter<ChallengeDashboardListItem, ChallengeDashboardListItemViewHolder<out ChallengeDashboardListItem>>(
+) : PagingDataAdapter<ChallengeDashboardListItem, ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem>>(
     ChallengeDashboardListItemDiffCallback()
 ) {
     companion object {
-        private const val VT_TITLE = 100
-        private const val VT_MATRIX_HEADER = 101
-        private const val VT_MATRIX = 102
-        private const val VT_RANK_HEADER = 103
-        private const val VT_RANKER = 104
-        private const val VT_BUTTON = 105
-        private const val VT_MY_RANK = 106
+        private const val VT_TITLE = 1
+        private const val VT_ITEM = 2
     }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): ChallengeDashboardListItemViewHolder<out ChallengeDashboardListItem> {
+    ): ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem> {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            VT_TITLE -> ChallengeDashboardListItemViewHolder.Title(
-                LayoutListItemChallengeTitleBinding.inflate(inflater, parent, false)
-            ).apply {
-                binding.btnSelectDate.setOnClickListener { onClickSelectDate() }
+            VT_TITLE -> {
+                val binding = LayoutListItemChallengeTitleBinding.inflate(inflater, parent, false)
+                ChallengeDashboardListItemTitleViewHolder(binding)
             }
 
-            VT_MATRIX_HEADER -> ChallengeDashboardListItemViewHolder.MatrixHeader(
-                LayoutListItemChallengeHeaderBinding.inflate(inflater, parent, false)
-            )
-
-            VT_MATRIX -> ChallengeDashboardListItemViewHolder.MatrixInfo(
-                LayoutListItemChallengeMatrixBinding.inflate(inflater, parent, false)
-            )
-
-            VT_BUTTON -> ChallengeDashboardListItemViewHolder.Button(
-                LayoutListItemChallengeButtonBinding.inflate(inflater, parent, false)
-            ).apply {
-                setOnClickListener {
-                    onClickStart((getItem(bindingAdapterPosition) as ChallengeDashboardListItem.ChallengeStartItem).challengeEntity)
-                }
-            }
-
-            VT_MY_RANK -> ChallengeDashboardListItemViewHolder.MyRank(
-                LayoutListItemChallengeMyRankBinding.inflate(inflater, parent, false)
-            )
-
-            VT_RANK_HEADER -> ChallengeDashboardListItemViewHolder.RankHeader(
-                LayoutListItemChallengeHeaderBinding.inflate(inflater, parent, false)
-            )
-
-            else -> ChallengeDashboardListItemViewHolder.Rank(
-                LayoutListItemChallengeRankBinding.inflate(inflater, parent, false)
-            ).apply {
-                clickableView.setOnClickListener {
-                    with(ProfilePopupMenu(it.context, it, onPopupMenuItemClickListener)) {
-                        (getItem(bindingAdapterPosition) as? ChallengeDashboardListItem.RankItem)
-                            ?.rankEntity
-                            ?.let {
-                                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                                if (currentUserId != it.uid) it else null
-                            }
-                            ?.run { show(this) }
+            VT_ITEM -> {
+                val binding = LayoutListItemChallengeItemBinding.inflate(inflater, parent, false)
+                ChallengeDashboardListItemDefaultViewHolder<ChallengeDashboardListItem>(
+                    binding,
+                    repository,
+                    onPopupMenuItemClickListener
+                ).apply {
+                    binding.btnLeaderBoard.setOnClickListener {
+                        getItem(bindingAdapterPosition)?.id?.apply(onClickLeaderBoard)
+                    }
+                    binding.cardView.setOnClickListener {
+                        (getItem(bindingAdapterPosition) as? ChallengeDashboardListItem.ChallengeItem)
+                            ?.challengeEntity
+                            ?.apply(onClickStart)
                     }
                 }
             }
+
+            else -> throw Exception("unknown view type")
         }
     }
 
     override fun onBindViewHolder(
-        holder: ChallengeDashboardListItemViewHolder<out ChallengeDashboardListItem>,
+        holder: ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem>,
         position: Int
     ) {
-        when (val item = getItem(position)) {
-            is ChallengeDashboardListItem.ChallengeStartItem ->
-                (holder as ChallengeDashboardListItemViewHolder.Button).onBind(item)
-
-            is ChallengeDashboardListItem.MatrixItem ->
-                (holder as ChallengeDashboardListItemViewHolder.MatrixInfo).onBind(item)
-
-            is ChallengeDashboardListItem.RankItem ->
-                (holder as ChallengeDashboardListItemViewHolder.Rank).onBind(item)
-
-            is ChallengeDashboardListItem.MyRankItem ->
-                (holder as ChallengeDashboardListItemViewHolder.MyRank).onBind(item)
-
-            is ChallengeDashboardListItem.TitleItem ->
-                (holder as ChallengeDashboardListItemViewHolder.Title).onBind(item)
-
-            is ChallengeDashboardListItem.MatrixHeaderItem ->
-                (holder as ChallengeDashboardListItemViewHolder.MatrixHeader).onBind(item)
-
-            is ChallengeDashboardListItem.RankHeaderItem ->
-                (holder as ChallengeDashboardListItemViewHolder.RankHeader).onBind(item)
+        val item = getItem(position) ?: return
+        when (holder) {
+            is ChallengeDashboardListItemDefaultViewHolder -> holder.onBind(item)
+            is ChallengeDashboardListItemTitleViewHolder -> holder.onBind(item)
         }
     }
 
     override fun getItemViewType(position: Int) = when (getItem(position)) {
-        is ChallengeDashboardListItem.ChallengeStartItem -> VT_BUTTON
-        is ChallengeDashboardListItem.MatrixItem -> VT_MATRIX
-        is ChallengeDashboardListItem.RankItem -> VT_RANKER
-        is ChallengeDashboardListItem.TitleItem -> VT_TITLE
-        is ChallengeDashboardListItem.MyRankItem -> VT_MY_RANK
-        is ChallengeDashboardListItem.MatrixHeaderItem -> VT_MATRIX_HEADER
-        is ChallengeDashboardListItem.RankHeaderItem -> VT_RANK_HEADER
+        is ChallengeDashboardListItem.ChallengeItem -> VT_ITEM
+        ChallengeDashboardListItem.TitleItem -> VT_TITLE
+        null -> throw Exception("unknown item")
     }
 
-    override fun onViewRecycled(holder: ChallengeDashboardListItemViewHolder<out ChallengeDashboardListItem>) {
-        super.onViewRecycled(holder)
-        holder.onRecycled()
+    override fun onViewAttachedToWindow(holder: ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem>) {
+        holder.onViewAttachedToWindow()
+    }
+
+    override fun onViewDetachedFromWindow(holder: ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem>) {
+        holder.onViewDetachedFromWindow()
+    }
+
+    override fun onViewRecycled(holder: ChallengeDashboardListItemViewHolder<ChallengeDashboardListItem>) {
+        holder.onViewRecycled()
     }
 }

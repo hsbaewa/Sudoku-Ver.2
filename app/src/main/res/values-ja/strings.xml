@@ -104,10 +104,10 @@
 
     <!-- 도전 대시보드 -->
     <string name="title_challenge">挑戦</string>
-    <string name="challenge_dashboard_header_matrix">今日の課題</string>
-    <string name="challenge_dashboard_header_rank">ランキング</string>
     <string name="error_challenge_already_record">既に挑戦完了しました。広告を通じて再挑戦の報酬を得ることができます。再挑戦しますか？</string>
     <string name="error_challenge_retry_rewarded">再挑戦報酬を受け取りませんでした。</string>
+    <string name="challenge_list_item_rank_more">リーダーボードを見る</string>
+    <string name="challenge_list_item_description">まだ誰も挑戦していません。\nクリックして挑戦してみてください。</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">おめでとうございます！\n数独をクリアしました！</string>

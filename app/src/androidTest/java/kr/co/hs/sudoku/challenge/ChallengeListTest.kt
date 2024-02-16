@@ -4,7 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.spyk
 import kotlinx.coroutines.test.runTest
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl2
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +15,7 @@ import kotlin.time.Duration
 class ChallengeListTest {
     @Test
     fun getChallengeListTest() = runTest(timeout = Duration.INFINITE) {
-        val challengeRepository2 = spyk<ChallengeRepositoryImpl2>(recordPrivateCalls = true)
+        val challengeRepository2 = spyk<ChallengeRepositoryImpl>(recordPrivateCalls = true)
         challengeRepository2.setFireStoreRootVersion("test")
         every { challengeRepository2.getProperty("currentUserUid") } returns "lYYBEGzX9JggNlChJs7C9OPtVe82"
 

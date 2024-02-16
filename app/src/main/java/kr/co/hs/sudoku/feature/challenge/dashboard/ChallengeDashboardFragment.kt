@@ -5,36 +5,34 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.Fragment
-import kr.co.hs.sudoku.databinding.LayoutListChallengeRankBinding
+import kr.co.hs.sudoku.core.PagingLoadStateAdapter
+import kr.co.hs.sudoku.databinding.LayoutListChallengeBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
-import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.ad.ChallengeRetryRewardAdManager
 import kr.co.hs.sudoku.feature.challenge.play.ChallengePlayActivity
+import kr.co.hs.sudoku.feature.leaderboard.LeaderBoardBottomSheetDialogFragment
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
+import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
-import java.util.Calendar
-import java.util.Date
 
 class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
         fun newInstance() = ChallengeDashboardFragment()
     }
 
-    private lateinit var binding: LayoutListChallengeRankBinding
+    private lateinit var binding: LayoutListChallengeBinding
     private val viewModel: ChallengeDashboardViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -42,52 +40,64 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = LayoutListChallengeRankBinding.inflate(inflater, container, false)
+        binding = LayoutListChallengeBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        with(binding.recyclerViewRankList) {
-            layoutManager = LinearLayoutManager(context)
-            addVerticalDivider(thickness = 10.dp)
-            adapter = ChallengeDashboardListItemAdapter(
-                onClickStart = { startChallenge(it) },
-                onClickSelectDate = { showChallengeSelectDialog() },
-                this@ChallengeDashboardFragment
-            )
-        }
-
-        with(binding.recyclerViewRankList.adapter as ChallengeDashboardListItemAdapter) {
-            submitList(listOf(ChallengeDashboardListItem.TitleItem(null)))
-        }
-
-        viewModel.dashboardItemList.observe(viewLifecycleOwner) {
-            with(binding.recyclerViewRankList.adapter as ChallengeDashboardListItemAdapter) {
-                submitList(it)
-            }
-        }
-
-
         with(binding.swipeRefreshLayout) {
-            setOnRefreshListener { viewModel.refreshChallenge() }
-            viewModel.isRunningProgress.observe(viewLifecycleOwner) {
-                if (isRefreshing) {
-                    if (!it) {
-                        binding.swipeRefreshLayout.isRefreshing = it
+            setOnRefreshListener { pagingDataAdapter.refresh() }
+        }
+
+        pagingDataAdapter.apply {
+            addLoadStateListener { loadState ->
+                when (loadState.refresh) {
+                    is LoadState.NotLoading, is LoadState.Error -> {
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        dismissProgressIndicator()
                     }
-                } else {
-                    isShowProgressIndicator = it
+
+                    LoadState.Loading -> {
+                        if (!binding.swipeRefreshLayout.isRefreshing) {
+                            showProgressIndicator()
+                        }
+                    }
                 }
 
+                if (loadState.refresh is LoadState.NotLoading && loadState.append is LoadState.NotLoading) {
+                    // 페이지 로드 완료 후 동작
+                    binding.swipeRefreshLayout.isRefreshing = false
+                }
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.refreshChallenge() }
+        with(binding.recyclerViewChallengeList) {
+            layoutManager = LinearLayoutManager(context)
+            addVerticalDivider(thickness = 40.dp)
+            adapter = pagingDataAdapter.withLoadStateFooter(PagingLoadStateAdapter())
         }
 
+        viewModel.challengeDashboardPagingData.observe(viewLifecycleOwner) {
+            viewLifecycleOwner.lifecycleScope.launch { pagingDataAdapter.submitData(it) }
+        }
+    }
+
+    private val pagingDataAdapter: ChallengeDashboardListItemAdapter
+            by lazy {
+                val app = requireContext().applicationContext as App
+                ChallengeDashboardListItemAdapter(
+                    app.getChallengeRepository(),
+                    onClickLeaderBoard = { showLeaderBoard(it) },
+                    onClickStart = { startChallenge(it) },
+                    this
+                )
+            }
+
+    private fun showLeaderBoard(challengeId: String) = viewLifecycleOwner.lifecycleScope.launch {
+        LeaderBoardBottomSheetDialogFragment
+            .showChallengeLeaderBoard(childFragmentManager, challengeId)
     }
 
     private fun startChallenge(challengeEntity: ChallengeEntity) =
@@ -98,7 +108,7 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
                     throwable.message.toString()
                 ) {
                     if (it) {
-                        retryChallenge(challengeEntity)
+                        retryChallenge(challengeEntity.challengeId)
                     }
                 }
 
@@ -116,7 +126,7 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
     private class AlreadyException(message: String?) : Exception(message)
 
 
-    private fun retryChallenge(challengeEntity: ChallengeEntity) {
+    private fun retryChallenge(challengeId: String) {
         viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             dismissProgressIndicator()
             showAlert(getString(R.string.app_name), throwable.message.toString()) {}
@@ -126,49 +136,14 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
             if (!result)
                 throw InvalidRewardedException(getString(R.string.error_challenge_retry_rewarded))
 
-            viewModel.doDeleteRecord()
+            viewModel.doDeleteRecord(challengeId)
             dismissProgressIndicator()
 
-            ChallengePlayActivity.start(requireContext(), challengeEntity.challengeId)
+            ChallengePlayActivity.start(requireContext(), challengeId)
         }
     }
 
     private class InvalidRewardedException(message: String?) : Exception(message)
-
-    private fun showChallengeSelectDialog() = viewLifecycleOwner.lifecycleScope.launch {
-        val dialog = DatePickerDialog.newInstance(
-            { _, year, monthOfYear, dayOfMonth ->
-                viewModel.challengeList.value
-                    ?.find {
-                        val c = it.createdAt?.let {
-                            Calendar.getInstance().apply { time = it }
-                        } ?: return@find false
-
-                        val y = c.get(Calendar.YEAR)
-                        val m = c.get(Calendar.MONTH)
-                        val d = c.get(Calendar.DAY_OF_MONTH)
-
-                        y == year && m == monthOfYear && d == dayOfMonth
-                    }
-                    ?.let { viewModel.selectChallenge(it) }
-            },
-            Calendar.getInstance()
-                .apply { time = viewModel.selected.value?.createdAt ?: Date() }
-        )
-        dialog.selectableDays = viewModel.challengeList.value
-            ?.mapNotNull {
-                it.createdAt?.let { c -> Calendar.getInstance().apply { time = c } }
-            }
-            ?.toTypedArray()
-
-        dialog.vibrate(false)
-        dialog.show(childFragmentManager, "DatePickerDialog")
-    }
-
-    private fun showUserProfile(uid: String): Boolean {
-        lifecycleScope.launch { ProfileBottomSheetDialog.show(childFragmentManager, uid) }
-        return true
-    }
 
     override fun onClickProfile(uid: String) =
         ProfileBottomSheetDialog.show(childFragmentManager, uid)
@@ -183,4 +158,5 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
         }
     }
 
+    fun refreshPagingData() = pagingDataAdapter.refresh()
 }

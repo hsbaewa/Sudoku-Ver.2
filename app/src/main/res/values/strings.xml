@@ -108,8 +108,6 @@
 
     <!-- 도전 대시보드 -->
     <string name="title_challenge">Challenge</string>
-    <string name="challenge_dashboard_header_matrix">Today\'s challenge</string>
-    <string name="challenge_dashboard_header_rank">Ranking</string>
     <string name="challenge_divider_for_my_rank" translatable="false">.\n.\n.</string>
     <string name="error_challenge_already_record">You have already completed the challenge. You can receive rewards for trying again through advertising. Would you like to try again?</string>
     <string name="error_challenge_retry_rewarded">failed rewarded</string>
@@ -118,7 +116,9 @@
     <string name="rank_format_second" translatable="false">2nd</string>
     <string name="rank_format_third" translatable="false">3rd</string>
     <string name="rank_format" translatable="false">%1$dth</string>
-    <string name="challenge_select_date_format" translatable="false">%1$s ▼</string>
+    <string name="challenge_list_item_rank_more">Show Leaderboard</string>
+    <string name="challenge_list_item_created_at_format" translatable="false">yyyy-MM-dd HH:mm</string>
+    <string name="challenge_list_item_description">No one has taken the challenge yet.\nClick to try it!</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">Congratulation!\nClear sudoku!!</string>
@@ -142,6 +142,7 @@
     <string name="in_app_update_message_canceled">Cancel app update now. The update can be performed later through the options menu.</string>
     <string name="in_app_update_message_confirm">Proceed with updating the app now.</string>
     <string name="empty">Empty</string>
+    <string name="no_name" translatable="false" />
 
     <!-- 가이드 -->
     <string name="single_tab_guide_title">Single Play</string>

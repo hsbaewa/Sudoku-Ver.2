@@ -6,6 +6,7 @@ import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
+import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.record.ReserveRecordModel
 
@@ -87,5 +88,27 @@ class ChallengeRecordRemoteSourceImpl : FireStoreRemoteSource(), RecordRemoteSou
                 .await()
             true
         }.getOrDefault(false)
+    }
+
+    override suspend fun getChallengeMetadata(
+        challengeEntity: ChallengeEntity,
+        uid: String
+    ) = runCatching {
+        val documentSnapshot = getRankingCollection(challengeEntity.challengeId)
+            .document(uid)
+            .get()
+            .await()
+
+        challengeEntity.startPlayAt = documentSnapshot.getTimestamp("startAt")?.toDate()
+        challengeEntity.isPlaying = challengeEntity.startPlayAt != null
+        challengeEntity.relatedUid = uid
+        challengeEntity.isComplete = (documentSnapshot.getLong("clearTime") ?: -1) >= 0
+        true
+    }.getOrElse {
+        challengeEntity.startPlayAt = null
+        challengeEntity.isPlaying = false
+        challengeEntity.relatedUid = uid
+        challengeEntity.isComplete = false
+        false
     }
 }

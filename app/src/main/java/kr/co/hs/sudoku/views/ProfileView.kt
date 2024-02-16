@@ -37,6 +37,7 @@ class ProfileView : ConstraintLayout {
     private val tvFlag: TextView by lazy { findViewById(R.id.tv_flag) }
     private val tvDisplayName: TextView by lazy { findViewById(R.id.tv_display_name) }
     private var disposableProfileIcon: Disposable? = null
+    var currentProfile: ProfileEntity? = null
 
     private fun setProfileIcon(data: String?) = with(ivProfileIcon) {
         disposableProfileIcon = data
@@ -66,6 +67,7 @@ class ProfileView : ConstraintLayout {
     }
 
     fun load(profile: ProfileEntity?): Disposable? {
+        this.currentProfile = profile
         setProfileIcon(profile?.iconUrl)
         setNationFlag(profile?.locale)
         setDisplayName(profile?.displayName)

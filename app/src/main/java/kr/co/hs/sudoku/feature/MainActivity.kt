@@ -25,6 +25,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentOnAttachListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -214,7 +216,23 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             ACTION_NEW_CHALLENGE -> lifecycleScope.launch {
                 withStarted {
                     binding.bottomNavigationView.selectedItemId = R.id.challenge
-                    challengeDashboardViewMode.initChallengeDashboard()
+
+                    with(supportFragmentManager) {
+                        findChallengeFragment()
+                            ?.refreshPagingData()
+                            ?: run {
+                                addFragmentOnAttachListener(object : FragmentOnAttachListener {
+                                    override fun onAttachFragment(
+                                        fragmentManager: FragmentManager,
+                                        fragment: Fragment
+                                    ) {
+                                        removeFragmentOnAttachListener(this)
+                                        fragmentManager.findChallengeFragment()?.refreshPagingData()
+                                    }
+                                })
+                            }
+                    }
+
                 }
             }
         }
@@ -450,6 +468,9 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    private fun FragmentManager.findChallengeFragment() =
+        findFragmentByTag(ChallengeDashboardFragment::class.java.name) as? ChallengeDashboardFragment
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

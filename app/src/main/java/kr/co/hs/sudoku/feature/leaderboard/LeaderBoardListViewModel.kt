@@ -9,16 +9,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.repository.battle.BattleRepository
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepository2
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
 class LeaderBoardListViewModel(
     private val battleRepository: BattleRepository? = null,
-    private val challengeRepository: ChallengeRepository2? = null
+    private val challengeRepository: ChallengeRepository? = null
 ) : ViewModel() {
     class ProviderFactory(
         private val battleRepository: BattleRepository? = null,
-        private val challengeRepository: ChallengeRepository2? = null
+        private val challengeRepository: ChallengeRepository? = null
     ) : ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
             return if (modelClass.isAssignableFrom(LeaderBoardListViewModel::class.java)) {

@@ -13,4 +13,5 @@ interface ChallengeRemoteSource {
     suspend fun getChallenge(createdAt: Date): ChallengeModel
     suspend fun getChallenges(startAt: Date): List<ChallengeModel>
     suspend fun getChallenges(count: Long): List<ChallengeModel>
+    suspend fun getChallenges(startAt: Date, count: Long): List<ChallengeModel>
 }
