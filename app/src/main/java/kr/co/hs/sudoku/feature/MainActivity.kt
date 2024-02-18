@@ -70,6 +70,7 @@ import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
+import java.net.MalformedURLException
 import java.net.URL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -296,7 +297,11 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private fun ActionBar.setUIProfile(profileEntity: ProfileEntity?) = profileEntity
         ?.run {
             title = getString(R.string.welcome_format, displayName)
-            loadIcon(URL(iconUrl), getDrawableCompat(R.drawable.ic_person))
+            try {
+                loadIcon(URL(iconUrl), getDrawableCompat(R.drawable.ic_person))
+            } catch (e: MalformedURLException) {
+                setLogo(R.drawable.ic_person)
+            }
         }
         ?: run {
             title = getString(R.string.welcome_not_login)
