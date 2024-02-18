@@ -21,7 +21,6 @@ class ChallengeRetryRewardAdManager(
         } else {
             activity.getMetaData("kr.co.hs.sudoku.adUnitId.RewardAdChallengeRetry")
                 ?.takeIf { it.isNotEmpty() }
-            null
         }
 
     private suspend fun fetchRewardedAd() = suspendCoroutine {
