@@ -13,21 +13,24 @@ import androidx.paging.liveData
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Date
 
 class ChallengeDashboardViewModel(
-    private val repository: ChallengeRepository
+    private val repository: ChallengeRepository,
+    private val nativeItemAdManager: NativeItemAdManager,
 ) : ViewModel() {
 
     class ProviderFactory(
-        private val repository: ChallengeRepository
+        private val repository: ChallengeRepository,
+        private val nativeItemAdManager: NativeItemAdManager,
     ) : ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
             return if (modelClass.isAssignableFrom(ChallengeDashboardViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                ChallengeDashboardViewModel(repository) as T
+                ChallengeDashboardViewModel(repository, nativeItemAdManager) as T
             } else {
                 throw IllegalArgumentException()
             }
@@ -37,14 +40,15 @@ class ChallengeDashboardViewModel(
 
     val challengeDashboardPagingData: LiveData<PagingData<ChallengeDashboardListItem>>
         get() = Pager(
-            config = PagingConfig(pageSize = 5),
+            config = PagingConfig(pageSize = 5, initialLoadSize = 1),
             pagingSourceFactory = {
-                ChallengePagingSource(repository)
+                ChallengePagingSource(repository, nativeItemAdManager)
             }
         ).liveData.cachedIn(viewModelScope)
 
     private class ChallengePagingSource(
-        private val repository: ChallengeRepository
+        private val repository: ChallengeRepository,
+        private val nativeItemAdManager: NativeItemAdManager
     ) : PagingSource<Long, ChallengeDashboardListItem>() {
         override fun getRefreshKey(state: PagingState<Long, ChallengeDashboardListItem>) = null
         override suspend fun load(params: LoadParams<Long>): LoadResult<Long, ChallengeDashboardListItem> {
@@ -56,11 +60,17 @@ class ChallengeDashboardViewModel(
                 if (isFirst) {
                     add(ChallengeDashboardListItem.TitleItem)
                 }
-                addAll(repository
-                    .runCatching { getChallenges(key, count) }
+                val originalChallengeList: MutableList<ChallengeDashboardListItem> = repository
+                    .runCatching { withContext(Dispatchers.IO) { getChallenges(key, count) } }
                     .getOrDefault(emptyList())
                     .map { ChallengeDashboardListItem.ChallengeItem(it) }
-                )
+                    .toMutableList()
+
+                withContext(Dispatchers.IO) { nativeItemAdManager.fetchNativeAd() }?.let { ad ->
+                    originalChallengeList.add(ChallengeDashboardListItem.AdItem(ad))
+                }
+
+                addAll(originalChallengeList)
             }
 
             val nextKey = list.findLast { it is ChallengeDashboardListItem.ChallengeItem }

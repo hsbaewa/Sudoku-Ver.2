@@ -6,20 +6,13 @@ import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAdOptions
-import kr.co.hs.sudoku.BuildConfig
-import kr.co.hs.sudoku.extension.platform.ContextExtension.getMetaData
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class NativeItemAdManager(private val context: Context) {
-
+class NativeItemAdManager(
+    private val context: Context,
     private val adUnitId: String?
-        get() = if (BuildConfig.DEBUG) {
-            "ca-app-pub-3940256099942544/2247696110"
-        } else {
-            context.getMetaData("kr.co.hs.sudoku.adUnitId.NativeAd")
-                ?.takeIf { it.isNotEmpty() }
-        }
+) {
 
     private fun getAdLoader(): AdLoader.Builder? {
         val adUnitId = adUnitId ?: return null

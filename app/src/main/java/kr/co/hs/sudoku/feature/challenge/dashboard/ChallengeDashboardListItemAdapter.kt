@@ -3,6 +3,7 @@ package kr.co.hs.sudoku.feature.challenge.dashboard
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
+import kr.co.hs.sudoku.databinding.LayoutListItemChallengeAdBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeItemBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemChallengeTitleBinding
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
@@ -20,6 +21,7 @@ class ChallengeDashboardListItemAdapter(
     companion object {
         private const val VT_TITLE = 1
         private const val VT_ITEM = 2
+        private const val VT_AD = 3
     }
 
     override fun onCreateViewHolder(
@@ -51,6 +53,11 @@ class ChallengeDashboardListItemAdapter(
                 }
             }
 
+            VT_AD -> {
+                val binding = LayoutListItemChallengeAdBinding.inflate(inflater, parent, false)
+                AdItemViewHolder(binding)
+            }
+
             else -> throw Exception("unknown view type")
         }
     }
@@ -63,12 +70,14 @@ class ChallengeDashboardListItemAdapter(
         when (holder) {
             is ChallengeDashboardListItemDefaultViewHolder -> holder.onBind(item)
             is ChallengeDashboardListItemTitleViewHolder -> holder.onBind(item)
+            is AdItemViewHolder -> holder.onBind(item)
         }
     }
 
     override fun getItemViewType(position: Int) = when (getItem(position)) {
         is ChallengeDashboardListItem.ChallengeItem -> VT_ITEM
         ChallengeDashboardListItem.TitleItem -> VT_TITLE
+        is ChallengeDashboardListItem.AdItem -> VT_AD
         null -> throw Exception("unknown item")
     }
 
