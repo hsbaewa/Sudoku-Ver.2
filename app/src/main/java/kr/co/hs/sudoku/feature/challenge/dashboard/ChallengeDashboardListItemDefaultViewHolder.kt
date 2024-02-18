@@ -5,6 +5,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import coil.request.Disposable
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -30,6 +31,8 @@ class ChallengeDashboardListItemDefaultViewHolder<T : ChallengeDashboardListItem
     private var disposableProfileFirst: Disposable? = null
     private var disposableProfileSecond: Disposable? = null
     private var disposableProfileThird: Disposable? = null
+    private val currentUserUid: String
+        get() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     override fun onBind(item: ChallengeDashboardListItem) {
         challengeId = item.id
@@ -73,6 +76,7 @@ class ChallengeDashboardListItemDefaultViewHolder<T : ChallengeDashboardListItem
         list.getOrNull(0)
             ?.run {
                 disposableProfileFirst = binding.profileViewFirstGrade.loadProfile(this)
+                binding.profileViewFirstGrade.setTextColor(if (currentUserUid == uid) R.color.black else R.color.gray_600)
                 binding.cardViewFirstGrade.isVisible = true
             }
             ?: run { binding.cardViewFirstGrade.isVisible = false }
@@ -80,6 +84,7 @@ class ChallengeDashboardListItemDefaultViewHolder<T : ChallengeDashboardListItem
         list.getOrNull(1)
             ?.run {
                 disposableProfileSecond = binding.profileViewSecondGrade.loadProfile(this)
+                binding.profileViewSecondGrade.setTextColor(if (currentUserUid == uid) R.color.black else R.color.gray_600)
                 binding.cardViewSecondGrade.isVisible = true
             }
             ?: run { binding.cardViewSecondGrade.isVisible = false }
@@ -87,6 +92,7 @@ class ChallengeDashboardListItemDefaultViewHolder<T : ChallengeDashboardListItem
         list.getOrNull(2)
             ?.run {
                 disposableProfileThird = binding.profileViewThirdGrade.loadProfile(this)
+                binding.profileViewThirdGrade.setTextColor(if (currentUserUid == uid) R.color.black else R.color.gray_600)
                 binding.cardViewThirdGrade.isVisible = true
             }
             ?: run { binding.cardViewThirdGrade.isVisible = false }
@@ -114,5 +120,7 @@ class ChallengeDashboardListItemDefaultViewHolder<T : ChallengeDashboardListItem
     }
 
     private fun onClickProfile(parent: View, profileEntity: ProfileEntity) =
-        ProfilePopupMenu(parent.context, parent, onPopupMenuItemClickListener).show(profileEntity)
+        profileEntity.uid.takeUnless { it == currentUserUid }
+            ?.run { ProfilePopupMenu(parent.context, parent, onPopupMenuItemClickListener) }
+            ?.show(profileEntity)
 }
