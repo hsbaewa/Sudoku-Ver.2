@@ -256,12 +256,15 @@ class SudokuView : MatrixItemView {
             height = 500
         }
 
-        fun showAtPosition(x: Float, y: Float) = showAtLocation(
-            this@SudokuView,
-            NO_GRAVITY,
-            x.toInt().minus(width.div(2)),
-            y.toInt().minus(height.div(2))
-        )
+        fun showAtPosition(x: Float, y: Float) = runCatching {
+            showAtLocation(
+                this@SudokuView,
+                NO_GRAVITY,
+                x.toInt().minus(width.div(2)),
+                y.toInt().minus(height.div(2))
+            )
+        }.getOrNull()
+
 
         fun getCurrentAction() = (contentView as NumberSelectionView).getCurrentAction()
 
