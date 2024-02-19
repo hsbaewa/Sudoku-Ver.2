@@ -34,7 +34,7 @@ class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource
 
     override suspend fun createChallenge(challengeModel: ChallengeModel) =
         with(
-            challengeModel.id.takeIf { it != null }
+            challengeModel.id.takeIf { !it.isNullOrEmpty() }
                 ?.run { challengeCollection.document(this) }
                 ?: challengeCollection.document()
         ) {
