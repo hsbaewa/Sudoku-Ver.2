@@ -185,6 +185,11 @@ class SudokuView : MatrixItemView {
             MotionEvent.ACTION_UP -> {
                 val selectedNumber = getNumberSelected()
                 currentCellPosition?.run {
+                    val maxRowValue = matrixValues.size.takeIf { it > 0 }?.minus(1) ?: 0
+                    val maxColumnValue =
+                        matrixValues.firstOrNull()?.size?.takeIf { it > 0 }?.minus(1) ?: 0
+                    val row = row.takeIf { it <= maxRowValue } ?: maxRowValue
+                    val column = column.takeIf { it <= maxColumnValue } ?: maxColumnValue
                     matrixValues[row][column] = selectedNumber
                     onCellValueChangedListener?.onChangedCell(
                         row,
