@@ -3,6 +3,7 @@ package kr.co.hs.sudoku.challenge
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.spyk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
@@ -31,6 +32,8 @@ class ChallengeListTest {
         val challengeEntity = ChallengeEntityImpl(matrix)
 
         challengeRepository.createChallenge(challengeEntity)
+
+        delay(5000)
 
         var list = challengeRepository.getChallenges(Date(), 10000)
         val listSize = list.size
