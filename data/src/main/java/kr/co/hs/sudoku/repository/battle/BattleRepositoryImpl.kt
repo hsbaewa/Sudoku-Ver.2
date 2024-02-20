@@ -12,6 +12,8 @@ import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
 import kr.co.hs.sudoku.datasource.battle.impl.BattleRemoteSourceImpl
+import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
+import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
 import kr.co.hs.sudoku.datasource.user.impl.ProfileRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain
@@ -22,6 +24,7 @@ import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.model.battle.BattleModel
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
+import kr.co.hs.sudoku.model.logs.impl.BattleClearModelImpl
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.TestableRepository
@@ -31,7 +34,8 @@ import kotlin.math.sqrt
 @Suppress("SpellCheckingInspection")
 class BattleRepositoryImpl(
     private val battleRemoteSource: BattleRemoteSource = BattleRemoteSourceImpl(),
-    private val profileRemoteSource: ProfileRemoteSource = ProfileRemoteSourceImpl()
+    private val profileRemoteSource: ProfileRemoteSource = ProfileRemoteSourceImpl(),
+    private val logRemoteSource: LogRemoteSource = LogRemoteSourceImpl()
 ) : BattleRepository, TestableRepository {
 
     override val currentUserUid: String
@@ -479,6 +483,14 @@ class BattleRepositoryImpl(
             }
         }.await()
 
+        logRemoteSource.createLog(
+            BattleClearModelImpl().also {
+                it.battleId = battle.id
+                it.battleWith = battle.participants.map { it.uid }
+                it.uid = currentUserUid
+                it.record = record
+            }
+        )
     }
 
     override suspend fun exit() = doExitBattle()
@@ -622,13 +634,12 @@ class BattleRepositoryImpl(
     class BattleRepositoryException(message: String?, val type: ErrorType) : Exception(message)
 
     override fun setFireStoreRootVersion(versionName: String) {
-        (profileRemoteSource as FireStoreRemoteSource).rootDocument =
-            FirebaseFirestore.getInstance()
-                .collection("version")
-                .document(versionName)
-        (battleRemoteSource as FireStoreRemoteSource).rootDocument = FirebaseFirestore.getInstance()
+        val rootDocument = FirebaseFirestore.getInstance()
             .collection("version")
             .document(versionName)
+        (profileRemoteSource as FireStoreRemoteSource).rootDocument = rootDocument
+        (battleRemoteSource as FireStoreRemoteSource).rootDocument = rootDocument
+        (logRemoteSource as FireStoreRemoteSource).rootDocument = rootDocument
     }
 
 
