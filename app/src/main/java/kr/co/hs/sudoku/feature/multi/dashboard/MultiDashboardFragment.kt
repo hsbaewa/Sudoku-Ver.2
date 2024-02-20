@@ -25,9 +25,9 @@ import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.feature.leaderboard.LeaderBoardBottomSheetDialogFragment
 import kr.co.hs.sudoku.feature.messaging.MessagingManager
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
-import kr.co.hs.sudoku.feature.multi.dashboard.leaderboard.LeaderBoardBottomSheetDialogFragment
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
@@ -182,6 +182,6 @@ class MultiDashboardFragment : Fragment() {
     }
 
     private fun showLeaderBoard() = viewLifecycleOwner.lifecycleScope.launch {
-        LeaderBoardBottomSheetDialogFragment.show(childFragmentManager)
+        LeaderBoardBottomSheetDialogFragment.showBattleLeaderBoard(childFragmentManager)
     }
 }

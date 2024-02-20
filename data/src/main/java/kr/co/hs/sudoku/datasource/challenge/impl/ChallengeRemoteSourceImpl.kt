@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.datasource.challenge.impl
 
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -21,7 +22,8 @@ class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource
         .toObject(ChallengeModel::class.java)
         ?: throw Exception("cannot parse to ChallengeModel class")
 
-    private val challengeCollection = rootDocument.collection("challenge")
+    private val challengeCollection: CollectionReference
+        get() = rootDocument.collection("challenge")
 
     override suspend fun getChallenge(id: String) = challengeCollection
         .document(id)
@@ -32,7 +34,7 @@ class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource
 
     override suspend fun createChallenge(challengeModel: ChallengeModel) =
         with(
-            challengeModel.id.takeIf { it != null }
+            challengeModel.id.takeIf { !it.isNullOrEmpty() }
                 ?.run { challengeCollection.document(this) }
                 ?: challengeCollection.document()
         ) {
@@ -91,6 +93,15 @@ class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource
 
     override suspend fun getChallenges(count: Long) = challengeCollection
         .orderBy("createdAt", Query.Direction.DESCENDING)
+        .limit(count)
+        .get()
+        .await()
+        .documents
+        .mapNotNull { it.toObject(ChallengeModel::class.java) }
+
+    override suspend fun getChallenges(startAt: Date, count: Long) = challengeCollection
+        .orderBy("createdAt", Query.Direction.DESCENDING)
+        .whereLessThan("createdAt", startAt)
         .limit(count)
         .get()
         .await()

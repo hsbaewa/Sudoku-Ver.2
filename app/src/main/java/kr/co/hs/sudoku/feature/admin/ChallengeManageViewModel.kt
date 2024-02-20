@@ -14,11 +14,11 @@ import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.usecase.RandomCreateSudoku
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Calendar
+import java.util.Date
 
 class ChallengeManageViewModel(
     private val repository: ChallengeRepository,
@@ -45,7 +45,7 @@ class ChallengeManageViewModel(
 
     fun getChallengeList() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
-        val list = withContext(Dispatchers.IO) { repository.getChallengeList(50) }
+        val list = withContext(Dispatchers.IO) { repository.getChallenges(Date(), 50) }
         _challengeList.value = list
         setProgress(false)
     }
@@ -54,7 +54,7 @@ class ChallengeManageViewModel(
         viewModelScope.launch(viewModelScopeExceptionHandler) {
             setProgress(true)
             val isSuccess =
-                withContext(Dispatchers.IO) { repository.removeChallenge(challengeEntity) }
+                withContext(Dispatchers.IO) { repository.removeChallenge(challengeEntity.challengeId) }
             if (isSuccess) {
                 _challengeList.value = _challengeList.value
                     ?.toMutableList()
@@ -91,11 +91,10 @@ class ChallengeManageViewModel(
             matrix = matrix
         )
 
-        val challengeRepository = ChallengeRepositoryImpl()
-        val isSuccess = withContext(Dispatchers.IO) { challengeRepository.createChallenge(entity) }
+        val isSuccess = withContext(Dispatchers.IO) { repository.createChallenge(entity) }
         setProgress(false)
         if (isSuccess) {
-            onComplete(withContext(Dispatchers.IO) { challengeRepository.getChallengeDetail(entity.challengeId) })
+            onComplete(withContext(Dispatchers.IO) { repository.getChallenge(entity.challengeId) })
         } else {
             throw Exception("create failed")
         }

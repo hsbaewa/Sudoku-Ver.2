@@ -25,6 +25,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentOnAttachListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -43,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
+import kr.co.hs.sudoku.BuildConfig
 import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.R
@@ -55,6 +58,7 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicato
 import kr.co.hs.sudoku.extension.platform.Bitmap.toCropCircle
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
+import kr.co.hs.sudoku.extension.platform.ContextExtension.getMetaData
 import kr.co.hs.sudoku.feature.admin.AdminViewModel
 import kr.co.hs.sudoku.feature.admin.ChallengeManageActivity
 import kr.co.hs.sudoku.feature.admin.UpdatePushActivity
@@ -98,10 +102,26 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
     }
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
-        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository(), NativeItemAdManager(app))
+        val adUnitId = if (BuildConfig.DEBUG) {
+            "ca-app-pub-3940256099942544/2247696110"
+        } else {
+            getMetaData("kr.co.hs.sudoku.adUnitId.NativeAd")?.takeIf { it.isNotEmpty() }
+        }
+        MultiDashboardViewModel.ProviderFactory(
+            app.getBattleRepository(),
+            NativeItemAdManager(app, adUnitId)
+        )
     }
     private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels {
-        ChallengeDashboardViewModel.ProviderFactory(app.getChallengeRepository())
+        val adUnitId = if (BuildConfig.DEBUG) {
+            "ca-app-pub-3940256099942544/2247696110"
+        } else {
+            getMetaData("kr.co.hs.sudoku.adUnitId.NativeAdForChallengeItem")?.takeIf { it.isNotEmpty() }
+        }
+        ChallengeDashboardViewModel.ProviderFactory(
+            app.getChallengeRepository(),
+            NativeItemAdManager(app, adUnitId)
+        )
     }
     private val userProfileViewModel: UserProfileViewModel
             by viewModels { getUserProfileProviderFactory() }
@@ -215,7 +235,23 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             ACTION_NEW_CHALLENGE -> lifecycleScope.launch {
                 withStarted {
                     binding.bottomNavigationView.selectedItemId = R.id.challenge
-                    challengeDashboardViewMode.initChallengeDashboard()
+
+                    with(supportFragmentManager) {
+                        findChallengeFragment()
+                            ?.refreshPagingData()
+                            ?: run {
+                                addFragmentOnAttachListener(object : FragmentOnAttachListener {
+                                    override fun onAttachFragment(
+                                        fragmentManager: FragmentManager,
+                                        fragment: Fragment
+                                    ) {
+                                        removeFragmentOnAttachListener(this)
+                                        fragmentManager.findChallengeFragment()?.refreshPagingData()
+                                    }
+                                })
+                            }
+                    }
+
                 }
             }
         }
@@ -455,6 +491,9 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    private fun FragmentManager.findChallengeFragment() =
+        findFragmentByTag(ChallengeDashboardFragment::class.java.name) as? ChallengeDashboardFragment
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

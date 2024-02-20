@@ -42,8 +42,7 @@ class ChallengePlayViewModel(
     fun requestChallenge() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
 
-        val challengeEntity =
-            withContext(Dispatchers.IO) { repository.getChallengeDetail(challengeId) }
+        val challengeEntity = withContext(Dispatchers.IO) { repository.getChallenge(challengeId) }
         _challengeEntity.value = challengeEntity
 
         setProgress(false)
@@ -70,7 +69,7 @@ class ChallengePlayViewModel(
         setProgress(true)
         _challengeEntity.value?.run {
             if (!isPlaying) {
-                withContext(Dispatchers.IO) { repository.setPlaying(challengeId) }
+                withContext(Dispatchers.IO) { repository.putReserveRecord(challengeId) }
             }
 
             _command.value = Started(matrix)
@@ -82,7 +81,7 @@ class ChallengePlayViewModel(
         setProgress(true)
         _challengeEntity.value?.run {
             if (!isPlaying) {
-                withContext(Dispatchers.IO) { repository.setPlaying(challengeId) }
+                withContext(Dispatchers.IO) { repository.putReserveRecord(challengeId) }
             }
             _command.value = Started(lastStatus)
         }
@@ -106,7 +105,7 @@ class ChallengePlayViewModel(
     fun setRecord(clearRecord: Long) =
         viewModelScope.launch(viewModelScopeExceptionHandler) {
             setProgress(true)
-            repository.putRecord(clearRecord)
+            repository.putRecord(challengeId, clearRecord)
             setProgress(false)
             _command.value = Cleared(clearRecord)
         }

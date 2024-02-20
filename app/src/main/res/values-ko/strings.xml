@@ -104,14 +104,14 @@
 
     <!-- 도전 대시보드 -->
     <string name="title_challenge">도전</string>
-    <string name="challenge_dashboard_header_matrix">오늘의 도전 과제</string>
-    <string name="challenge_dashboard_header_rank">랭킹</string>
     <string name="error_challenge_already_record">이미 도전 완료 하였습니다. 광고를 통해 재 도전의 보상을 받을 수 있습니다. 재 도전 하시겠습니까?</string>
     <string name="error_challenge_retry_rewarded">재 도전 보상을 받지 못하였습니다.</string>
     <string name="rank_format_first">1위</string>
     <string name="rank_format_second">2위</string>
     <string name="rank_format_third">3위</string>
     <string name="rank_format">%1$d위</string>
+    <string name="challenge_list_item_rank_more">리더보드 보기</string>
+    <string name="challenge_list_item_description" translatable="false">아직 아무도 도전 하지 않았습니다.\n클릭하여 도전해 보세요.</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">축하합니다!\n스도쿠를 클리어 했어요!!</string>
@@ -131,6 +131,7 @@
     <string name="in_app_update_message">최신 앱 업데이트가 있습니다. 업데이트를 진행 하시겠습니까?</string>
     <string name="in_app_update_message_canceled">지금 앱 업데이트를 취소합니다. 이후에 옵션 메뉴를 통해 업데이트 진행이 가능합니다.</string>
     <string name="in_app_update_message_confirm">지금 앱 업데이트를 진행합니다.</string>
+    <string name="empty">비어있음</string>
 
 
     <!-- 가이드 -->
