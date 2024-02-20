@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
 import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
+import kr.co.hs.sudoku.model.logs.LogModel
 import kr.co.hs.sudoku.model.logs.impl.BattleClearModelImpl
 import kr.co.hs.sudoku.model.logs.impl.ChallengeClearModelImpl
 import org.junit.After
@@ -90,6 +91,23 @@ class LogTest {
         assertEquals(true, list3.isNotEmpty())
         assertEquals(true, list3.find { it.uid == "test-user-1" } != null)
         assertEquals(true, list3.first().uid == "test-user-2")
+
+        val list4 = logRemoteSource.getLogs(
+            LogModel.BattleClear::class.java,
+            "test-user-1",
+            Date(System.currentTimeMillis() + 60 * 1000),
+            10
+        )
+
+        assertEquals(true, list4.isNotEmpty())
+
+        val list5 = logRemoteSource.getLogs(
+            LogModel.ChallengeClear::class.java,
+            "test-user-1",
+            Date(System.currentTimeMillis() + 60 * 1000),
+            10
+        )
+        assertEquals(true, list5.isEmpty())
     }
 
     @After

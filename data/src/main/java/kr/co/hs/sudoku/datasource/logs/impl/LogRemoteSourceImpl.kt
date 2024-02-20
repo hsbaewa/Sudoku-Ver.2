@@ -46,6 +46,30 @@ class LogRemoteSourceImpl : FireStoreRemoteSource(), LogRemoteSource {
             .await()
             .mapNotNull { it.toLogData() }
 
+    override suspend fun <T : LogModel> getLogs(
+        type: Class<T>,
+        uid: String,
+        time: Date,
+        count: Long
+    ) = logsCollection
+        .orderBy("createdAt", Query.Direction.DESCENDING)
+        .whereLessThan("createdAt", time)
+        .whereEqualTo("uid", uid)
+        .whereEqualTo(
+            "type", when {
+                type.isAssignableFrom(LogModel.ChallengeClear::class.java) -> "challengeClear"
+                type.isAssignableFrom(LogModel.BattleClear::class.java) -> "battleClear"
+                else -> ""
+            }
+        )
+        .limit(count)
+        .get()
+        .await()
+        .mapNotNull {
+            @Suppress("UNCHECKED_CAST")
+            it.toLogData() as T
+        }
+
     override suspend fun createLog(logModel: LogModel) {
         logsCollection
             .document()
