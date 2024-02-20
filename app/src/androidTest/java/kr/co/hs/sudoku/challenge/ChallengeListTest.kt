@@ -3,7 +3,6 @@ package kr.co.hs.sudoku.challenge
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.spyk
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
@@ -33,18 +32,29 @@ class ChallengeListTest {
 
         challengeRepository.createChallenge(challengeEntity)
 
-        delay(5000)
-
-        var list = challengeRepository.getChallenges(Date(), 10000)
+        var list =
+            challengeRepository.getChallenges(Date(System.currentTimeMillis() + 60 * 1000), 10000)
         val listSize = list.size
 
         assertEquals(true, listSize > 0)
 
         assertEquals(list.first().matrix, challengeEntity.matrix)
 
-        challengeRepository.removeChallenge(list.first().challengeId)
+        val result = challengeRepository.putRecord(list.first().challengeId, 20000)
+        assertEquals(true, result)
+
+        val record = challengeRepository.getRecords(list.first().challengeId).firstOrNull()
+        assertEquals(20000, record?.clearTime?.toInt())
 
         list = challengeRepository.getChallenges(Date(), 10000)
-        assertEquals(listSize - 1, list.size)
+        assertEquals(listSize, list.size)
+
+        val history = challengeRepository.getHistory("lYYBEGzX9JggNlChJs7C9OPtVe82", 50)
+
+        assertEquals(true, history.isNotEmpty())
+        assertEquals("lYYBEGzX9JggNlChJs7C9OPtVe82", history.first().uid)
+        assertEquals(true, history.first().challengeId.isNotEmpty())
+        assertEquals(1, history.first().grade)
+        assertEquals(20000, history.first().record.toInt())
     }
 }

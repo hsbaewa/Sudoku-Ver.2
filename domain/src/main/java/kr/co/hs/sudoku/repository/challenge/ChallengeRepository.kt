@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.repository.challenge
 
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
+import kr.co.hs.sudoku.model.logs.ChallengeClearLogEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import java.util.Date
 
@@ -15,4 +16,6 @@ interface ChallengeRepository {
     suspend fun putReserveRecord(challengeId: String): Boolean
     suspend fun deleteRecord(challengeId: String, uid: String): Boolean
     fun clearCache()
+    suspend fun getHistory(uid: String, createdAt: Date, count: Long): List<ChallengeClearLogEntity>
+    suspend fun getHistory(uid: String, count: Long): List<ChallengeClearLogEntity>
 }
