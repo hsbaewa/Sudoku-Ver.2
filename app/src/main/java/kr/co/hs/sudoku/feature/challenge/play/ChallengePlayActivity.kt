@@ -42,9 +42,9 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
         private const val TAG = "ChallengePlayActivity"
         private fun debug(msg: String) = Log.d(TAG, msg)
 
-        private const val EXTRA_CHALLENGE_ID = "EXTRA_CHALLENGE_ID"
+        const val EXTRA_CHALLENGE_ID = "EXTRA_CHALLENGE_ID"
 
-        private fun newIntent(context: Context, challengeId: String) =
+        fun newIntent(context: Context, challengeId: String) =
             Intent(context, ChallengePlayActivity::class.java)
                 .putExtra(EXTRA_CHALLENGE_ID, challengeId)
 
@@ -141,6 +141,7 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
 
                     is ChallengePlayViewModel.Cleared -> {
                         historyCacheFile.delete()
+                        setResult(RESULT_OK, Intent().putExtra(EXTRA_CHALLENGE_ID, challengeId))
                         showCompleteRecordDialog(it.clearRecord)
                     }
 

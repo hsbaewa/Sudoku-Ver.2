@@ -1,9 +1,11 @@
 package kr.co.hs.sudoku.feature.challenge.dashboard
 
+import android.app.Activity.RESULT_OK
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
@@ -100,6 +102,27 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
             .showChallengeLeaderBoard(childFragmentManager, challengeId)
     }
 
+    private val launcherForChallengePlay =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                val challengeId = it.data?.getStringExtra(ChallengePlayActivity.EXTRA_CHALLENGE_ID)
+                    ?: return@registerForActivityResult
+                refreshChallenge(challengeId)
+            }
+        }
+
+    private fun refreshChallenge(id: String) = with(binding.recyclerViewChallengeList) {
+        with(pagingDataAdapter) {
+            snapshot()
+                .indexOfFirst { item -> item?.id == id }
+                .takeIf { idx -> idx >= 0 }
+                ?.let { idx ->
+                    notifyItemChanged(idx)
+                    smoothScrollToPosition(idx)
+                }
+        }
+    }
+
     private fun startChallenge(challengeEntity: ChallengeEntity) =
         viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             when (throwable) {
@@ -120,7 +143,12 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
         }) {
             if (challengeEntity.isComplete)
                 throw AlreadyException(getString(R.string.error_challenge_already_record))
-            ChallengePlayActivity.start(requireContext(), challengeEntity.challengeId)
+            launcherForChallengePlay.launch(
+                ChallengePlayActivity.newIntent(
+                    requireContext(),
+                    challengeEntity.challengeId
+                )
+            )
         }
 
     private class AlreadyException(message: String?) : Exception(message)
