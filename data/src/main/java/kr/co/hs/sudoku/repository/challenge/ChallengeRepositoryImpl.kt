@@ -125,14 +125,19 @@ class ChallengeRepositoryImpl(
             .getLogs(LogModel.ChallengeClear::class.java, uid, createdAt, count)
             .mapNotNull {
                 val challengeId = it.challengeId
+                val challenge = runCatching { getChallenge(challengeId) }.getOrNull()
+                    ?: return@mapNotNull null
+                val challengeCreatedAt = challenge.createdAt ?: return@mapNotNull null
                 val grade = runCatching { getRecord(challengeId, uid).rank }.getOrNull()
                     ?: return@mapNotNull null
                 object : ChallengeClearLogEntity {
+                    override val id: String = it.id
                     override val challengeId: String = it.challengeId
                     override val grade: Long = grade
                     override val clearAt: Date = it.createdAt.toDate()
                     override val uid: String = it.uid
                     override val record: Long = it.record
+                    override val createdAt: Date = challengeCreatedAt
                 }
             }
 

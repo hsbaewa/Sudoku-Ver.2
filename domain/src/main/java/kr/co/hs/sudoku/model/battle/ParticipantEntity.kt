@@ -4,6 +4,7 @@ import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
+import java.util.Date
 
 sealed interface ParticipantEntity : ProfileEntity.UserEntity {
 
@@ -14,7 +15,9 @@ sealed interface ParticipantEntity : ProfileEntity.UserEntity {
         override var iconUrl: String? = null,
         override val locale: LocaleEntity? = null,
         val matrix: IntMatrix = EmptyMatrix()
-    ) : ParticipantEntity
+    ) : ParticipantEntity {
+        override val lastCheckedAt: Date? = null
+    }
 
     data class Guest(
         override val uid: String,
@@ -22,7 +25,9 @@ sealed interface ParticipantEntity : ProfileEntity.UserEntity {
         override var message: String? = null,
         override var iconUrl: String? = null,
         override val locale: LocaleEntity? = null
-    ) : ParticipantEntity
+    ) : ParticipantEntity {
+        override val lastCheckedAt: Date? = null
+    }
 
     data class ReadyGuest(
         override val uid: String,
@@ -31,7 +36,9 @@ sealed interface ParticipantEntity : ProfileEntity.UserEntity {
         override var iconUrl: String? = null,
         override val locale: LocaleEntity? = null,
         val matrix: IntMatrix = EmptyMatrix()
-    ) : ParticipantEntity
+    ) : ParticipantEntity {
+        override val lastCheckedAt: Date? = null
+    }
 
     data class Playing(
         override val uid: String,
@@ -43,6 +50,8 @@ sealed interface ParticipantEntity : ProfileEntity.UserEntity {
     ) : ParticipantEntity {
         fun toCleared(record: Long) =
             Cleared(uid, displayName, message, iconUrl, locale, matrix, record)
+
+        override val lastCheckedAt: Date? = null
     }
 
     data class Cleared(
@@ -53,5 +62,7 @@ sealed interface ParticipantEntity : ProfileEntity.UserEntity {
         override val locale: LocaleEntity? = null,
         val matrix: IntMatrix,
         val record: Long
-    ) : ParticipantEntity
+    ) : ParticipantEntity {
+        override val lastCheckedAt: Date? = null
+    }
 }

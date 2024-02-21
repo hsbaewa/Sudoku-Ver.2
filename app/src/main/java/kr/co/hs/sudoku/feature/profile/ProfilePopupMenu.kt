@@ -8,6 +8,7 @@ import androidx.appcompat.widget.PopupMenu
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
+import java.util.Date
 
 class ProfilePopupMenu(
     context: Context,
@@ -35,6 +36,7 @@ class ProfilePopupMenu(
             override var message: String? = null
             override var iconUrl: String? = null
             override val locale: LocaleEntity? = null
+            override val lastCheckedAt: Date? = null
         }
         show()
     }

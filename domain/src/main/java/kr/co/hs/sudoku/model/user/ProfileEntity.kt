@@ -9,7 +9,9 @@ sealed interface ProfileEntity {
     var iconUrl: String?
     val locale: LocaleEntity?
 
-    interface UserEntity : ProfileEntity
+    interface UserEntity : ProfileEntity {
+        val lastCheckedAt: Date?
+    }
     interface OnlineUserEntity : ProfileEntity {
         val checkedAt: Date
     }

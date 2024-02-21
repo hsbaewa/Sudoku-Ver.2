@@ -49,6 +49,9 @@ class ProfileRepositoryImpl(
     override suspend fun checkIn(profileEntity: ProfileEntity) =
         remoteSource.checkInCommunity(profileEntity.toData())
 
+    override suspend fun checkIn(uid: String) =
+        with(remoteSource) { checkInCommunity(getProfile(uid)) }
+
     override suspend fun checkOut(uid: String) = remoteSource.checkOutCommunity(uid)
 
     override suspend fun getOnlineUserList() = remoteSource.getCheckedInProfileList()

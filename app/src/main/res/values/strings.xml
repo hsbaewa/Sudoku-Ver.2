@@ -29,11 +29,13 @@
     <string name="profile_image_url_invalid">url is invalid</string>
 
     <!-- 프로필 -->
-    <string name="profile_label_multi_play_rank">Multi Play</string>
+    <string name="profile_label_multi_play_rank">Multi Play Ladder</string>
     <string name="profile_label_show_this_user">View Profile</string>
     <string name="profile_label_last_checked">Last Checked</string>
     <string name="profile_label_nation">Nation</string>
     <string name="profile_last_checked_format" translatable="false">yyyy-MM-dd HH:mm:ss</string>
+    <string name="profile_label_challenge_log">Challenge Records</string>
+    <string name="profile_challenge_log_format">Cleared the challenge created at %1$s with a record of %2$s and am currently ranked %3$s.(%4$s)</string>
 
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">Single</string>

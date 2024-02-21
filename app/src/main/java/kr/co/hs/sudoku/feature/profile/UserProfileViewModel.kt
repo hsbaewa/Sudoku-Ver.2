@@ -5,6 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
+import androidx.paging.cachedIn
+import androidx.paging.liveData
 import com.google.android.gms.games.GamesSignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -21,6 +28,8 @@ import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeUser
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
+import kr.co.hs.sudoku.repository.battle.BattleRepository
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Date
@@ -29,17 +38,27 @@ import java.util.Locale
 class UserProfileViewModel(
     val profileRepository: ProfileRepository,
     private val gamesSignInClient: GamesSignInClient,
-    private val defaultWebClientId: String
+    private val defaultWebClientId: String,
+    private val battleRepository: BattleRepository,
+    private val challengeRepository: ChallengeRepository
 ) : ViewModel() {
     class ProviderFactory(
         private val profileRepository: ProfileRepository,
         private val gamesSignInClient: GamesSignInClient,
-        private val defaultWebClientId: String
+        private val defaultWebClientId: String,
+        private val battleRepository: BattleRepository,
+        private val challengeRepository: ChallengeRepository
     ) : ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
             return if (modelClass.isAssignableFrom(UserProfileViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                UserProfileViewModel(profileRepository, gamesSignInClient, defaultWebClientId) as T
+                UserProfileViewModel(
+                    profileRepository,
+                    gamesSignInClient,
+                    defaultWebClientId,
+                    battleRepository,
+                    challengeRepository
+                ) as T
             } else {
                 throw IllegalArgumentException()
             }
@@ -50,12 +69,6 @@ class UserProfileViewModel(
 
     private val _profile = MutableLiveData<ProfileEntity?>()
     val profile: LiveData<ProfileEntity?> by this::_profile
-
-    private val _lastCheckedAt = MutableLiveData<Date>()
-    val lastCheckedAt: LiveData<Date> by this::_lastCheckedAt
-
-    private val _onlineUserList = MutableLiveData<List<ProfileEntity.OnlineUserEntity>>()
-    val onlineUserList: LiveData<List<ProfileEntity.OnlineUserEntity>> by this::_onlineUserList
 
     /**
      * Google Games
@@ -109,7 +122,8 @@ class UserProfileViewModel(
         locale = LocaleEntityImpl(
             Locale.getDefault().language,
             Locale.getDefault().country
-        )
+        ),
+        lastCheckedAt = null
     )
 
     fun requestCurrentUserProfile() = viewModelScope.launch(viewModelScopeExceptionHandler) {
@@ -246,27 +260,87 @@ class UserProfileViewModel(
         setProgress(false)
     }
 
-    fun requestOnlineUserList() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        setProgress(true)
-        with(profileRepository) {
-            runCatching { withContext(Dispatchers.IO) { getOnlineUserList() } }
-                .getOrNull()
-                ?.run { _onlineUserList.value = this }
-        }
-        setProgress(false)
+    fun getProfilePagingData(
+        uid: String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    ): LiveData<PagingData<ProfileItem>> {
+        return Pager(
+            config = PagingConfig(pageSize = 10, initialLoadSize = 10),
+            pagingSourceFactory = {
+                ProfilePagingSource(
+                    uid,
+                    profileRepository,
+                    battleRepository,
+                    challengeRepository
+                )
+            }
+        ).liveData.cachedIn(viewModelScope)
     }
 
-    fun checkIn() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        with(profileRepository) {
-            FirebaseAuth.getInstance().currentUser
-                ?.run { withContext(Dispatchers.IO) { getProfile(uid) } }
-                ?.let { withContext(Dispatchers.IO) { checkIn(it) } }
-        }
-    }
+    private class ProfilePagingSource(
+        private val uid: String,
+        private val profileRepository: ProfileRepository,
+        private val battleRepository: BattleRepository,
+        private val challengeRepository: ChallengeRepository,
+    ) : PagingSource<Long, ProfileItem>() {
+        override fun getRefreshKey(state: PagingState<Long, ProfileItem>) = null
+        override suspend fun load(params: LoadParams<Long>): LoadResult<Long, ProfileItem> {
+            val isFirst = params.key == null
 
-    fun checkOut() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        FirebaseAuth.getInstance().currentUser?.run {
-            withContext(Dispatchers.IO) { profileRepository.checkOut(uid) }
+            val profileItems = buildList {
+                if (isFirst) {
+                    val profile =
+                        withContext(Dispatchers.IO) { profileRepository.getProfile(uid) }
+                    profile.iconUrl?.let { url -> add(ProfileItem.Icon(url)) }
+                    add(
+                        ProfileItem.DisplayName(
+                            profile.displayName,
+                            profile.locale?.getLocaleFlag()
+                        )
+                    )
+                    profile.message.takeUnless { it.isNullOrEmpty() }
+                        ?.let { message -> add(ProfileItem.Message(message)) }
+
+                    val lastCheckedAt = when (profile) {
+                        is ProfileEntity.OnlineUserEntity -> profile.checkedAt
+                        is ProfileEntity.UserEntity -> profile.lastCheckedAt
+                    }
+                    lastCheckedAt?.let { checkedAt -> add(ProfileItem.LastChecked(checkedAt)) }
+
+
+                    val ladder =
+                        withContext(Dispatchers.IO) { battleRepository.getLeaderBoard(uid) }
+
+                    add(
+                        ProfileItem.BattleLadder(
+                            ladder.playCount,
+                            ladder.winCount,
+                            ladder.ranking
+                        )
+                    )
+                }
+            }
+
+
+            val count = params.loadSize.toLong()
+            val challengeHistory =
+                withContext(Dispatchers.IO) {
+                    params.key
+                        ?.run { challengeRepository.getHistory(uid, Date(this), count) }
+                        ?: run { challengeRepository.getHistory(uid, count) }
+                }.map { ProfileItem.ChallengeLog(it) }
+            val nextKey =
+                challengeHistory.takeIf { it.isNotEmpty() }?.lastOrNull()?.item?.clearAt?.time
+
+            return LoadResult.Page(
+                profileItems.toMutableList().apply {
+                    if (challengeHistory.isNotEmpty()) {
+                        add(ProfileItem.Divider(ProfileItem.DividerType.Challenge))
+                        addAll(challengeHistory)
+                    }
+                },
+                null,
+                nextKey
+            )
         }
     }
 }

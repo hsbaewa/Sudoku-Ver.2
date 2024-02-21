@@ -39,6 +39,7 @@ import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -653,12 +654,18 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     override fun onStart() {
         super.onStart()
-        userProfileViewModel.checkIn()
+        lifecycleScope.launch {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            withContext(Dispatchers.IO) { app.getProfileRepository().checkIn(uid) }
+        }
     }
 
     override fun onStop() {
         super.onStop()
-        userProfileViewModel.checkOut()
+        lifecycleScope.launch {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            withContext(Dispatchers.IO) { app.getProfileRepository().checkOut(uid) }
+        }
     }
 
     private fun showOnlineUserList() = lifecycleScope.launch {

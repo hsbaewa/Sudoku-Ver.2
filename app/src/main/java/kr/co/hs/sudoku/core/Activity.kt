@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.core
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +39,7 @@ abstract class Activity : AppCompatActivity() {
             ?.run { onReceivedRemoteMessage(this) }
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.extras
@@ -168,9 +170,14 @@ abstract class Activity : AppCompatActivity() {
             )
         }
 
-    fun getUserProfileProviderFactory() = UserProfileViewModel.ProviderFactory(
-        (applicationContext as App).getProfileRepository(),
-        PlayGames.getGamesSignInClient(this),
-        getString(R.string.default_web_client_id)
-    )
+    fun getUserProfileProviderFactory() = with(applicationContext as App) {
+        UserProfileViewModel.ProviderFactory(
+            getProfileRepository(),
+            PlayGames.getGamesSignInClient(this@Activity),
+            getString(R.string.default_web_client_id),
+            getBattleRepository(),
+            getChallengeRepository()
+        )
+    }
+
 }
