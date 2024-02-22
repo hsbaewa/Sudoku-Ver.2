@@ -42,7 +42,7 @@ class ChallengeDashboardListItemAdapter(
                     repository,
                     onPopupMenuItemClickListener
                 ).apply {
-                    binding.btnLeaderBoard.setOnClickListener {
+                    binding.challengeItemView.setOnClickShowLeaderBoard {
                         getItem(bindingAdapterPosition)?.id?.apply(onClickLeaderBoard)
                     }
                     binding.cardView.setOnClickListener {

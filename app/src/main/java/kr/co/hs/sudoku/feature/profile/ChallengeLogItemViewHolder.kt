@@ -11,7 +11,7 @@ import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class ChallengeLogItemViewHolder(private val binding: LayoutListItemChallengeClearLogBinding) :
+class ChallengeLogItemViewHolder(val binding: LayoutListItemChallengeClearLogBinding) :
     ProfileItemViewHolder(binding.root) {
     override fun onBind(item: ProfileItem?) {
         when (item) {

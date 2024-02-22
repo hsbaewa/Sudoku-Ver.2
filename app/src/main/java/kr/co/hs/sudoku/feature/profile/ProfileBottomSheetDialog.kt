@@ -19,6 +19,7 @@ import kr.co.hs.sudoku.databinding.LayoutDialogUserProfileBinding
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
+import kr.co.hs.sudoku.feature.challenge.ChallengeItemBottomSheetDialog
 
 class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
     companion object {
@@ -47,7 +48,14 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val pagingDataAdapter = ProfileItemAdapter().apply {
+        val pagingDataAdapter = ProfileItemAdapter {
+            when (it) {
+                is ProfileItem.ChallengeLog ->
+                    ChallengeItemBottomSheetDialog.show(childFragmentManager, it.item.challengeId)
+
+                else -> {}
+            }
+        }.apply {
             addLoadStateListener { loadState ->
                 when (loadState.refresh) {
                     is LoadState.NotLoading, is LoadState.Error -> dismissProgressIndicator()

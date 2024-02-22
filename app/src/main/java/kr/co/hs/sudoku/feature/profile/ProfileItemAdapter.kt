@@ -11,8 +11,9 @@ import kr.co.hs.sudoku.databinding.LayoutListItemProfileIconBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemProfileLastCheckedBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemProfileMessageBinding
 
-class ProfileItemAdapter :
-    PagingDataAdapter<ProfileItem, ProfileItemViewHolder>(ProfileItemDiffCallback()) {
+class ProfileItemAdapter(
+    private val onClickItem: (ProfileItem?) -> Unit
+) : PagingDataAdapter<ProfileItem, ProfileItemViewHolder>(ProfileItemDiffCallback()) {
 
     companion object {
         private const val VT_ICON = 1
@@ -53,7 +54,9 @@ class ProfileItemAdapter :
 
             VT_CHALLENGE_LOG -> ChallengeLogItemViewHolder(
                 LayoutListItemChallengeClearLogBinding.inflate(inflater, parent, false)
-            )
+            ).apply {
+                binding.root.setOnClickListener { onClickItem(getItem(bindingAdapterPosition)) }
+            }
 
             else -> throw Exception("invalid view type")
         }
