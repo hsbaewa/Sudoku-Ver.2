@@ -114,6 +114,7 @@
     <string name="rank_format">%1$d위</string>
     <string name="challenge_list_item_rank_more">리더보드 보기</string>
     <string name="challenge_list_item_description" translatable="false">아직 아무도 도전 하지 않았습니다.\n클릭하여 도전해 보세요.</string>
+    <string name="challenge_start">도전 시작</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">축하합니다!\n스도쿠를 클리어 했어요!!</string>
