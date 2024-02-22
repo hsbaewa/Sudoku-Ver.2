@@ -34,6 +34,8 @@
     <string name="profile_label_show_this_user">プロフィールを見る</string>
     <string name="profile_label_last_checked">最後の接続</string>
     <string name="profile_label_nation">国</string>
+    <string name="profile_label_challenge_log">挑戦記録</string>
+    <string name="profile_challenge_log_format">「%1$s」に生成された挑戦で「%2$s」記録でクリアし、現在「%3$s」を記録中です。(%4$s)</string>
 
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">シングル</string>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/goreyong_ddalgi"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@id/matrix"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <kr.co.hs.sudoku.views.MatrixItemView
+        android:id="@+id/matrix"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintBottom_toTopOf="@id/card_view_first_grade"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintWidth_max="250dp" />
+
+    <TextView
+        android:id="@+id/tv_label_first_grade"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:fontFamily="@font/goreyong_ddalgi"
+        android:gravity="center"
+        android:minWidth="50dp"
+        android:text="@string/rank_format_first"
+        android:textColor="@color/gold"
+        app:layout_constraintBottom_toBottomOf="@id/card_view_first_grade"
+        app:layout_constraintEnd_toStartOf="@id/card_view_first_grade"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="@id/matrix"
+        app:layout_constraintTop_toTopOf="@id/card_view_first_grade" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_view_first_grade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:cardCornerRadius="50dp"
+        app:cardElevation="1dp"
+        app:contentPadding="4dp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@id/card_view_second_grade"
+        app:layout_constraintEnd_toEndOf="@id/matrix"
+        app:layout_constraintStart_toEndOf="@id/tv_label_first_grade"
+        app:layout_constraintTop_toBottomOf="@id/matrix"
+        app:strokeColor="@color/gray_500"
+        app:strokeWidth="1dp">
+
+        <kr.co.hs.sudoku.views.ProfileView
+            android:id="@+id/profile_view_first_grade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <TextView
+        android:id="@+id/tv_label_second_grade"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:fontFamily="@font/goreyong_ddalgi"
+        android:gravity="center"
+        android:minWidth="50dp"
+        android:text="@string/rank_format_second"
+        android:textColor="@color/silver"
+        app:layout_constraintBottom_toBottomOf="@id/card_view_second_grade"
+        app:layout_constraintEnd_toStartOf="@id/card_view_second_grade"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="@id/matrix"
+        app:layout_constraintTop_toTopOf="@id/card_view_second_grade" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_view_second_grade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:cardCornerRadius="50dp"
+        app:cardElevation="1dp"
+        app:contentPadding="4dp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@id/card_view_third_grade"
+        app:layout_constraintEnd_toEndOf="@id/matrix"
+        app:layout_constraintStart_toEndOf="@id/tv_label_second_grade"
+        app:layout_constraintTop_toBottomOf="@id/card_view_first_grade"
+        app:strokeColor="@color/gray_500"
+        app:strokeWidth="1dp">
+
+        <kr.co.hs.sudoku.views.ProfileView
+            android:id="@+id/profile_view_second_grade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tv_label_third_grade"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:fontFamily="@font/goreyong_ddalgi"
+        android:gravity="center"
+        android:minWidth="50dp"
+        android:text="@string/rank_format_third"
+        android:textColor="@color/bronze"
+        app:layout_constraintBottom_toBottomOf="@id/card_view_third_grade"
+        app:layout_constraintEnd_toStartOf="@id/card_view_third_grade"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="@id/matrix"
+        app:layout_constraintTop_toTopOf="@id/card_view_third_grade" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_view_third_grade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="3dp"
+        android:visibility="gone"
+        app:cardCornerRadius="50dp"
+        app:cardElevation="1dp"
+        app:contentPadding="4dp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@id/btn_leader_board"
+        app:layout_constraintEnd_toEndOf="@id/matrix"
+        app:layout_constraintStart_toEndOf="@id/tv_label_third_grade"
+        app:layout_constraintTop_toBottomOf="@id/card_view_second_grade"
+        app:strokeColor="@color/gray_500"
+        app:strokeWidth="1dp">
+
+        <kr.co.hs.sudoku.views.ProfileView
+            android:id="@+id/profile_view_third_grade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_leader_board"
+        style="@style/Theme.HSSudoku2.OutlineButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/challenge_list_item_rank_more"
+        android:textSize="13sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/tv_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/card_view_third_grade"
+        app:strokeWidth="0dp" />
+
+    <TextView
+        android:id="@+id/tv_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/goreyong_ddalgi"
+        android:gravity="center"
+        android:text="@string/challenge_list_item_description"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_leader_board" />
+
+</merge>

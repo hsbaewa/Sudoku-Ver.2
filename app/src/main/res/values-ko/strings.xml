@@ -30,10 +30,12 @@
     <string name="profile_image_url_invalid">url이 유효하지 않습니다</string>
 
     <!-- 프로필 -->
-    <string name="profile_label_multi_play_rank">멀티 플레이</string>
+    <string name="profile_label_multi_play_rank">멀티 플레이 래더</string>
     <string name="profile_label_show_this_user">프로필 보기</string>
     <string name="profile_label_last_checked">마지막 접속</string>
     <string name="profile_label_nation">국가</string>
+    <string name="profile_label_challenge_log">도전 기록</string>
+    <string name="profile_challenge_log_format">%1$s에 생성된 도전에서 %2$s기록으로 클리어 하여 현재 %3$s를 기록중입니다.(%4$s)</string>
 
     <!-- 메인 하단 탭 -->
     <string name="navigation_tab_single">싱글</string>

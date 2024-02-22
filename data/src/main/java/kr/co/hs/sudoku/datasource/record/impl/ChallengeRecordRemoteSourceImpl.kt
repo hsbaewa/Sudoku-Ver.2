@@ -4,9 +4,12 @@ import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
+import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
+import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
+import kr.co.hs.sudoku.model.logs.impl.ChallengeClearModelImpl
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.record.ReserveRecordModel
 
@@ -36,6 +39,24 @@ class ChallengeRecordRemoteSourceImpl : FireStoreRemoteSource(), RecordRemoteSou
             getRankingCollection(id).document(record.uid).set(record).await()
             true
         }.getOrDefault(false)
+            .takeIf { it }
+            ?.apply {
+                val logRemoteSource: LogRemoteSource =
+                    LogRemoteSourceImpl().also { it.rootDocument = rootDocument }
+
+                logRemoteSource
+                    .runCatching {
+                        val data = ChallengeClearModelImpl()
+                            .also {
+                                it.uid = record.uid
+                                it.challengeId = id
+                                it.record = record.clearTime
+                            }
+                        createLog(data)
+                    }
+                    .getOrNull()
+            }
+            ?: false
 
     override suspend fun setRecord(id: String, record: ReserveRecordModel) =
         runCatching {

@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
+import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutUserListBinding
@@ -25,8 +26,10 @@ class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment(),
     }
 
     private lateinit var binding: LayoutUserListBinding
-    private val viewModel: UserProfileViewModel
-            by viewModels { (requireActivity() as Activity).getUserProfileProviderFactory() }
+    private val viewModel: OnlineUserListViewModel by viewModels {
+        val app = requireContext().applicationContext as App
+        OnlineUserListViewModel.ProviderFactory(app.getProfileRepository())
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

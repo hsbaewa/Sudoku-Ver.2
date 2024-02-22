@@ -5,12 +5,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.impl.ChallengeRemoteSourceImpl
+import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
+import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
 import kr.co.hs.sudoku.mapper.RecordMapper.toDomain
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
+import kr.co.hs.sudoku.model.logs.ChallengeClearLogEntity
+import kr.co.hs.sudoku.model.logs.LogModel
 import kr.co.hs.sudoku.model.rank.RankerEntity
 import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.record.ReserveRecordModel
@@ -23,7 +27,8 @@ import java.util.Locale
 
 class ChallengeRepositoryImpl(
     private var challengeRemoteSource: ChallengeRemoteSource = ChallengeRemoteSourceImpl(),
-    private var recordRemoteSource: RecordRemoteSource = ChallengeRecordRemoteSourceImpl()
+    private var recordRemoteSource: RecordRemoteSource = ChallengeRecordRemoteSourceImpl(),
+    private val logRemoteSource: LogRemoteSource = LogRemoteSourceImpl()
 ) : ChallengeRepository, TestableRepository {
 
     private val currentUserUid: String
@@ -108,5 +113,34 @@ class ChallengeRepositoryImpl(
 
         (challengeRemoteSource as FireStoreRemoteSource).rootDocument = root
         (recordRemoteSource as FireStoreRemoteSource).rootDocument = root
+        (logRemoteSource as FireStoreRemoteSource).rootDocument = root
     }
+
+    override suspend fun getHistory(
+        uid: String,
+        createdAt: Date,
+        count: Long
+    ): List<ChallengeClearLogEntity> =
+        logRemoteSource
+            .getLogs(LogModel.ChallengeClear::class.java, uid, createdAt, count)
+            .mapNotNull {
+                val challengeId = it.challengeId
+                val challenge = runCatching { getChallenge(challengeId) }.getOrNull()
+                    ?: return@mapNotNull null
+                val challengeCreatedAt = challenge.createdAt ?: return@mapNotNull null
+                val grade = runCatching { getRecord(challengeId, uid).rank }.getOrNull()
+                    ?: return@mapNotNull null
+                object : ChallengeClearLogEntity {
+                    override val id: String = it.id
+                    override val challengeId: String = it.challengeId
+                    override val grade: Long = grade
+                    override val clearAt: Date = it.createdAt.toDate()
+                    override val uid: String = it.uid
+                    override val record: Long = it.record
+                    override val createdAt: Date = challengeCreatedAt
+                }
+            }
+
+    override suspend fun getHistory(uid: String, count: Long) =
+        getHistory(uid, Date(System.currentTimeMillis() + 60 * 1000), count)
 }

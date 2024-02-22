@@ -7,19 +7,17 @@
         android:layout_height="wrap_content"
         android:minHeight="250dp">
 
-        <kr.co.hs.sudoku.views.RecyclerView
-            android:id="@+id/recycler_view_profile"
+        <kr.co.hs.sudoku.views.ChallengeItemView
+            android:id="@+id/challenge_item_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="30dp"
-            android:paddingBottom="50dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
