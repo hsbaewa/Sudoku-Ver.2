@@ -30,6 +30,7 @@ class ChallengeDashboardListItemDefaultViewHolder<T : ChallengeDashboardListItem
 
     private fun onBindChallengeItem(item: ChallengeDashboardListItem.ChallengeItem) {
         binding.challengeItemView.set(item.challengeEntity)
+        binding.challengeItemView.setOnProfileClickListener(onPopupMenuItemClickListener)
     }
 
     override fun onViewAttachedToWindow() {
