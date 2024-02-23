@@ -121,6 +121,7 @@
     <string name="challenge_list_item_rank_more">Show Leaderboard</string>
     <string name="challenge_list_item_created_at_format" translatable="false">yyyy-MM-dd HH:mm</string>
     <string name="challenge_list_item_description">No one has taken the challenge yet.\nClick to try it!</string>
+    <string name="challenge_start">Start Challenge</string>
 
     <!-- 스도쿠 게임 결과 팝업 -->
     <string name="complete_message">Congratulation!\nClear sudoku!!</string>
