@@ -56,6 +56,10 @@
             android:value="@string/ads_unit_id_reward_ad_for_challenge_list" />
 
         <meta-data
+            android:name="kr.co.hs.sudoku.adUnitId.NativeAdExitPopup"
+            android:value="@string/ads_unit_id_native_ad_for_exit" />
+
+        <meta-data
             android:name="com.google.android.gms.games.APP_ID"
             android:value="@string/game_services_project_id" />
 

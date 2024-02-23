@@ -211,5 +211,8 @@
     <string name="user_list_label_header_my_info">Me</string>
     <string name="user_list_label_header_others">Others</string>
     <string name="user_list_menu_label_invite_multi_play">Invite Multi Play</string>
+
+    <!-- 종료 -->
+    <string name="exit_popup_message">Do you really want to quit \'Sudoku Battle\'?</string>
     <!-- -->
 </resources>

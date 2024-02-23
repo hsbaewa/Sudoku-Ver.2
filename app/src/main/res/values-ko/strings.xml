@@ -172,5 +172,8 @@
     <string name="user_list_label_header_my_info">내 정보</string>
     <string name="user_list_label_header_others">온라인 사용자</string>
     <string name="user_list_menu_label_invite_multi_play">대결 신청</string>
+
+    <!-- 종료 -->
+    <string name="exit_popup_message">정말로 \'스도쿠 배틀\'을 종료 하시겠습니까?</string>
     <!-- -->
 </resources>

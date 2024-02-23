@@ -106,6 +106,13 @@ jobs:
           metadata-key: 'kr.co.hs.sudoku.adUnitId.NativeAdForChallengeItem'
           metadata-value: ${{secrets.ADS_UNIT_ID_CHALLENGE_ITEM}}
           print-file: true
+      - name: kr.co.hs.sudoku.adUnitId.NativeAdExitPopup 설정
+        uses: jacinlowe/update-android-manifest-package-action@v1.0.1
+        with:
+          android-manifest-path: './app/src/main/AndroidManifest.xml'
+          metadata-key: 'kr.co.hs.sudoku.adUnitId.NativeAdExitPopup'
+          metadata-value: ${{secrets.ADS_UNIT_ID_NATIVE_EXIT_POPUP}}
+          print-file: true
       - name: kr.co.hs.sudoku.messaging.serverKey 설정
         uses: jacinlowe/update-android-manifest-package-action@v1.0.1
         with:

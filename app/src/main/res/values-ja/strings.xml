@@ -167,5 +167,8 @@
     <string name="user_list_label_header_my_info">私の情報</string>
     <string name="user_list_label_header_others">オンラインユーザー</string>
     <string name="user_list_menu_label_invite_multi_play">対決申請</string>
+
+    <!-- 종료 -->
+    <string name="exit_popup_message">本当に「数独バトル」を終了しますか？</string>
     <!-- -->
 </resources>

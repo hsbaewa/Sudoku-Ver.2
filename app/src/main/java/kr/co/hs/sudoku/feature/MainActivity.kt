@@ -17,6 +17,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -227,6 +228,10 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         }
 
         binding.btnOnlineUserList.setOnClickListener { showOnlineUserList() }
+
+        onBackPressedDispatcher.addCallback {
+            ExitDialogBottomSheetFragment.show(supportFragmentManager)
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
