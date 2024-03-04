@@ -11,6 +11,8 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.espresso.util.HumanReadables
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
@@ -18,6 +20,8 @@ import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.any
 import org.hamcrest.Matcher
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.TimeoutException
@@ -25,8 +29,16 @@ import java.util.concurrent.TimeoutException
 
 @Suppress("TestFunctionName", "NonAsciiCharacters")
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class BattlePlayTest {
 
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+
+    @Before
+    fun before() {
+        hiltRule.inject()
+    }
 
     @Test
     fun 화면_시작() {
@@ -190,6 +202,9 @@ class BattlePlayTest {
         val minutes = allMinutes % 60
         val hour = allMinutes / 60
         val strClear = String.format("%d:%02d:%02d.%03d", hour, minutes, seconds, millis)
+
+        runBlocking { delay(500) }
+
         onView(withText(strClear)).check(matches(isDisplayed()))
     }
 

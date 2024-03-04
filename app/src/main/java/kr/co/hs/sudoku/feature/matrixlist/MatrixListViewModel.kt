@@ -3,16 +3,31 @@ package kr.co.hs.sudoku.feature.matrixlist
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.repositories.AdvancedMatrixRepositoryQualifier
+import kr.co.hs.sudoku.di.repositories.BeginnerMatrixRepositoryQualifier
+import kr.co.hs.sudoku.di.repositories.IntermediateMatrixRepositoryQualifier
+import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
+import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.repository.AdvancedMatrixRepository
-import kr.co.hs.sudoku.repository.BeginnerMatrixRepository
-import kr.co.hs.sudoku.repository.IntermediateMatrixRepository
+import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
+import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 
-class MatrixListViewModel : ViewModel() {
+@HiltViewModel
+class MatrixListViewModel
+@Inject constructor(
+    @BeginnerMatrixRepositoryQualifier
+    val beginnerMatrixRepository: MatrixRepository<BeginnerMatrix>,
+    @IntermediateMatrixRepositoryQualifier
+    val intermediateMatrixRepository: MatrixRepository<IntermediateMatrix>,
+    @AdvancedMatrixRepositoryQualifier
+    val advancedMatrixRepository: MatrixRepository<AdvancedMatrix>
+) : ViewModel() {
     private val _matrixList = MutableLiveData<List<IntMatrix>>()
     val matrixList: LiveData<List<IntMatrix>> by this::_matrixList
 
@@ -23,9 +38,9 @@ class MatrixListViewModel : ViewModel() {
         setProgress(true)
         val resultList = buildList {
             withContext(Dispatchers.IO) {
-                BeginnerMatrixRepository().getList().also { addAll(it) }
-                IntermediateMatrixRepository().getList().also { addAll(it) }
-                AdvancedMatrixRepository().getList().also { addAll(it) }
+                beginnerMatrixRepository.getList().also { addAll(it) }
+                intermediateMatrixRepository.getList().also { addAll(it) }
+                advancedMatrixRepository.getList().also { addAll(it) }
             }
         }
         _matrixList.value = resultList.sortedBy { it.boxCount }
@@ -40,7 +55,7 @@ class MatrixListViewModel : ViewModel() {
         setProgress(true)
         val resultList = buildList {
             withContext(Dispatchers.IO) {
-                BeginnerMatrixRepository().getList().also { addAll(it) }
+                beginnerMatrixRepository.getList().also { addAll(it) }
             }
         }
         _matrixList.value = resultList.sortedBy { it.boxCount }
@@ -51,7 +66,7 @@ class MatrixListViewModel : ViewModel() {
         setProgress(true)
         val resultList = buildList {
             withContext(Dispatchers.IO) {
-                IntermediateMatrixRepository().getList().also { addAll(it) }
+                intermediateMatrixRepository.getList().also { addAll(it) }
             }
         }
         _matrixList.value = resultList.sortedBy { it.boxCount }
@@ -62,7 +77,7 @@ class MatrixListViewModel : ViewModel() {
         setProgress(true)
         val resultList = buildList {
             withContext(Dispatchers.IO) {
-                AdvancedMatrixRepository().getList().also { addAll(it) }
+                advancedMatrixRepository.getList().also { addAll(it) }
             }
         }
         _matrixList.value = resultList.sortedBy { it.boxCount }
@@ -72,7 +87,7 @@ class MatrixListViewModel : ViewModel() {
     fun selectAny() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
         val item = withContext(Dispatchers.IO) {
-            BeginnerMatrixRepository().getList().firstOrNull()
+            beginnerMatrixRepository.getList().firstOrNull()
         }
         item?.run { select(this) }
         setProgress(false)

@@ -11,8 +11,10 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 
-class SinglePlayViewModel(
+class SinglePlayViewModel
+@Inject constructor(
     val matrix: IntMatrix
 ) : ViewModel() {
     class ProviderFactory(private val matrix: IntMatrix) : ViewModelProvider.Factory {

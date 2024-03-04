@@ -178,6 +178,10 @@
             </intent-filter>
         </service>
 
+        <activity
+            android:name=".HiltTestActivity"
+            android:exported="true" />
+
     </application>
 
 </manifest>

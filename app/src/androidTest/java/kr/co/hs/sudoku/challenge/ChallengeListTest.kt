@@ -1,27 +1,48 @@
 package kr.co.hs.sudoku.challenge
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.spyk
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.test.runTest
+import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
+import kr.co.hs.sudoku.repository.TestableRepository
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
 import kr.co.hs.sudoku.usecase.RandomCreateSudoku
 import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.Date
+import javax.inject.Inject
 import kotlin.time.Duration
 
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class ChallengeListTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    @ChallengeRepositoryQualifier
+    lateinit var challengeRepository: ChallengeRepository
+
+    @Before
+    fun before() {
+        hiltRule.inject()
+    }
+
     @Test
     fun getChallengeListTest() = runTest(timeout = Duration.INFINITE) {
-        val challengeRepository = spyk<ChallengeRepositoryImpl>(recordPrivateCalls = true)
-        challengeRepository.setFireStoreRootVersion("test")
+        val challengeRepository = spyk(challengeRepository, recordPrivateCalls = true)
+        (challengeRepository as TestableRepository).setFireStoreRootVersion("test")
         every { challengeRepository.getProperty("currentUserUid") } returns "lYYBEGzX9JggNlChJs7C9OPtVe82"
 
         val matrix = RandomCreateSudoku(9, 50.0)

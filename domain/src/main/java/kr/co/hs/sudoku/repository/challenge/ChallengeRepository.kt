@@ -15,7 +15,6 @@ interface ChallengeRepository {
     suspend fun putRecord(challengeId: String, clearRecord: Long): Boolean
     suspend fun putReserveRecord(challengeId: String): Boolean
     suspend fun deleteRecord(challengeId: String, uid: String): Boolean
-    fun clearCache()
     suspend fun getHistory(uid: String, createdAt: Date, count: Long): List<ChallengeClearLogEntity>
     suspend fun getHistory(uid: String, count: Long): List<ChallengeClearLogEntity>
 }

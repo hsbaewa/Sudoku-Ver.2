@@ -15,6 +15,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.last
@@ -51,6 +52,7 @@ import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.ViewModel
 
+@AndroidEntryPoint
 class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
         private const val EXTRA_MATRIX = "EXTRA_MATRIX"
@@ -82,11 +84,8 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
     }
     private var lastKnownUserProfile: ProfileEntity? = null
     private val app: App by lazy { applicationContext as App }
-    private val userProfileViewModel: UserProfileViewModel
-            by viewModels { getUserProfileProviderFactory() }
-    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
-        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
-    }
+    private val userProfileViewModel: UserProfileViewModel by viewModels()
+    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

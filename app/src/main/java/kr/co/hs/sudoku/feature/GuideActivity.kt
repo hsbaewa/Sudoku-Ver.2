@@ -7,23 +7,28 @@ import androidx.activity.addCallback
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityGuideBinding
+import kr.co.hs.sudoku.di.repositories.RegistrationRepositoryQualifier
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
+import kr.co.hs.sudoku.repository.settings.RegistrationRepository
 import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
 import kr.co.hs.sudoku.views.SudokuView
+import javax.inject.Inject
 
+
+@AndroidEntryPoint
 class GuideActivity : Activity() {
 
     companion object {
@@ -33,6 +38,10 @@ class GuideActivity : Activity() {
 
     private val binding: ActivityGuideBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_guide) }
+
+    @Inject
+    @RegistrationRepositoryQualifier
+    lateinit var registrationRepository: RegistrationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +53,7 @@ class GuideActivity : Activity() {
                 if (it) {
                     lifecycleScope.launch {
                         showProgressIndicator()
-                        val app = applicationContext as App
-                        withContext(Dispatchers.IO) {
-                            app.getRegistrationRepository().seenTutorial()
-                        }
+                        withContext(Dispatchers.IO) { registrationRepository.seenTutorial() }
                         dismissProgressIndicator()
                         finish()
                     }
@@ -309,10 +315,7 @@ class GuideActivity : Activity() {
             setOnClickListener {
                 lifecycleScope.launch {
                     showProgressIndicator()
-                    val app = applicationContext as App
-                    withContext(Dispatchers.IO) {
-                        app.getRegistrationRepository().seenTutorial()
-                    }
+                    withContext(Dispatchers.IO) { registrationRepository.seenTutorial() }
                     dismissProgressIndicator()
                     finish()
                 }

@@ -12,8 +12,8 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutDialogUserProfileBinding
 import kr.co.hs.sudoku.extension.Number.dp
@@ -21,6 +21,7 @@ import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndic
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.challenge.ChallengeItemBottomSheetDialog
 
+@AndroidEntryPoint
 class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
     companion object {
 
@@ -32,8 +33,7 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
     }
 
     private lateinit var binding: LayoutDialogUserProfileBinding
-    private val profileViewModel: UserProfileViewModel
-            by viewModels { (requireActivity() as Activity).getUserProfileProviderFactory() }
+    private val profileViewModel: UserProfileViewModel by viewModels()
     private val behavior by lazy { (dialog as BottomSheetDialog).behavior }
 
     override fun onCreateView(

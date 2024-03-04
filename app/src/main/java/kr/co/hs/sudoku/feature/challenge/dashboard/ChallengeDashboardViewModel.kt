@@ -1,7 +1,6 @@
 package kr.co.hs.sudoku.feature.challenge.dashboard
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -11,32 +10,25 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.liveData
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.ad.ChallengeDashboardAdQualifier
+import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Date
+import javax.inject.Inject
 
-class ChallengeDashboardViewModel(
+@HiltViewModel
+class ChallengeDashboardViewModel
+@Inject constructor(
+    @ChallengeRepositoryQualifier
     private val repository: ChallengeRepository,
+    @ChallengeDashboardAdQualifier
     private val nativeItemAdManager: NativeItemAdManager,
 ) : ViewModel() {
-
-    class ProviderFactory(
-        private val repository: ChallengeRepository,
-        private val nativeItemAdManager: NativeItemAdManager,
-    ) : ViewModelProvider.Factory {
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(ChallengeDashboardViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                ChallengeDashboardViewModel(repository, nativeItemAdManager) as T
-            } else {
-                throw IllegalArgumentException()
-            }
-        }
-    }
-
 
     val challengeDashboardPagingData: LiveData<PagingData<ChallengeDashboardListItem>>
         get() = Pager(

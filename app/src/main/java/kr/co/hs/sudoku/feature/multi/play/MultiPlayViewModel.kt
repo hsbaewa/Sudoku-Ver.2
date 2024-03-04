@@ -2,36 +2,26 @@ package kr.co.hs.sudoku.feature.multi.play
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.battle.BattleEventRepository
-import kr.co.hs.sudoku.repository.battle.BattleEventRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 
-class MultiPlayViewModel(
+@HiltViewModel
+class MultiPlayViewModel @Inject constructor(
+    @BattleRepositoryQualifier
     private val battleRepository: BattleRepository
 ) : ViewModel() {
-    class ProviderFactory(
-        private val battleRepository: BattleRepository
-    ) : ViewModelProvider.Factory {
-
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(MultiPlayViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                MultiPlayViewModel(battleRepository) as T
-            } else {
-                throw IllegalArgumentException()
-            }
-        }
-    }
 
     override fun onCleared() {
         super.onCleared()
@@ -57,9 +47,16 @@ class MultiPlayViewModel(
 
     fun join(battleId: String) = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
-        withContext(Dispatchers.IO) { battleRepository.join(battleId) }
+        val eventRepository = withContext(Dispatchers.IO) { battleRepository.join(battleId) }
         stopEventMonitoring()
-        monitoringJob = launch(viewModelScopeExceptionHandler) { doStartEventMonitoring(battleId) }
+        monitoringJob = launch(viewModelScopeExceptionHandler) {
+            battleEventRepository?.stopMonitoring()
+            eventRepository.startMonitoring()
+            battleEventRepository = eventRepository
+            eventRepository.battleFlow.collect { entity ->
+                _battleEntity.value = entity
+            }
+        }
         setProgress(false)
     }
 
@@ -126,43 +123,30 @@ class MultiPlayViewModel(
     private val _battleEntity = MutableLiveData<BattleEntity>()
     val battleEntity: LiveData<BattleEntity> by this::_battleEntity
 
-    suspend fun doStartEventMonitoring(battleId: String) {
-        battleEventRepository?.stopMonitoring()
-
-        BattleEventRepositoryImpl(battleId)
-            .apply { startMonitoring() }
-            .also { battleEventRepository = it }
-            .also {
-                it.battleFlow.collect { entity ->
-                    _battleEntity.value = entity
-                }
-            }
-    }
-
-    suspend fun doStartEventMonitoring(eventRepository: BattleEventRepository) {
-        battleEventRepository?.stopMonitoring()
-
-        eventRepository
-            .apply { startMonitoring() }
-            .also { battleEventRepository = it }
-            .also {
-                it.battleFlow.collect { entity ->
-                    _battleEntity.value = entity
-                }
-            }
-    }
-
     private var monitoringJob: Job? = null
     fun startEventMonitoring(battleId: String) {
         stopEventMonitoring()
-        monitoringJob =
-            viewModelScope.launch(viewModelScopeExceptionHandler) { doStartEventMonitoring(battleId) }
+        monitoringJob = viewModelScope.launch(viewModelScopeExceptionHandler) {
+            battleEventRepository?.stopMonitoring()
+            val eventRepository = battleRepository.getEventRepository(battleId)
+            eventRepository.startMonitoring()
+            battleEventRepository = eventRepository
+            eventRepository.battleFlow.collect { entity -> _battleEntity.value = entity }
+        }
     }
 
     fun startEventMonitoring(eventRepository: BattleEventRepository) {
         stopEventMonitoring()
         monitoringJob = viewModelScope.launch(viewModelScopeExceptionHandler) {
-            doStartEventMonitoring(eventRepository)
+            battleEventRepository?.stopMonitoring()
+            eventRepository
+                .apply { startMonitoring() }
+                .also { battleEventRepository = it }
+                .also {
+                    it.battleFlow.collect { entity ->
+                        _battleEntity.value = entity
+                    }
+                }
         }
     }
 

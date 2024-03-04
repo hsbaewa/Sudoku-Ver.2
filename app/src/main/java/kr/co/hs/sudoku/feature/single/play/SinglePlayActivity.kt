@@ -13,6 +13,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
@@ -31,6 +32,7 @@ import kr.co.hs.sudoku.parcel.MatrixParcelModel
 import kr.co.hs.sudoku.repository.timer.TimerImpl
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 
+@AndroidEntryPoint
 class SinglePlayActivity : Activity() {
     companion object {
         private const val EXTRA_MATRIX = "EXTRA_MATRIX"

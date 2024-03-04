@@ -1,7 +1,5 @@
 package kr.co.hs.sudoku.battle
 
-import androidx.fragment.app.testing.FragmentScenario
-import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
@@ -10,8 +8,11 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kr.co.hs.sudoku.HiltTestUtil
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.ViewMatchers.checkCellValue
 import kr.co.hs.sudoku.feature.stage.StageFragment
@@ -20,11 +21,13 @@ import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.not
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @Suppress("TestFunctionName", "NonAsciiCharacters")
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class ViewerBoardFragmentTest {
 
     private val testStartingMatrix = listOf(
@@ -40,11 +43,15 @@ class ViewerBoardFragmentTest {
         testStartingMatrix[3].map { if (it > 0) 2 else 0 }
     )
 
-    private lateinit var fragmentScenario: FragmentScenario<MultiPlayViewerStageFragment>
+    private lateinit var fragmentScenario: HiltTestUtil.HiltFragmentScenario<MultiPlayViewerStageFragment>
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
     @Before
     fun initFragmentScenario() {
-        fragmentScenario = launchFragmentInContainer(
+        hiltRule.inject()
+        fragmentScenario = HiltTestUtil.launchFragmentInHiltContainer(
             fragmentArgs = StageFragment.newInstanceArguments(CustomMatrix(testStartingMatrix)),
             themeResId = R.style.Theme_HSSudoku2,
             initialState = Lifecycle.State.RESUMED

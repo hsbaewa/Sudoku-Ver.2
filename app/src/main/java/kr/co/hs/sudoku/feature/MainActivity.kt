@@ -38,21 +38,29 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
+import com.google.android.gms.games.GamesSignInClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
-import kr.co.hs.sudoku.BuildConfig
 import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
-import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
+import kr.co.hs.sudoku.datasource.StageRemoteSource
+import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
+import kr.co.hs.sudoku.di.google.GoogleGameSignInClientQualifier
+import kr.co.hs.sudoku.di.network.BattleRemoteSourceQualifier
+import kr.co.hs.sudoku.di.network.StageRemoteSourceQualifier
+import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
+import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
+import kr.co.hs.sudoku.di.repositories.RegistrationRepositoryQualifier
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
@@ -60,7 +68,6 @@ import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicato
 import kr.co.hs.sudoku.extension.platform.Bitmap.toCropCircle
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getColorCompat
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
-import kr.co.hs.sudoku.extension.platform.ContextExtension.getMetaData
 import kr.co.hs.sudoku.feature.admin.AdminViewModel
 import kr.co.hs.sudoku.feature.admin.ChallengeManageActivity
 import kr.co.hs.sudoku.feature.admin.UpdatePushActivity
@@ -75,13 +82,18 @@ import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
+import kr.co.hs.sudoku.repository.battle.BattleRepository
+import kr.co.hs.sudoku.repository.settings.RegistrationRepository
+import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import java.net.MalformedURLException
 import java.net.URL
+import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
+@AndroidEntryPoint
 class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     companion object {
@@ -100,47 +112,44 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
     private val app: App by lazy { applicationContext as App }
-    private val multiPlayViewModel: MultiPlayViewModel by viewModels {
-        MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
-    }
-    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
-        val adUnitId = if (BuildConfig.DEBUG) {
-            "ca-app-pub-3940256099942544/2247696110"
-        } else {
-            getMetaData("kr.co.hs.sudoku.adUnitId.NativeAd")?.takeIf { it.isNotEmpty() }
-        }
-        MultiDashboardViewModel.ProviderFactory(
-            app.getBattleRepository(),
-            NativeItemAdManager(app, adUnitId)
-        )
-    }
-    private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels {
-        val adUnitId = if (BuildConfig.DEBUG) {
-            "ca-app-pub-3940256099942544/2247696110"
-        } else {
-            getMetaData("kr.co.hs.sudoku.adUnitId.NativeAdForChallengeItem")?.takeIf { it.isNotEmpty() }
-        }
-        ChallengeDashboardViewModel.ProviderFactory(
-            app.getChallengeRepository(),
-            NativeItemAdManager(app, adUnitId)
-        )
-    }
-    private val userProfileViewModel: UserProfileViewModel
-            by viewModels { getUserProfileProviderFactory() }
-    private val gameSettingsViewModel: GameSettingsViewModel by viewModels {
-        GameSettingsViewModel.Factory(app.getGameSettingsRepository())
-    }
+    private val multiPlayViewModel: MultiPlayViewModel by viewModels()
+    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels()
+
+    @Inject
+    @GoogleGameSignInClientQualifier
+    lateinit var gamesSignInClient: GamesSignInClient
+    private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels()
+    private val userProfileViewModel: UserProfileViewModel by viewModels()
+    private val gameSettingsViewModel: GameSettingsViewModel by viewModels()
     private val launcherForProfileUpdate =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
-                userProfileViewModel.requestCurrentUserProfile()
+                userProfileViewModel.requestCurrentUserProfile(gamesSignInClient)
             }
         }
     private var hasUpdate = false
 
-    private val adminViewModel: AdminViewModel by viewModels {
-        AdminViewModel.ProviderFactory(app.getAdminPermissionRepository())
-    }
+    private val adminViewModel: AdminViewModel by viewModels()
+
+    @Inject
+    @ProfileRepositoryQualifier
+    lateinit var profileRepository: ProfileRepository
+
+    @Inject
+    @StageRemoteSourceQualifier
+    lateinit var stageRemoteSource: StageRemoteSource
+
+    @Inject
+    @BattleRemoteSourceQualifier
+    lateinit var battleRemoteSource: BattleRemoteSource
+
+    @Inject
+    @BattleRepositoryQualifier
+    lateinit var battleRepository: BattleRepository
+
+    @Inject
+    @RegistrationRepositoryQualifier
+    lateinit var registrationRepository: RegistrationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,7 +185,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 multiDashboardViewModel.registerRank()
             }
             // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
-            lifecycleScope.launch { withStarted { requestCurrentUserProfile() } }
+            lifecycleScope.launch { withStarted { requestCurrentUserProfile(gamesSignInClient) } }
         }
 
         with(gameSettingsViewModel) {
@@ -193,14 +202,9 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         }
 
         if (savedInstanceState == null) {
-            val isFirstAppOpened = runBlocking {
-                app.getRegistrationRepository().isFirstAppOpened()
-            }
-            when (isFirstAppOpened) {
+            when (runBlocking { registrationRepository.isFirstAppOpened() }) {
                 true -> {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        app.getRegistrationRepository().appOpened()
-                    }
+                    lifecycleScope.launch(Dispatchers.IO) { registrationRepository.appOpened() }
                     checkShowTutorial()
                 }
 
@@ -273,9 +277,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             R.id.menu_single -> {
                 showSinglePlayDashboard()
                 lifecycleScope.launch {
-                    val hasSeenSinglePlayGuide = withContext(Dispatchers.IO) {
-                        app.getRegistrationRepository().hasSeenSinglePlayGuide()
-                    }
+                    val hasSeenSinglePlayGuide =
+                        withContext(Dispatchers.IO) { registrationRepository.hasSeenSinglePlayGuide() }
                     if (!hasSeenSinglePlayGuide) {
                         showSingleTabGuide(lifecycle)
                     }
@@ -285,9 +288,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             R.id.menu_multi -> {
                 showMultiPlayDashboard()
                 lifecycleScope.launch {
-                    val hasSeenMultiPlayGuide = withContext(Dispatchers.IO) {
-                        app.getRegistrationRepository().hasSeenMultiPlayGuide()
-                    }
+                    val hasSeenMultiPlayGuide =
+                        withContext(Dispatchers.IO) { registrationRepository.hasSeenMultiPlayGuide() }
                     if (!hasSeenMultiPlayGuide) {
                         showMultiTabGuide(lifecycle)
                     }
@@ -297,9 +299,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             R.id.challenge -> {
                 showChallengeDashboard()
                 lifecycleScope.launch {
-                    val hasSeenChallengeGuide = withContext(Dispatchers.IO) {
-                        app.getRegistrationRepository().hasSeenChallengeGuide()
-                    }
+                    val hasSeenChallengeGuide =
+                        withContext(Dispatchers.IO) { registrationRepository.hasSeenChallengeGuide() }
                     if (!hasSeenChallengeGuide) {
                         showChallengeTabGuide(lifecycle)
                     }
@@ -449,7 +450,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.sign_in -> {
-                userProfileViewModel.signIn()
+                userProfileViewModel.signIn(gamesSignInClient)
                 true
             }
 
@@ -470,7 +471,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
             R.id.clear_seen_guide -> {
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { app.getRegistrationRepository().clear() }
+                    withContext(Dispatchers.IO) { registrationRepository.clear() }
                     showAlert(null, R.string.clear_seen_guide_success) {}
                 }
                 true
@@ -553,9 +554,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             },
             object : TapTargetView.Listener() {
                 override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
-                    lifecycle.coroutineScope.launch(Dispatchers.IO) {
-                        app.getRegistrationRepository().seenSinglePlayGuide()
-                    }
+                    lifecycle.coroutineScope.launch(Dispatchers.IO) { registrationRepository.seenSinglePlayGuide() }
                     onDismiss?.invoke()
                 }
             }
@@ -577,9 +576,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             },
             object : TapTargetView.Listener() {
                 override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
-                    lifecycle.coroutineScope.launch(Dispatchers.IO) {
-                        app.getRegistrationRepository().seenMultiPlayGuide()
-                    }
+                    lifecycle.coroutineScope.launch(Dispatchers.IO) { registrationRepository.seenMultiPlayGuide() }
                     onDismiss?.invoke()
                 }
             }
@@ -604,9 +601,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
             },
             object : TapTargetView.Listener() {
                 override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
-                    lifecycle.coroutineScope.launch(Dispatchers.IO) {
-                        app.getRegistrationRepository().seenChallengeGuide()
-                    }
+                    lifecycle.coroutineScope.launch(Dispatchers.IO) { registrationRepository.seenChallengeGuide() }
                     onDismiss?.invoke()
                 }
             }
@@ -661,7 +656,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         super.onStart()
         lifecycleScope.launch {
             val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-            withContext(Dispatchers.IO) { app.getProfileRepository().checkIn(uid) }
+            withContext(Dispatchers.IO) { profileRepository.checkIn(uid) }
         }
     }
 
@@ -669,7 +664,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         super.onStop()
         lifecycleScope.launch {
             val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-            withContext(Dispatchers.IO) { app.getProfileRepository().checkOut(uid) }
+            withContext(Dispatchers.IO) { profileRepository.checkOut(uid) }
         }
     }
 
@@ -679,7 +674,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
 
     private fun checkShowTutorial() = lifecycleScope.launch {
         val hasSeenTutorial =
-            withContext(Dispatchers.IO) { app.getRegistrationRepository().hasSeenTutorial() }
+            withContext(Dispatchers.IO) { registrationRepository.hasSeenTutorial() }
         if (!hasSeenTutorial) {
             GuideActivity.start(this@MainActivity)
         }

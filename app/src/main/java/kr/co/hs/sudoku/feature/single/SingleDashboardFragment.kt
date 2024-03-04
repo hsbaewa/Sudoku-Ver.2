@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
@@ -24,6 +25,7 @@ import kr.co.hs.sudoku.feature.single.play.SinglePlayActivity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 
 
+@AndroidEntryPoint
 class SingleDashboardFragment : Fragment() {
     companion object {
         private const val EXTRA_IS_TEST = "EXTRA_IS_TEST"

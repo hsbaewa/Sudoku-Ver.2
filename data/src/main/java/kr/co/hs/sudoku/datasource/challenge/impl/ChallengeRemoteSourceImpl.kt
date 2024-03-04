@@ -9,8 +9,10 @@ import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
 import java.util.Date
+import javax.inject.Inject
 
-class ChallengeRemoteSourceImpl : FireStoreRemoteSource(), ChallengeRemoteSource {
+class ChallengeRemoteSourceImpl
+@Inject constructor() : FireStoreRemoteSource(), ChallengeRemoteSource {
 
     override suspend fun getLatestChallenge() = challengeCollection
         .orderBy("createdAt", Query.Direction.DESCENDING)

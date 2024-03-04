@@ -16,6 +16,7 @@ import androidx.lifecycle.withStarted
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
@@ -26,6 +27,7 @@ import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
 
+@AndroidEntryPoint
 class ProfileUpdateActivity : Activity() {
     companion object {
         fun newIntent(context: Context) =
@@ -37,8 +39,7 @@ class ProfileUpdateActivity : Activity() {
     private val binding: ActivityProfileUpdateBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_profile_update) }
     private val app: App by lazy { applicationContext as App }
-    private val viewModel: UserProfileViewModel
-            by viewModels { getUserProfileProviderFactory() }
+    private val viewModel: UserProfileViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

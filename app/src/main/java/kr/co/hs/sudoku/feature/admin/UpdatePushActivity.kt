@@ -6,15 +6,16 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityManageUpdatePushBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.messaging.MessagingManager
 
+@AndroidEntryPoint
 class UpdatePushActivity : Activity() {
     companion object {
         private fun newIntent(context: Context) = Intent(context, UpdatePushActivity::class.java)
@@ -24,11 +25,7 @@ class UpdatePushActivity : Activity() {
     private val binding: ActivityManageUpdatePushBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_manage_update_push) }
 
-    private val messagingViewModel: MessagingViewModel by viewModels {
-        val app = applicationContext as App
-        val messagingManager = MessagingManager(app)
-        MessagingViewModel.ProviderFactory(messagingManager)
-    }
+    private val messagingViewModel: MessagingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

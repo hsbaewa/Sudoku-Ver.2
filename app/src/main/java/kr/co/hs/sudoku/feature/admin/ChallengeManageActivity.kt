@@ -15,8 +15,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.ViewHolder
@@ -26,6 +26,7 @@ import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 
+@AndroidEntryPoint
 class ChallengeManageActivity : Activity() {
     companion object {
         private fun newIntent(context: Context) =
@@ -36,10 +37,7 @@ class ChallengeManageActivity : Activity() {
 
     private val binding: ActivityManageChallengeBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_manage_challenge) }
-    private val challengeViewModel: ChallengeManageViewModel by viewModels {
-        val app = applicationContext as App
-        ChallengeManageViewModel.ProviderFactory(app.getChallengeRepository())
-    }
+    private val challengeViewModel: ChallengeManageViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

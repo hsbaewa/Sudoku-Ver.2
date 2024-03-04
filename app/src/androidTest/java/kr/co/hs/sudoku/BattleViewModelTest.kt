@@ -3,6 +3,7 @@ package kr.co.hs.sudoku
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -12,7 +13,6 @@ import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.repository.TestableRepository
-import kr.co.hs.sudoku.repository.battle.BattleEventRepositoryImpl
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
@@ -26,6 +26,7 @@ import kotlin.time.Duration
 
 @Suppress("NonAsciiCharacters", "TestFunctionName")
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class BattleViewModelTest : BattleRepositoryTest() {
 
     private val viewModel = ArrayList<MultiPlayViewModel>()
@@ -68,8 +69,10 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
     @Test
     override fun 게임_참여_테스트() = runTest(timeout = Duration.INFINITE) {
-        viewModel[0].doJoin(BattleEventRepositoryImpl(testBattleId)
-            .apply { setFireStoreRootVersion("test") })
+        viewModel[0].doJoin(
+            userBattleRepository[0].getEventRepository(testBattleId)
+                .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
+        )
 
         var battleEntity = viewModel[0].battleEntity.getOrAwaitValue(10) {
             it.participants.size == 2 && it.participants.find { it.uid == userProfile[0].uid } != null
@@ -78,13 +81,15 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
         assertThrows(Exception::class.java) {
             runBlocking {
-                viewModel[1].doJoin(BattleEventRepositoryImpl(testBattleId)
-                    .apply { setFireStoreRootVersion("test") })
+                viewModel[1].doJoin(
+                    userBattleRepository[1].getEventRepository(testBattleId)
+                        .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
+                )
             }
         }.also { assertEquals(it.message, "게임(${battleEntity.id})의 참여자가 2/2로 이미 가득 찼습니다.") }
 
-        val eventRepository = BattleEventRepositoryImpl(testBattleId)
-        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
+        val eventRepository = userBattleRepository[3].getEventRepository(testBattleId)
+            .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
         viewModel[3].startEventMonitoring(eventRepository)
         battleEntity = viewModel[3].battleEntity.getOrAwaitValue(10) {
             it.participants.size == 2
@@ -96,8 +101,10 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
     @Test
     override fun 게임_시작_테스트() = runTest(timeout = Duration.INFINITE) {
-        viewModel[0].doJoin(BattleEventRepositoryImpl(testBattleId)
-            .apply { setFireStoreRootVersion("test") })
+        viewModel[0].doJoin(
+            userBattleRepository[0].getEventRepository(testBattleId)
+                .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
+        )
 
         assertThrows(Exception::class.java) {
             runBlocking { viewModel[0].doStart() }
@@ -126,15 +133,16 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
     @Test
     override fun 게임_종료_테스트() = runTest(timeout = Duration.INFINITE) {
-        viewModel[0].doJoin(BattleEventRepositoryImpl(testBattleId)
-            .apply { setFireStoreRootVersion("test") }
+        viewModel[0].doJoin(
+            userBattleRepository[0].getEventRepository(testBattleId)
+                .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
         )
         viewModel[0].doReady()
 
         viewModel[3].doPending()
         viewModel[3].doStart()
-        val eventRepository = BattleEventRepositoryImpl(testBattleId)
-        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
+        val eventRepository = userBattleRepository[3].getEventRepository(testBattleId)
+            .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
         viewModel[3].startEventMonitoring(eventRepository)
 
         var battleEntity = viewModel[3].battleEntity
@@ -159,7 +167,8 @@ class BattleViewModelTest : BattleRepositoryTest() {
     @Test
     override fun 게임_클리어_테스트() = runTest(timeout = Duration.INFINITE) {
         viewModel[0].doJoin(
-            BattleEventRepositoryImpl(testBattleId).apply { setFireStoreRootVersion("test") }
+            userBattleRepository[0].getEventRepository(testBattleId)
+                .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
         )
 
         assertThrows(Exception::class.java) {
@@ -176,8 +185,8 @@ class BattleViewModelTest : BattleRepositoryTest() {
         viewModel[3].doPending()
         viewModel[3].doStart()
 
-        val eventRepository = BattleEventRepositoryImpl(testBattleId)
-        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
+        val eventRepository = userBattleRepository[3].getEventRepository(testBattleId)
+            .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
         viewModel[3].startEventMonitoring(eventRepository)
 
         viewModel[0].doClear(1000)
@@ -191,8 +200,9 @@ class BattleViewModelTest : BattleRepositoryTest() {
 
     @Test
     override fun 셀_변경_테스트() = runTest(timeout = Duration.INFINITE) {
-        viewModel[0].doJoin(BattleEventRepositoryImpl(testBattleId)
-            .apply { setFireStoreRootVersion("test") }
+        viewModel[0].doJoin(
+            userBattleRepository[0].getEventRepository(testBattleId)
+                .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
         )
 
         assertThrows(Exception::class.java) {
@@ -204,8 +214,8 @@ class BattleViewModelTest : BattleRepositoryTest() {
         viewModel[3].doPending()
         viewModel[3].doStart()
 
-        val eventRepository = BattleEventRepositoryImpl(testBattleId)
-        (eventRepository as TestableRepository).setFireStoreRootVersion("test")
+        val eventRepository = userBattleRepository[3].getEventRepository(testBattleId)
+            .apply { (this as TestableRepository).setFireStoreRootVersion("test") }
         viewModel[3].startEventMonitoring(eventRepository)
 
         assertThrows(Exception::class.java) {

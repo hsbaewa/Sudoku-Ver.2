@@ -2,30 +2,22 @@ package kr.co.hs.sudoku.feature.profile
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 
-class OnlineUserListViewModel(
+@HiltViewModel
+class OnlineUserListViewModel
+@Inject constructor(
+    @ProfileRepositoryQualifier
     private val profileRepository: ProfileRepository
 ) : ViewModel() {
-
-    class ProviderFactory(
-        private val profileRepository: ProfileRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(OnlineUserListViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                OnlineUserListViewModel(profileRepository) as T
-            } else {
-                throw IllegalArgumentException()
-            }
-        }
-    }
 
     private val _onlineUserList = MutableLiveData<List<ProfileEntity.OnlineUserEntity>>()
     val onlineUserList: LiveData<List<ProfileEntity.OnlineUserEntity>> by this::_onlineUserList

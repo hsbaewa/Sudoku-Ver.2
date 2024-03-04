@@ -8,8 +8,10 @@ import kr.co.hs.sudoku.mapper.SettingsMapper.PREFERENCE_ENABLED_HAPTIC_FEEDBACK
 import kr.co.hs.sudoku.mapper.SettingsMapper.getGameSettingsEntity
 import kr.co.hs.sudoku.model.settings.GameSettingsEntity
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
+import javax.inject.Inject
 
-class GameSettingsRepositoryImpl(
+class GameSettingsRepositoryImpl
+@Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) : GameSettingsRepository {
 

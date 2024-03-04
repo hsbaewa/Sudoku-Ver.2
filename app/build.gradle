@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-parcelize'
     id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
     id 'com.google.gms.google-services'
     // Add the App Distribution Gradle plugin
     id 'com.google.firebase.appdistribution'
@@ -33,7 +34,7 @@ android {
         versionCode getVersionCodeFromParameter()
         versionName getVersionNameFromParameter()
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "kr.co.hs.sudoku.CustomTestRunner"
     }
 
     buildTypes {
@@ -193,6 +194,11 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
+
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hilt_version"
 }
 
 
