@@ -10,14 +10,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListChallengeBinding
+import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
@@ -28,7 +29,10 @@ import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
         fun newInstance() = ChallengeDashboardFragment()
@@ -36,6 +40,10 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
 
     private lateinit var binding: LayoutListChallengeBinding
     private val viewModel: ChallengeDashboardViewModel by activityViewModels()
+
+    @Inject
+    @ChallengeRepositoryQualifier
+    lateinit var challengeRepository: ChallengeRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -88,9 +96,8 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
 
     private val pagingDataAdapter: ChallengeDashboardListItemAdapter
             by lazy {
-                val app = requireContext().applicationContext as App
                 ChallengeDashboardListItemAdapter(
-                    app.getChallengeRepository(),
+                    challengeRepository,
                     onClickLeaderBoard = { showLeaderBoard(it) },
                     onClickStart = { startChallenge(it) },
                     this

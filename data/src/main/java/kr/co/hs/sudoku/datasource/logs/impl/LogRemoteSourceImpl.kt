@@ -12,8 +12,10 @@ import kr.co.hs.sudoku.model.logs.LogModel
 import kr.co.hs.sudoku.model.logs.impl.BattleClearModelImpl
 import kr.co.hs.sudoku.model.logs.impl.ChallengeClearModelImpl
 import java.util.Date
+import javax.inject.Inject
 
-class LogRemoteSourceImpl : FireStoreRemoteSource(), LogRemoteSource {
+class LogRemoteSourceImpl
+@Inject constructor() : FireStoreRemoteSource(), LogRemoteSource {
     private val logsCollection: CollectionReference
         get() = rootDocument.collection("logs")
 

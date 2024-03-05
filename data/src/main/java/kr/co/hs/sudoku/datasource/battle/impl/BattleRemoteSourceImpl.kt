@@ -2,13 +2,14 @@ package kr.co.hs.sudoku.datasource.battle.impl
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.AggregateSource
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions.merge
 import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
+import kr.co.hs.sudoku.mapper.DocumentSnapshotMapper.toBattleModel
+import kr.co.hs.sudoku.mapper.DocumentSnapshotMapper.toParticipantModel
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardModel
 import kr.co.hs.sudoku.model.battle.BattleModel
@@ -39,20 +40,10 @@ class BattleRemoteSourceImpl : FireStoreRemoteSource(), BattleRemoteSource {
             .get(getBattleCollectionRef().document(battleId))
             .toBattleModel()
 
-    private fun DocumentSnapshot.toBattleModel() =
-        toObject(BattleModel::class.java)
-            ?.apply { this.id = this@toBattleModel.id }
-
-    fun changeToBattleModel(snapshot: DocumentSnapshot?) = snapshot?.toBattleModel()
-
     override fun getParticipant(transaction: Transaction, uid: String) =
         transaction
             .get(getParticipantCollectionRef().document(uid))
             .toParticipantModel()
-
-    private fun DocumentSnapshot.toParticipantModel() = toObject(BattleParticipantModel::class.java)
-
-    fun changeToParticipantModel(snapshot: DocumentSnapshot?) = snapshot?.toParticipantModel()
 
     override fun getBattleRecord(transaction: Transaction, battleId: String, uid: String) =
         transaction

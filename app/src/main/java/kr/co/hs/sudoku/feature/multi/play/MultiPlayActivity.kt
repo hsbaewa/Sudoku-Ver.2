@@ -15,11 +15,11 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
@@ -46,6 +46,7 @@ import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import org.jetbrains.annotations.TestOnly
 
+@AndroidEntryPoint
 class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
         private const val EXTRA_BATTLE_ID = "kr.co.hs.sudoku.EXTRA_BATTLE_ID"
@@ -67,10 +68,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
 
     private val binding: ActivityPlayMultiBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_play_multi) }
-    private val battleViewModel: MultiPlayViewModel by viewModels {
-        val app = applicationContext as App
-        MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
-    }
+    private val battleViewModel: MultiPlayViewModel by viewModels()
     private val recordViewModel: RecordViewModel by viewModels()
     private val realServerTimer by lazy { BattleTimer() }
 
@@ -86,10 +84,7 @@ class MultiPlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListen
     @TestOnly
     var isShowErrorDialog = true
 
-    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels {
-        val app = applicationContext as App
-        MultiDashboardViewModel.ProviderFactory(app.getBattleRepository())
-    }
+    private val multiDashboardViewModel: MultiDashboardViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

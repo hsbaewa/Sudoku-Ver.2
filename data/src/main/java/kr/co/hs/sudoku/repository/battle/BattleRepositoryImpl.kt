@@ -11,11 +11,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
-import kr.co.hs.sudoku.datasource.battle.impl.BattleRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
-import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
-import kr.co.hs.sudoku.datasource.user.impl.ProfileRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain2
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
@@ -29,13 +26,16 @@ import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
+import javax.inject.Inject
 import kotlin.math.sqrt
 
 @Suppress("SpellCheckingInspection")
-class BattleRepositoryImpl(
-    private val battleRemoteSource: BattleRemoteSource = BattleRemoteSourceImpl(),
-    private val profileRemoteSource: ProfileRemoteSource = ProfileRemoteSourceImpl(),
-    private val logRemoteSource: LogRemoteSource = LogRemoteSourceImpl()
+class BattleRepositoryImpl
+@Inject
+constructor(
+    private val battleRemoteSource: BattleRemoteSource,
+    private val profileRemoteSource: ProfileRemoteSource,
+    private val logRemoteSource: LogRemoteSource
 ) : BattleRepository, TestableRepository {
 
     override val currentUserUid: String
@@ -177,7 +177,13 @@ class BattleRepositoryImpl(
     /**
      *
      */
-    override suspend fun join(battleId: String) = doJoinBattle(battleId)
+    override suspend fun join(battleId: String): BattleEventRepository {
+        doJoinBattle(battleId)
+        return BattleEventRepositoryImpl(battleId, battleRemoteSource)
+    }
+
+    override suspend fun getEventRepository(battleId: String): BattleEventRepository =
+        BattleEventRepositoryImpl(battleId, battleRemoteSource)
 
     private suspend fun doJoinBattle(battleId: String) {
         FirebaseFirestore.getInstance().runTransaction { t ->

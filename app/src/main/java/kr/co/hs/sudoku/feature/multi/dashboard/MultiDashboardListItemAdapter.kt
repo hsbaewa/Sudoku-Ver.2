@@ -2,10 +2,7 @@ package kr.co.hs.sudoku.feature.multi.dashboard
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.RecyclerView
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAdBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayAddFunctionBinding
 import kr.co.hs.sudoku.databinding.LayoutListItemMultiPlayBinding
@@ -31,13 +28,6 @@ class MultiDashboardListItemAdapter(
         const val VT_FILTER = 1080
     }
 
-    private lateinit var viewModel: MultiDashboardViewModel
-
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        viewModel =
-            ViewModelProvider(recyclerView.context as ViewModelStoreOwner)[MultiDashboardViewModel::class.java]
-    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -52,8 +42,7 @@ class MultiDashboardListItemAdapter(
             }
 
             VT_ITEM -> MultiDashboardListItemViewHolder.MultiPlay(
-                LayoutListItemMultiPlayBinding.inflate(inflater, parent, false),
-                viewModel
+                LayoutListItemMultiPlayBinding.inflate(inflater, parent, false)
             ).apply {
                 setOnClickListener {
                     (getItem(bindingAdapterPosition) as? MultiDashboardListItem.MultiPlayItem)
@@ -138,5 +127,15 @@ class MultiDashboardListItemAdapter(
             is MultiDashboardListItemViewHolder.MultiPlay -> holder.onRecycled()
             else -> {}
         }
+    }
+
+    override fun onViewAttachedToWindow(holder: MultiDashboardListItemViewHolder<out MultiDashboardListItem>) {
+        super.onViewAttachedToWindow(holder)
+        holder.onViewAttachedToWindow()
+    }
+
+    override fun onViewDetachedFromWindow(holder: MultiDashboardListItemViewHolder<out MultiDashboardListItem>) {
+        super.onViewDetachedFromWindow(holder)
+        holder.onViewDetachedFromWindow()
     }
 }

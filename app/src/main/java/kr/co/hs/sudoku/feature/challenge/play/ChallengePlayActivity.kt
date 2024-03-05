@@ -12,11 +12,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityPlaySingleBinding
@@ -37,6 +37,7 @@ import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import java.io.File
 import java.io.FileOutputStream
 
+@AndroidEntryPoint
 class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
     companion object {
         private const val TAG = "ChallengePlayActivity"
@@ -90,13 +91,7 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
 
 
     private val recordViewModel: RecordViewModel by viewModels()
-    private val challengePlayViewModel: ChallengePlayViewModel by viewModels {
-        val app = applicationContext as App
-        ChallengePlayViewModel.ProviderFactory(
-            challengeId,
-            app.getChallengeRepository()
-        )
-    }
+    private val challengePlayViewModel: ChallengePlayViewModel by viewModels()
 
     private val binding: ActivityPlaySingleBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_play_single) }
@@ -159,7 +154,7 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
             }
             dismissProgressIndicator()
             withStarted {
-                challengePlayViewModel.requestChallenge()
+                challengePlayViewModel.requestChallenge(challengeId)
                 AdaptiveBannerAdManager(this@ChallengePlayActivity).attachBanner(binding.layoutAdView)
             }
         }
@@ -188,7 +183,7 @@ class ChallengePlayActivity : Activity(), IntCoordinateCellEntity.ValueChangedLi
             } else {
                 recordViewModel.stop()
                 val record = sudokuFragment.getClearTime()
-                challengePlayViewModel.setRecord(record)
+                challengePlayViewModel.setRecord(challengeId, record)
             }
         }
     }

@@ -2,33 +2,27 @@ package kr.co.hs.sudoku.feature.leaderboard
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
+import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 
-class LeaderBoardListViewModel(
-    private val battleRepository: BattleRepository? = null,
-    private val challengeRepository: ChallengeRepository? = null
+@HiltViewModel
+class LeaderBoardListViewModel
+@Inject constructor(
+    @BattleRepositoryQualifier
+    private val battleRepository: BattleRepository,
+    @ChallengeRepositoryQualifier
+    private val challengeRepository: ChallengeRepository
 ) : ViewModel() {
-    class ProviderFactory(
-        private val battleRepository: BattleRepository? = null,
-        private val challengeRepository: ChallengeRepository? = null
-    ) : ViewModelProvider.Factory {
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(LeaderBoardListViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                LeaderBoardListViewModel(battleRepository, challengeRepository) as T
-            } else {
-                throw IllegalArgumentException()
-            }
-        }
-    }
 
     private val _leaderBoardList = MutableLiveData<List<LeaderBoardListItem>>()
     val leaderBoardList: LiveData<List<LeaderBoardListItem>> by this::_leaderBoardList
@@ -47,7 +41,7 @@ class LeaderBoardListViewModel(
             setProgress(true)
 
             val records = withContext(Dispatchers.IO) {
-                challengeRepository?.getRecords(challengeId) ?: emptyList()
+                challengeRepository.getRecords(challengeId)
             }
 
             val leaderBoardList = MutableList(10) {
@@ -61,8 +55,9 @@ class LeaderBoardListViewModel(
             val hasMyUid = records.find { it.uid == currentUserUid } != null
             if (currentUserUid != null && !hasMyUid) {
                 val myRecord = withContext(Dispatchers.IO) {
-                    challengeRepository?.runCatching { getRecord(challengeId, currentUserUid) }
-                        ?.getOrNull()
+                    challengeRepository
+                        .runCatching { getRecord(challengeId, currentUserUid) }
+                        .getOrNull()
                 }
                 myRecord
                     ?.run { LeaderBoardListItem.ChallengeItemForMine(this) }
@@ -77,7 +72,7 @@ class LeaderBoardListViewModel(
         setProgress(true)
 
         val records = withContext(Dispatchers.IO) {
-            battleRepository?.getLeaderBoard(10) ?: emptyList()
+            battleRepository.getLeaderBoard(10)
         }
 
         val leaderBoardList = MutableList(10) {
@@ -91,11 +86,11 @@ class LeaderBoardListViewModel(
         val hasMyUid = records.find { it.uid == currentUserUid } != null
         if (currentUserUid != null && !hasMyUid) {
             val myRecord = withContext(Dispatchers.IO) {
-                battleRepository?.getLeaderBoard(currentUserUid)
+                battleRepository.getLeaderBoard(currentUserUid)
             }
             myRecord
-                ?.run { LeaderBoardListItem.BattleItemForMine(this) }
-                ?.apply { leaderBoardList.add(this) }
+                .run { LeaderBoardListItem.BattleItemForMine(this) }
+                .apply { leaderBoardList.add(this) }
         }
 
         setProgress(false)

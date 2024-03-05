@@ -2,6 +2,8 @@ package kr.co.hs.sudoku.feature.multi.dashboard
 
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import coil.request.Disposable
 import kotlinx.coroutines.Job
 import kr.co.hs.sudoku.R
@@ -24,11 +26,15 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
     abstract val clickableView: View
     abstract fun onBind(item: T)
     fun setOnClickListener(l: View.OnClickListener) = clickableView.setOnClickListener(l)
+    open fun onViewAttachedToWindow() {}
+    open fun onViewDetachedFromWindow() {}
 
     class MultiPlay(
         val binding: LayoutListItemMultiPlayBinding,
-        private val viewModel: MultiDashboardViewModel
     ) : MultiDashboardListItemViewHolder<MultiDashboardListItem.MultiPlayItem>(binding.root) {
+
+        private var battleEntity: BattleEntity? = null
+
         override val clickableView: View by lazy { binding.cardView }
         override fun onBind(item: MultiDashboardListItem.MultiPlayItem) {
             with(binding.matrix) {
@@ -36,7 +42,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
                 invalidate()
             }
 
-            requestProfileJob = viewModel.requestParticipant(item.battleEntity, onResultParticipant)
+            battleEntity = item.battleEntity
         }
 
         private var requestProfileJob: Job? = null
@@ -70,6 +76,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
                         val hostEntity = participants.find { it.uid == host }
                         val guestEntity = participants.filter { it.uid != host }.firstOrNull()
 
+                        val viewModel = multiDashboardViewModel
                         hostEntity
                             ?.run {
                                 disposableHostIcon =
@@ -77,7 +84,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
                                 ivHostIcon.isVisible = true
                                 tvHostName.text = displayName
                                 requestHostGradeJob =
-                                    viewModel.requestStatistics(this, onResultHostGrade)
+                                    viewModel?.requestStatistics(this, onResultHostGrade)
                             }
                             ?: run {
                                 ivHostIcon.setImageDrawable(null)
@@ -92,7 +99,7 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
                                 ivGuestIcon.isVisible = true
                                 tvGuestName.text = displayName
                                 requestGuestGradeJob =
-                                    viewModel.requestStatistics(this, onResultGuestGrade)
+                                    viewModel?.requestStatistics(this, onResultGuestGrade)
                             }
                             ?: run {
                                 ivGuestIcon.setImageDrawable(null)
@@ -175,6 +182,15 @@ sealed class MultiDashboardListItemViewHolder<T : MultiDashboardListItem>(
             disposableHostIcon?.dispose()
             disposableGuestIcon?.dispose()
         }
+
+        override fun onViewAttachedToWindow() = multiDashboardViewModel
+            ?.let { vm -> battleEntity?.let { vm.requestParticipant(it, onResultParticipant) } }
+            ?.let { job -> requestProfileJob = job }
+            ?: Unit
+
+        private val multiDashboardViewModel: MultiDashboardViewModel?
+            get() = itemView.findViewTreeViewModelStoreOwner()
+                ?.let { vmStoreOwner -> ViewModelProvider(vmStoreOwner)[MultiDashboardViewModel::class.java] }
     }
 
     class Title(val binding: LayoutListItemMultiPlayTitleBinding) :

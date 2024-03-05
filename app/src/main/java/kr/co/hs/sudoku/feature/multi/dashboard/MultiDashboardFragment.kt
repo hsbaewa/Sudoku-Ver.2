@@ -13,6 +13,7 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +23,7 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
+import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
@@ -31,8 +33,11 @@ import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
+import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.views.RecyclerView
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MultiDashboardFragment : Fragment() {
     companion object {
         fun newInstance() = MultiDashboardFragment()
@@ -41,6 +46,10 @@ class MultiDashboardFragment : Fragment() {
     private lateinit var binding: LayoutListMultiPlayBinding
     private val dashboardViewModel: MultiDashboardViewModel by activityViewModels()
     private val playViewModel: MultiPlayViewModel by activityViewModels()
+
+    @Inject
+    @ProfileRepositoryQualifier
+    lateinit var profileRepository: ProfileRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -162,7 +171,7 @@ class MultiDashboardFragment : Fragment() {
             withContext(Dispatchers.IO) {
                 playViewModel.doJoin(battleEntity.id)
                 val app = requireContext().applicationContext as App
-                val displayName = app.getProfileRepository().getProfile(uid).displayName
+                val displayName = profileRepository.getProfile(uid).displayName
                 MessagingManager(app).sendNotification(
                     MessagingManager.JoinedMultiPlayer(battleEntity.id, displayName)
                 )

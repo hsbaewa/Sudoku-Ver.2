@@ -6,13 +6,10 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import android.widget.LinearLayout.LayoutParams
 import androidx.core.content.ContextCompat
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showSnackBar
-import kr.co.hs.sudoku.extension.platform.ContextExtension.dataStore
 
 object FragmentExtension {
     //--------------------------------------------------------------------------------------------\\
@@ -145,12 +142,6 @@ object FragmentExtension {
     //----------------------------------------- SnackBar -----------------------------------------\\
     //--------------------------------------------------------------------------------------------\\
     fun Fragment.showSnackBar(message: String) = requireActivity().showSnackBar(message)
-
-    //--------------------------------------------------------------------------------------------\\
-    //----------------------------------------- Preference ----------------------------------------\\
-    //--------------------------------------------------------------------------------------------\\
-    val Fragment.dataStore: DataStore<Preferences>
-        get() = requireContext().dataStore
 
     //--------------------------------------------------------------------------------------------\\
     //----------------------------------------- conv -------------------------------------------\\

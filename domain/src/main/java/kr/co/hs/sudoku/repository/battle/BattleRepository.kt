@@ -41,7 +41,8 @@ interface BattleRepository {
     /**
      * 방 참여
      */
-    suspend fun join(battleId: String)
+    suspend fun join(battleId: String): BattleEventRepository
+    suspend fun getEventRepository(battleId: String): BattleEventRepository
 
 
     /**

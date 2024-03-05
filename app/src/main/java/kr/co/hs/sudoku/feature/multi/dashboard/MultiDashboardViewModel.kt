@@ -2,7 +2,6 @@ package kr.co.hs.sudoku.feature.multi.dashboard
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -12,35 +11,31 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.liveData
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.ad.MultiDashboardAdQualifier
+import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 import kotlin.random.Random
 
-class MultiDashboardViewModel(
-    val battleRepository: BattleRepository,
-    private val nativeItemAdManager: NativeItemAdManager? = null
+@HiltViewModel
+class MultiDashboardViewModel
+@Inject
+constructor(
+    @MultiDashboardAdQualifier
+    private val nativeItemAdManager: NativeItemAdManager,
+    @BattleRepositoryQualifier
+    val battleRepository: BattleRepository
 ) : ViewModel() {
-    class ProviderFactory(
-        private val battleRepository: BattleRepository,
-        private val nativeItemAdManager: NativeItemAdManager? = null
-    ) : ViewModelProvider.Factory {
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(MultiDashboardViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                MultiDashboardViewModel(battleRepository, nativeItemAdManager) as T
-            } else {
-                throw IllegalArgumentException()
-            }
-        }
-    }
 
     private val _currentMultiPlay = MutableLiveData<BattleEntity?>()
     val currentMultiPlay: LiveData<BattleEntity?> by this::_currentMultiPlay

@@ -1,21 +1,21 @@
 package kr.co.hs.sudoku.viewmodel
 
 import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.repositories.GameSettingsRepositoryQualifier
 import kr.co.hs.sudoku.model.settings.GameSettingsEntity
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
+import javax.inject.Inject
 
-class GameSettingsViewModel(private val repository: GameSettingsRepository) : ViewModel() {
-    @Suppress("UNCHECKED_CAST")
-    class Factory(private val repository: GameSettingsRepository) : ViewModelProvider.Factory {
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return modelClass.takeIf { it.isAssignableFrom(GameSettingsViewModel::class.java) }
-                ?.run { GameSettingsViewModel(repository) as T }
-                ?: throw IllegalArgumentException("unKnown ViewModel class")
-        }
-    }
+@HiltViewModel
+class GameSettingsViewModel
+@Inject constructor(
+    @GameSettingsRepositoryQualifier
+    private val repository: GameSettingsRepository
+) : ViewModel() {
 
     val gameSettings: LiveData<GameSettingsEntity> = repository.getGameSettings().asLiveData()
     fun setGameSettings(entity: GameSettingsEntity) =

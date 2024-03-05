@@ -13,17 +13,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.datasource.battle.impl.BattleRemoteSourceImpl
+import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
+import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain2
+import kr.co.hs.sudoku.mapper.DocumentSnapshotMapper.toBattleModel
+import kr.co.hs.sudoku.mapper.DocumentSnapshotMapper.toParticipantModel
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.repository.TestableRepository
 
-class BattleEventRepositoryImpl(
+internal class BattleEventRepositoryImpl(
     override val battleId: String,
-    private val remoteSource: BattleRemoteSourceImpl = BattleRemoteSourceImpl(),
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val remoteSource: BattleRemoteSource,
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Unconfined)
 ) : BattleEventRepository, TestableRepository {
 
     companion object {
@@ -189,7 +192,7 @@ class BattleEventRepositoryImpl(
 
     // battle document snapshot 이벤트 수신 하여 battle entity 이벤트로 변환
     private val onChangedBattleDocumentSnapshot: (DocumentSnapshot) -> Unit = { documentSnapshot ->
-        remoteSource.changeToBattleModel(documentSnapshot)
+        documentSnapshot.toBattleModel()
             ?.toDomain()
             ?.run(onChangedBattleEntity)
             ?: onExceptionParseBattleEntity.invoke(NullPointerException("parse error"))
@@ -274,7 +277,7 @@ class BattleEventRepositoryImpl(
 
 
     private val onChangedParticipantDocumentSnapshot: (DocumentSnapshot) -> Unit = { document ->
-        remoteSource.changeToParticipantModel(document)
+        document.toParticipantModel()
             ?.takeIf { it.battleId == battleId }
             ?.toDomain2(getBattle())
             ?.run(onChangedParticipantEntity)
@@ -313,8 +316,10 @@ class BattleEventRepositoryImpl(
     }
 
     override fun setFireStoreRootVersion(versionName: String) {
-        remoteSource.rootDocument = FirebaseFirestore.getInstance()
+        val rootDocument = FirebaseFirestore.getInstance()
             .collection("version")
             .document(versionName)
+
+        (remoteSource as FireStoreRemoteSource).rootDocument = rootDocument
     }
 }

@@ -1,7 +1,5 @@
 package kr.co.hs.sudoku.battle
 
-import androidx.fragment.app.testing.FragmentScenario
-import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -9,8 +7,11 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kr.co.hs.sudoku.HiltTestUtil
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayControlStageFragment
@@ -18,12 +19,22 @@ import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import org.hamcrest.CoreMatchers.not
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @Suppress("TestFunctionName", "NonAsciiCharacters", "SpellCheckingInspection")
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class ControlBoardFragmentTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+
+    @Before
+    fun before() {
+        hiltRule.inject()
+    }
 
     private val testStartingMatrix = listOf(
         listOf(1, 0, 0, 1),
@@ -38,13 +49,13 @@ class ControlBoardFragmentTest {
         testStartingMatrix[3].map { if (it > 0) 2 else 0 }
     )
 
-    private lateinit var fragmentScenario: FragmentScenario<MultiPlayControlStageFragment>
+    private lateinit var fragmentScenario: HiltTestUtil.HiltFragmentScenario<MultiPlayControlStageFragment>
 
     @Before
     fun initFragmentScenario() {
-        fragmentScenario = launchFragmentInContainer(
+        fragmentScenario = HiltTestUtil.launchFragmentInHiltContainer(
             fragmentArgs = StageFragment.newInstanceArguments(CustomMatrix(testStartingMatrix)),
-            themeResId = R.style.Theme_HSSudoku2,
+            themeResId = R.style.Theme_HSSudoku2
         )
     }
 

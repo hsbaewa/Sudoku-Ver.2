@@ -4,11 +4,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
-import kr.co.hs.sudoku.datasource.challenge.impl.ChallengeRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
-import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
-import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
 import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
 import kr.co.hs.sudoku.mapper.RecordMapper.toDomain
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
@@ -24,11 +21,13 @@ import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepositoryImpl
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class ChallengeRepositoryImpl(
-    private var challengeRemoteSource: ChallengeRemoteSource = ChallengeRemoteSourceImpl(),
-    private var recordRemoteSource: RecordRemoteSource = ChallengeRecordRemoteSourceImpl(),
-    private val logRemoteSource: LogRemoteSource = LogRemoteSourceImpl()
+class ChallengeRepositoryImpl
+@Inject constructor(
+    private var challengeRemoteSource: ChallengeRemoteSource,
+    private var recordRemoteSource: RecordRemoteSource,
+    private val logRemoteSource: LogRemoteSource
 ) : ChallengeRepository, TestableRepository {
 
     private val currentUserUid: String
@@ -62,8 +61,6 @@ class ChallengeRepositoryImpl(
     override suspend fun removeChallenge(challengeId: String): Boolean {
         return challengeRemoteSource.removeChallenge(challengeId)
     }
-
-    override fun clearCache() {}
 
     override suspend fun getRecords(challengeId: String): List<RankerEntity> {
         return recordRemoteSource.getRecords(challengeId, 10).map { it.toDomain() }

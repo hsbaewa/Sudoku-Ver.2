@@ -2,34 +2,25 @@ package kr.co.hs.sudoku.feature.challenge.play
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.model.stage.history.impl.CachedHistoryQueue
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 
-class ChallengePlayViewModel(
-    private val challengeId: String,
+@HiltViewModel
+class ChallengePlayViewModel
+@Inject constructor(
+    @ChallengeRepositoryQualifier
     private val repository: ChallengeRepository
 ) : ViewModel() {
-    class ProviderFactory(
-        private val challengeId: String,
-        private val repository: ChallengeRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(ChallengePlayViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                ChallengePlayViewModel(challengeId, repository) as T
-            } else {
-                throw IllegalArgumentException()
-            }
-        }
-    }
 
     private val _challengeEntity = MutableLiveData<ChallengeEntity>()
     val challengeEntity: LiveData<ChallengeEntity> by this::_challengeEntity
@@ -39,14 +30,16 @@ class ChallengePlayViewModel(
 
     private lateinit var historyQueue: CachedHistoryQueue
 
-    fun requestChallenge() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        setProgress(true)
+    fun requestChallenge(challengeId: String) =
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            setProgress(true)
 
-        val challengeEntity = withContext(Dispatchers.IO) { repository.getChallenge(challengeId) }
-        _challengeEntity.value = challengeEntity
+            val challengeEntity =
+                withContext(Dispatchers.IO) { repository.getChallenge(challengeId) }
+            _challengeEntity.value = challengeEntity
 
-        setProgress(false)
-    }
+            setProgress(false)
+        }
 
     fun initMatrix() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
@@ -102,7 +95,7 @@ class ChallengePlayViewModel(
     data class Cleared(val clearRecord: Long) : Command
 
 
-    fun setRecord(clearRecord: Long) =
+    fun setRecord(challengeId: String, clearRecord: Long) =
         viewModelScope.launch(viewModelScopeExceptionHandler) {
             setProgress(true)
             repository.putRecord(challengeId, clearRecord)

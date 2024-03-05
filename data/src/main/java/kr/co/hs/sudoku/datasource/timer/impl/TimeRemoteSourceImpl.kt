@@ -5,8 +5,10 @@ import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.timer.TimeRemoteSource
 import kr.co.hs.sudoku.model.timer.ServerTime
+import javax.inject.Inject
 
-class TimeRemoteSourceImpl : FireStoreRemoteSource(), TimeRemoteSource {
+class TimeRemoteSourceImpl
+@Inject constructor() : FireStoreRemoteSource(), TimeRemoteSource {
 
     override suspend fun getServerTimestamp(): ServerTime? {
         document.set(mapOf("serverTime" to FieldValue.serverTimestamp())).await()

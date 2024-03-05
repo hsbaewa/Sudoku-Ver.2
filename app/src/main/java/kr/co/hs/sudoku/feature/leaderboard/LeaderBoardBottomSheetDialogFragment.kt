@@ -12,16 +12,22 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutLeaderboardMultiPlayBinding
+import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
+import kr.co.hs.sudoku.repository.user.ProfileRepository
+import javax.inject.Inject
 
+
+@AndroidEntryPoint
 class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
     ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
@@ -48,12 +54,11 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
 
     private lateinit var binding: LayoutLeaderboardMultiPlayBinding
     private val app: App by lazy { requireContext().applicationContext as App }
-    private val viewModel: LeaderBoardListViewModel by viewModels {
-        LeaderBoardListViewModel.ProviderFactory(
-            app.getBattleRepository(),
-            app.getChallengeRepository()
-        )
-    }
+    private val viewModel: LeaderBoardListViewModel by viewModels()
+
+    @Inject
+    @ProfileRepositoryQualifier
+    lateinit var profileRepository: ProfileRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,7 +76,7 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
             this.layoutManager = LinearLayoutManager(context)
             addVerticalDivider(10.dp)
             val itemAdapter = LeaderBoardListAdapter(
-                app.getProfileRepository(),
+                profileRepository,
                 this@LeaderBoardBottomSheetDialogFragment
             )
             this.adapter = itemAdapter

@@ -15,6 +15,7 @@ import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutCreateMultiPlayBinding
+import kr.co.hs.sudoku.di.repositories.RegistrationRepositoryQualifier
 import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeBattle
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
@@ -36,7 +38,10 @@ import kr.co.hs.sudoku.feature.messaging.MessagingManager
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
 import kr.co.hs.sudoku.model.battle.BattleEntity
+import kr.co.hs.sudoku.repository.settings.RegistrationRepository
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MultiPlayCreateActivity : Activity() {
     companion object {
         private const val EXTRA_OPPONENT_UID = "EXTRA_OPPONENT_UID"
@@ -58,10 +63,11 @@ class MultiPlayCreateActivity : Activity() {
         DataBindingUtil.setContentView(this, R.layout.layout_create_multi_play)
     }
     private val matrixListViewModel: MatrixListViewModel by viewModels()
-    private val multiPlayViewModel: MultiPlayViewModel by viewModels {
-        val app = applicationContext as App
-        MultiPlayViewModel.ProviderFactory(app.getBattleRepository())
-    }
+    private val multiPlayViewModel: MultiPlayViewModel by viewModels()
+
+    @RegistrationRepositoryQualifier
+    @Inject
+    lateinit var registrationRepository: RegistrationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,12 +105,7 @@ class MultiPlayCreateActivity : Activity() {
                         if (binding.checkboxWithAi.isChecked) {
                             startWithAI()
                         } else {
-                            val registrationRepository =
-                                (applicationContext as App).getRegistrationRepository()
-                            val hasSeen =
-                                runBlocking { registrationRepository.hasSeenNotificationParticipate() }
-
-                            if (hasSeen) {
+                            if (runBlocking { registrationRepository.hasSeenNotificationParticipate() }) {
                                 multiPlayViewModel.create(this)
                             } else {
                                 showParticipateNotificationGuide()
@@ -159,10 +160,7 @@ class MultiPlayCreateActivity : Activity() {
             },
             object : TapTargetView.Listener() {
                 override fun onTargetDismissed(view: TapTargetView?, userInitiated: Boolean) {
-                    runBlocking {
-                        val app = applicationContext as App
-                        app.getRegistrationRepository().seenNotificationParticipate()
-                    }
+                    runBlocking { registrationRepository.seenNotificationParticipate() }
                     onDismiss?.invoke()
                 }
             }

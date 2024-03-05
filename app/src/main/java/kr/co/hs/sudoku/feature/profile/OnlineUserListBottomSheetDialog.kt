@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
-import kr.co.hs.sudoku.App
+import dagger.hilt.android.AndroidEntryPoint
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutUserListBinding
@@ -17,6 +17,7 @@ import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 
+@AndroidEntryPoint
 class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment(),
     ProfilePopupMenu.OnPopupMenuItemClickListener {
     companion object {
@@ -26,10 +27,7 @@ class OnlineUserListBottomSheetDialog : BottomSheetDialogFragment(),
     }
 
     private lateinit var binding: LayoutUserListBinding
-    private val viewModel: OnlineUserListViewModel by viewModels {
-        val app = requireContext().applicationContext as App
-        OnlineUserListViewModel.ProviderFactory(app.getProfileRepository())
-    }
+    private val viewModel: OnlineUserListViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

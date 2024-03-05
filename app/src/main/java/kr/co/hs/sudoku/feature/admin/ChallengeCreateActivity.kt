@@ -6,13 +6,14 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
-import kr.co.hs.sudoku.App
+import dagger.hilt.android.AndroidEntryPoint
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityManageChallengeCreateBinding
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.feature.messaging.MessagingManager
 
+@AndroidEntryPoint
 class ChallengeCreateActivity : Activity() {
     companion object {
         private fun newIntent(context: Context) =
@@ -25,14 +26,8 @@ class ChallengeCreateActivity : Activity() {
             by lazy {
                 DataBindingUtil.setContentView(this, R.layout.activity_manage_challenge_create)
             }
-    private val app: App by lazy { applicationContext as App }
-    private val viewModel: ChallengeManageViewModel by viewModels {
-        ChallengeManageViewModel.ProviderFactory(app.getChallengeRepository())
-    }
-    private val messagingViewModel: MessagingViewModel by viewModels {
-        val messagingManager = MessagingManager(app)
-        MessagingViewModel.ProviderFactory(messagingManager)
-    }
+    private val viewModel: ChallengeManageViewModel by viewModels()
+    private val messagingViewModel: MessagingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

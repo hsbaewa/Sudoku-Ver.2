@@ -70,8 +70,7 @@ class StageTest {
 
     @Test
     fun testBeginnerStageRepository() = runTest(timeout = Duration.INFINITE) {
-        val matrixRepository = BeginnerMatrixRepository()
-        matrixRepository.setRemoteSource(stageRemoteSource)
+        val matrixRepository = BeginnerMatrixRepository(stageRemoteSource)
 
         val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepository)
         val stageBuilder = getSudokuUseCase(0).first()
@@ -91,8 +90,7 @@ class StageTest {
 
     @Test
     fun testIntermediateStageRepository() = runTest(timeout = Duration.INFINITE) {
-        val matrixRepository = IntermediateMatrixRepository()
-        matrixRepository.setRemoteSource(stageRemoteSource)
+        val matrixRepository = IntermediateMatrixRepository(stageRemoteSource)
 
         val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepository)
         val stageBuilder = getSudokuUseCase(0).first()

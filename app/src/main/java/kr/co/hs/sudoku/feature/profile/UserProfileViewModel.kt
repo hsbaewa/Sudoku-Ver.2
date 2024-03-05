@@ -3,7 +3,6 @@ package kr.co.hs.sudoku.feature.profile
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -18,12 +17,17 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.PlayGamesAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.google.GoogleDefaultWebClientIdQualifier
+import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
+import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
+import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeUser
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
@@ -34,36 +38,20 @@ import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class UserProfileViewModel(
+@HiltViewModel
+class UserProfileViewModel
+@Inject constructor(
+    @ProfileRepositoryQualifier
     val profileRepository: ProfileRepository,
-    private val gamesSignInClient: GamesSignInClient,
+    @GoogleDefaultWebClientIdQualifier
     private val defaultWebClientId: String,
+    @BattleRepositoryQualifier
     private val battleRepository: BattleRepository,
+    @ChallengeRepositoryQualifier
     private val challengeRepository: ChallengeRepository
 ) : ViewModel() {
-    class ProviderFactory(
-        private val profileRepository: ProfileRepository,
-        private val gamesSignInClient: GamesSignInClient,
-        private val defaultWebClientId: String,
-        private val battleRepository: BattleRepository,
-        private val challengeRepository: ChallengeRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return if (modelClass.isAssignableFrom(UserProfileViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                UserProfileViewModel(
-                    profileRepository,
-                    gamesSignInClient,
-                    defaultWebClientId,
-                    battleRepository,
-                    challengeRepository
-                ) as T
-            } else {
-                throw IllegalArgumentException()
-            }
-        }
-    }
 
     private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
@@ -126,37 +114,38 @@ class UserProfileViewModel(
         lastCheckedAt = null
     )
 
-    fun requestCurrentUserProfile() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        setProgress(true)
+    fun requestCurrentUserProfile(gamesSignInClient: GamesSignInClient) =
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            setProgress(true)
 
-        _profile.value = firebaseAuth.currentUser
-            ?.let { currentUser ->
-                with(profileRepository) {
-                    runCatching {
-                        withContext(Dispatchers.IO) { getProfile(currentUser.uid) }
-                    }.getOrElse {
-                        currentUser
-                            .toProfile()
-                            .apply { setProfile(this) }
+            _profile.value = firebaseAuth.currentUser
+                ?.let { currentUser ->
+                    with(profileRepository) {
+                        runCatching {
+                            withContext(Dispatchers.IO) { getProfile(currentUser.uid) }
+                        }.getOrElse {
+                            currentUser
+                                .toProfile()
+                                .apply { setProfile(this) }
+                        }
                     }
                 }
-            }
-            ?: run {
-                if (gamesSignInClient.isAuthenticatedGames()) {
-                    migrationUserProfileGamesWithFirebase()
-                } else {
-                    null
+                ?: run {
+                    if (gamesSignInClient.isAuthenticatedGames()) {
+                        migrationUserProfileGamesWithFirebase(gamesSignInClient)
+                    } else {
+                        null
+                    }
                 }
+
+            _profile.value?.run {
+                FirebaseMessaging.getInstance().subscribeUser(uid).await()
             }
 
-        _profile.value?.run {
-            FirebaseMessaging.getInstance().subscribeUser(uid).await()
+            setProgress(false)
         }
 
-        setProgress(false)
-    }
-
-    private suspend fun migrationUserProfileGamesWithFirebase(): ProfileEntity {
+    private suspend fun migrationUserProfileGamesWithFirebase(gamesSignInClient: GamesSignInClient): ProfileEntity {
         var authCode = gamesSignInClient.getPlayGamesServerAuthCode()
         if (authCode == null) {
             delay(3000)
@@ -195,14 +184,15 @@ class UserProfileViewModel(
     }
 
 
-    fun signIn() = viewModelScope.launch(viewModelScopeExceptionHandler) {
-        setProgress(true)
-        val result = gamesSignInClient.signInGames()
-        if (result?.isAuthenticated == true) {
-            _profile.value = migrationUserProfileGamesWithFirebase()
+    fun signIn(gamesSignInClient: GamesSignInClient) =
+        viewModelScope.launch(viewModelScopeExceptionHandler) {
+            setProgress(true)
+            val result = gamesSignInClient.signInGames()
+            if (result?.isAuthenticated == true) {
+                _profile.value = migrationUserProfileGamesWithFirebase(gamesSignInClient)
+            }
+            setProgress(false)
         }
-        setProgress(false)
-    }
 
     fun updateUserInfo(onComplete: (Boolean) -> Unit) =
         viewModelScope.launch(CoroutineExceptionHandler { coroutineContext, throwable ->

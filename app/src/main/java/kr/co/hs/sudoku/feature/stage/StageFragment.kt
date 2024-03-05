@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.extension.platform.FragmentExtension.dataStore
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
@@ -20,12 +20,13 @@ import kr.co.hs.sudoku.model.stage.impl.IntCellEntityImpl
 import kr.co.hs.sudoku.model.stage.impl.IntCoordinate
 import kr.co.hs.sudoku.model.stage.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.model.stage.impl.MutableStageImpl
-import kr.co.hs.sudoku.repository.GameSettingsRepositoryImpl
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.views.SudokuView
 import kotlin.math.sqrt
 
+
+@AndroidEntryPoint
 abstract class StageFragment : Fragment() {
     companion object {
         private const val EXTRA_FIX_CELL = "EXTRA_FIX_CELL"
@@ -58,9 +59,7 @@ abstract class StageFragment : Fragment() {
     abstract val board: SudokuView
     abstract val silhouette: View
 
-    private val gameSettingsViewModel: GameSettingsViewModel by viewModels {
-        GameSettingsViewModel.Factory(GameSettingsRepositoryImpl(dataStore))
-    }
+    private val gameSettingsViewModel: GameSettingsViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

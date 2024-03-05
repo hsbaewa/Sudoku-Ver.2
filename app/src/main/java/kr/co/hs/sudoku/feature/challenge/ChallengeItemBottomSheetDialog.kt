@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,6 +20,7 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.BottomSheetDialogFragment
 import kr.co.hs.sudoku.databinding.LayoutDialogChallengeItemBinding
+import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.ad.ChallengeRetryRewardAdManager
@@ -29,7 +31,10 @@ import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
+import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ChallengeItemBottomSheetDialog : BottomSheetDialogFragment(),
     ProfilePopupMenu.OnPopupMenuItemClickListener {
 
@@ -51,6 +56,10 @@ class ChallengeItemBottomSheetDialog : BottomSheetDialogFragment(),
                 updateChallengeInfo(challengeId)
             }
         }
+
+    @Inject
+    @ChallengeRepositoryQualifier
+    lateinit var challengeRepository: ChallengeRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,7 +91,7 @@ class ChallengeItemBottomSheetDialog : BottomSheetDialogFragment(),
             showProgressIndicator()
             val challengeEntity: ChallengeEntity
             val leaderBoardList: List<RankerEntity>
-            with(app.getChallengeRepository()) {
+            with(challengeRepository) {
                 challengeEntity = withContext(Dispatchers.IO) { getChallenge(challengeId) }
                 leaderBoardList = withContext(Dispatchers.IO) { getRecords(challengeId) }
             }
@@ -161,11 +170,9 @@ class ChallengeItemBottomSheetDialog : BottomSheetDialogFragment(),
             if (!result)
                 throw InvalidRewardedException(getString(R.string.error_challenge_retry_rewarded))
 
-            val app = requireContext().applicationContext as App
-
             FirebaseAuth.getInstance().currentUser?.uid?.let { currentUserUid ->
                 withContext(Dispatchers.IO) {
-                    app.getChallengeRepository().deleteRecord(challengeId, currentUserUid)
+                    challengeRepository.deleteRecord(challengeId, currentUserUid)
                 }
 
                 dismissProgressIndicator()
