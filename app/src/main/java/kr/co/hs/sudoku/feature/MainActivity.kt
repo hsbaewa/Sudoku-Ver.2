@@ -51,6 +51,8 @@ import kr.co.hs.sudoku.BuildConfig
 import kr.co.hs.sudoku.feature.ad.AppOpenAdManager
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.auth.Authenticator
+import kr.co.hs.sudoku.auth.AuthenticatorImpl
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
@@ -141,6 +143,8 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val adminViewModel: AdminViewModel by viewModels {
         AdminViewModel.ProviderFactory(app.getAdminPermissionRepository())
     }
+
+    private val authenticator: Authenticator by lazy { AuthenticatorImpl(FirebaseAuth.getInstance()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -660,7 +664,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onStart() {
         super.onStart()
         lifecycleScope.launch {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val uid = authenticator.runCatching { uid }.getOrNull() ?: return@launch
             withContext(Dispatchers.IO) { app.getProfileRepository().checkIn(uid) }
         }
     }
@@ -668,7 +672,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onStop() {
         super.onStop()
         lifecycleScope.launch {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val uid = authenticator.runCatching { uid }.getOrNull() ?: return@launch
             withContext(Dispatchers.IO) { app.getProfileRepository().checkOut(uid) }
         }
     }
