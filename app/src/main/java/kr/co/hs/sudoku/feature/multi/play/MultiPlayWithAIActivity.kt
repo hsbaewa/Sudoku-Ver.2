@@ -20,7 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
-import kr.co.hs.sudoku.SudokuPlayer
+import kr.co.hs.sudoku.repository.SudokuPlayer
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.IntCoordinateCellEntity
 import kr.co.hs.sudoku.core.Stage

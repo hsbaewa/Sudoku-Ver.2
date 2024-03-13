@@ -5,8 +5,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import kr.co.hs.sudoku.SudokuStageGenerator
+import kr.co.hs.sudoku.repository.SudokuStageGenerator
 import kr.co.hs.sudoku.core.Stage
+import kr.co.hs.sudoku.usecase.abs.UseCase
 import javax.inject.Inject
 import javax.inject.Singleton
 

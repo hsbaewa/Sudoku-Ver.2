@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku
+package kr.co.hs.sudoku.repository
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

@@ -2,8 +2,8 @@ package kr.co.hs.sudoku.core
 
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
-import kr.co.hs.sudoku.SudokuPlayer
-import kr.co.hs.sudoku.SudokuStageGenerator
+import kr.co.hs.sudoku.repository.SudokuPlayer
+import kr.co.hs.sudoku.repository.SudokuStageGenerator
 import kr.co.hs.sudoku.core.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.core.impl.MutableStageImpl
 import org.junit.Assert.*
