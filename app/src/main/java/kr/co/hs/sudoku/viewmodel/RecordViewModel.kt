@@ -7,16 +7,15 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import kr.co.hs.sudoku.core.Stage
+import kr.co.hs.sudoku.core.Timer
+import kr.co.hs.sudoku.core.history.HistoryItem
+import kr.co.hs.sudoku.core.history.HistoryQueue
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
-import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.model.stage.history.HistoryItem
-import kr.co.hs.sudoku.model.stage.history.HistoryQueue
-import kr.co.hs.sudoku.repository.timer.Timer
-import kr.co.hs.sudoku.usecase.timelog.TimerUseCase
-import kr.co.hs.sudoku.usecase.timelog.TimerUseCaseImpl
 
 class RecordViewModel : ViewModel() {
     fun bind(stage: Stage) {
@@ -37,8 +36,12 @@ class RecordViewModel : ViewModel() {
 
     private fun runTimer() = viewModelScope.launch {
         with(timerCore) {
-            val timerUseCase: TimerUseCase = TimerUseCaseImpl(this)
-            timerUseCase()
+            flow {
+                while (true) {
+                    delay(getTickInterval())
+                    emit(getPassedTime())
+                }
+            }
                 .onStart { onStart() }
                 .onCompletion { onFinish() }
                 .collect { onRunning(it) }

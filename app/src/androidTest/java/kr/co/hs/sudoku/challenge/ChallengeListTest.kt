@@ -5,15 +5,14 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.spyk
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
-import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
-import kr.co.hs.sudoku.usecase.RandomCreateSudoku
+import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
+import kr.co.hs.sudoku.usecase.SudokuRandomGenerateUseCase
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -34,6 +33,9 @@ class ChallengeListTest {
     @ChallengeRepositoryQualifier
     lateinit var challengeRepository: ChallengeRepository
 
+    @Inject
+    lateinit var sudokuGenerator: SudokuGenerateUseCase
+
     @Before
     fun before() {
         hiltRule.inject()
@@ -45,10 +47,8 @@ class ChallengeListTest {
         (challengeRepository as TestableRepository).setFireStoreRootVersion("test")
         every { challengeRepository.getProperty("currentUserUid") } returns "lYYBEGzX9JggNlChJs7C9OPtVe82"
 
-        val matrix = RandomCreateSudoku(9, 50.0)
-            .getIntMatrix()
-            .run { AutoGenerateSudokuUseCase(boxSize, boxCount, this).invoke().last() }
-            .run { CustomMatrix(this.toValueTable()) }
+        val stage = sudokuGenerator(SudokuRandomGenerateUseCase.Param(9, 50.0), this)
+        val matrix = CustomMatrix(stage.toValueTable())
         val challengeEntity = ChallengeEntityImpl(matrix)
 
         challengeRepository.createChallenge(challengeEntity)

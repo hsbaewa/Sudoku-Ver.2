@@ -13,7 +13,7 @@ import kr.co.hs.sudoku.core.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.core.impl.MutableStageImpl
 import kotlin.math.sqrt
 
-class SudokuStageGenerator(
+internal class SudokuStageGenerator(
     private val fixCell: List<List<Int>>
 ) : SudokuBuilder {
 

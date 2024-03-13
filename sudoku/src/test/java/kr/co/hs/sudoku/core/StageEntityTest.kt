@@ -1,16 +1,11 @@
-package kr.co.hs.sudoku
+package kr.co.hs.sudoku.core
 
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
-import kr.co.hs.sudoku.model.matrix.IntermediateMatrix
-import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
-import kr.co.hs.sudoku.model.stage.MutableStage
-import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.model.stage.impl.*
-import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
-import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
+import kr.co.hs.sudoku.SudokuPlayer
+import kr.co.hs.sudoku.SudokuStageGenerator
+import kr.co.hs.sudoku.core.impl.IntCoordinateCellEntityImpl
+import kr.co.hs.sudoku.core.impl.MutableStageImpl
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -181,14 +176,8 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
     }
 
     private fun buildStage(): Stage {
-        val matrix = IntermediateMatrix(
-            boxSize = 3,
-            boxCount = 3,
-            matrix = listOf(listOf(1, 2, 3, 4)),
-        )
-        val buildUseCase = AutoGenerateSudokuUseCase(
-            matrix = matrix,
-            filterMask = listOf(
+        val builder = SudokuStageGenerator(
+            listOf(
                 listOf(1, 1, 0, 0, 1, 0, 0, 0, 0),
                 listOf(1, 0, 0, 1, 1, 1, 0, 0, 0),
                 listOf(1, 1, 0, 0, 0, 0, 0, 1, 0),
@@ -200,10 +189,9 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 0, 1, 0, 0, 1, 1)
             )
         )
-        return runBlocking {
-            val stage = buildUseCase().first()
-            println(stage)
-            stage
+//        val buildUseCase = builder
+        return builder.build().also {
+            println(it)
         }
     }
 
@@ -225,24 +213,47 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 //            )
 //        )
 
-        val matrix = BeginnerMatrix()
-        val buildUseCase = AutoGenerateSudokuUseCase(
-            matrix = matrix,
-            filterMask = listOf(
+//        val matrix = BeginnerMatrix()
+//        val buildUseCase = AutoGenerateSudokuUseCase(
+//            matrix = matrix,
+//            filterMask = listOf(
+//                listOf(1, 1, 1, 1),
+//                listOf(1, 1, 1, 1),
+//                listOf(1, 1, 1, 1),
+//                listOf(1, 1, 1, 1)
+//            )
+//        )
+        val stage = SudokuStageGenerator(
+            listOf(
                 listOf(1, 1, 1, 1),
                 listOf(1, 1, 1, 1),
                 listOf(1, 1, 1, 1),
                 listOf(1, 1, 1, 1)
             )
-        )
-        val stage = runBlocking { buildUseCase().first() }
+        ).build()
+//            runBlocking { buildUseCase().first() }
         assertEquals(true, stage.isSudokuClear())
     }
 
     @Test
     fun testCustomFill() {
-        val matrix = IntermediateMatrix(
-            matrix = listOf(
+//        val matrix = IntermediateMatrix(
+//            matrix = listOf(
+//                listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
+//                listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
+//                listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
+//                listOf(8, 0, 0, 0, 6, 0, 0, 0, 3),
+//                listOf(4, 0, 0, 8, 0, 3, 0, 0, 1),
+//                listOf(7, 0, 0, 0, 2, 0, 0, 0, 6),
+//                listOf(0, 6, 0, 0, 0, 0, 2, 8, 0),
+//                listOf(0, 0, 0, 4, 1, 9, 0, 0, 5),
+//                listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
+//            )
+//        )
+//        val buildUseCase = AutoGenerateSudokuUseCase(matrix)
+//        val stage = runBlocking { buildUseCase().first() }
+        val stage = SudokuStageGenerator(
+            listOf(
                 listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
                 listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
                 listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
@@ -253,9 +264,7 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 4, 1, 9, 0, 0, 5),
                 listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
             )
-        )
-        val buildUseCase = AutoGenerateSudokuUseCase(matrix)
-        val stage = runBlocking { buildUseCase().first() }
+        ).build()
         assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
 
@@ -276,8 +285,11 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 
     @Test
     fun testCPU2() = runBlocking {
-        val matrix = IntermediateMatrix(
-            matrix = listOf(
+//        val buildUseCase = AutoGenerateSudokuUseCase(matrix)
+//        val stage = runBlocking { buildUseCase().first() }
+
+        val stage = SudokuStageGenerator(
+            listOf(
                 listOf(5, 3, 0, 0, 7, 0, 0, 0, 0),
                 listOf(6, 0, 0, 1, 9, 5, 0, 0, 0),
                 listOf(0, 9, 8, 0, 0, 0, 0, 6, 0),
@@ -288,9 +300,8 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
                 listOf(0, 0, 0, 4, 1, 9, 0, 0, 5),
                 listOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
             )
-        )
-        val buildUseCase = AutoGenerateSudokuUseCase(matrix)
-        val stage = runBlocking { buildUseCase().first() }
+        ).build()
+
 //        val stageBuilder = StageBuilderImpl()
 //        stageBuilder.setBox(3, 3)
 ////        stageBuilder.setStage(
@@ -344,8 +355,9 @@ class StageEntityTest : IntCoordinateCellEntity.ValueChangedListener {
 //        val cpu = AutoPlayStageImpl(stage, 0)
 //        cpu.play()
 
-        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
-        playUseCase().collect()
+//        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
+//        playUseCase().collect()
+        SudokuPlayer(stage, 0).flow.collect()
 
         println(stage)
 

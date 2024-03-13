@@ -5,7 +5,6 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -22,10 +21,9 @@ import kr.co.hs.sudoku.model.battle.BattleModel
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.logs.impl.BattleClearModelImpl
-import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.TestableRepository
-import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
+import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
 import javax.inject.Inject
 import kotlin.math.sqrt
 
@@ -37,6 +35,9 @@ constructor(
     private val profileRemoteSource: ProfileRemoteSource,
     private val logRemoteSource: LogRemoteSource
 ) : BattleRepository, TestableRepository {
+
+    @Inject
+    lateinit var sudokuGenerator: SudokuGenerateUseCase
 
     override val currentUserUid: String
         get() = FirebaseAuth.getInstance().currentUser?.uid
@@ -320,17 +321,11 @@ constructor(
                 joinAll(
                     *map {
                         launch {
-                            val matrix = CustomMatrix(battle.startingMatrix)
-                            AutoGenerateSudokuUseCase(matrix.boxSize, matrix.boxCount, matrix)
-                                .invoke()
-                                .last()
-                                .toValueTable()
-                                .run {
-                                    battleRemoteSource.setParticipant(
-                                        it.uid,
-                                        mapOf("matrix" to this.flatten())
-                                    )
-                                }
+                            val matrix = sudokuGenerator(battle.startingMatrix, this)
+                            battleRemoteSource.setParticipant(
+                                it.uid,
+                                mapOf("matrix" to matrix.toValueTable().flatten())
+                            )
                         }
                     }.toTypedArray()
                 )

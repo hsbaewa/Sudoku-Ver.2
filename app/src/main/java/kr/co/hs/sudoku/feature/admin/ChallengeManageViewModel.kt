@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
@@ -15,8 +14,8 @@ import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
-import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
-import kr.co.hs.sudoku.usecase.RandomCreateSudoku
+import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
+import kr.co.hs.sudoku.usecase.SudokuRandomGenerateUseCase
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Calendar
 import java.util.Date
@@ -27,6 +26,7 @@ class ChallengeManageViewModel
 @Inject constructor(
     @ChallengeRepositoryQualifier
     private val repository: ChallengeRepository,
+    private val sudokuGenerator: SudokuGenerateUseCase
 ) : ViewModel() {
 
     private val _challengeList = MutableLiveData<List<ChallengeEntity>>()
@@ -58,10 +58,8 @@ class ChallengeManageViewModel
     fun generateChallengeSudoku() = viewModelScope.launch(viewModelScopeExceptionHandler) {
         setProgress(true)
         val matrix = withContext(Dispatchers.IO) {
-            RandomCreateSudoku(9, 50.0)
-                .getIntMatrix()
-                .run { AutoGenerateSudokuUseCase(boxSize, boxCount, this).invoke().last() }
-                .run { CustomMatrix(this.toValueTable()) }
+            val stage = sudokuGenerator(SudokuRandomGenerateUseCase.Param(9, 50.0), this)
+            CustomMatrix(stage.toValueTable())
         }
         _generatedSudoku.value = matrix
         setProgress(false)

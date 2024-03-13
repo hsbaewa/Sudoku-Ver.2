@@ -7,16 +7,13 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.datasource.impl.StageRemoteSourceImpl
-import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.sudoku.impl.CustomStageModelImpl
 import kr.co.hs.sudoku.repository.*
-import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
-import kr.co.hs.sudoku.usecase.GetSudokuUseCaseImpl
-import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.SudokuBuildUseCase
+import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -26,6 +23,9 @@ import kotlin.time.Duration
 class StageTest {
 
     lateinit var stageRemoteSource: StageRemoteSourceImpl
+
+    lateinit var sudokuGenerator: SudokuGenerateUseCase
+    lateinit var sudokuBuilder: SudokuBuildUseCase
 
     @Before
     fun initializeRemoteSource() = runTest {
@@ -59,6 +59,9 @@ class StageTest {
 
         mockkStatic(FirebaseRemoteConfig::class)
         every { FirebaseRemoteConfig.getInstance() } returns mockk(relaxed = true)
+
+        sudokuGenerator = SudokuGenerateUseCase()
+        sudokuBuilder = SudokuBuildUseCase()
     }
 
     @Test
@@ -72,17 +75,14 @@ class StageTest {
     fun testBeginnerStageRepository() = runTest(timeout = Duration.INFINITE) {
         val matrixRepository = BeginnerMatrixRepository(stageRemoteSource)
 
-        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepository)
-        val stageBuilder = getSudokuUseCase(0).first()
-
-        val stage = stageBuilder().first()
+        val matrix = matrixRepository.getList()[0]
+        val stage = sudokuGenerator(matrix, this)
         println(stage)
         assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
-        val playUseCase = PlaySudokuUseCaseImpl(stage, 2000)
-        playUseCase().collect()
+        SudokuPlayer(stage, 2000).flow.collect()
 
         println(stage)
         assertEquals(true, stage.isSudokuClear())
@@ -92,17 +92,14 @@ class StageTest {
     fun testIntermediateStageRepository() = runTest(timeout = Duration.INFINITE) {
         val matrixRepository = IntermediateMatrixRepository(stageRemoteSource)
 
-        val getSudokuUseCase = GetSudokuUseCaseImpl(matrixRepository)
-        val stageBuilder = getSudokuUseCase(0).first()
-
-        val stage = stageBuilder().first()
+        val matrix = matrixRepository.getList()[0]
+        val stage = sudokuGenerator(matrix, this)
         println(stage)
         assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
-        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
-        playUseCase().collect()
+        SudokuPlayer(stage, 0).flow.collect()
 
         println(stage)
         assertEquals(true, stage.isSudokuClear())
@@ -119,17 +116,14 @@ class StageTest {
         }
         val model = Gson().fromJson(String(stream.toByteArray()), CustomStageModelImpl::class.java)
 
-        val customMatrix = CustomMatrix(matrix = model.matrix)
-        val buildUseCase = BuildSudokuUseCaseImpl(customMatrix)
-        val stage = buildUseCase().first()
+        val stage = sudokuBuilder(model.matrix, this)
 
         println(stage)
         assertEquals(false, stage.isSudokuClear())
         assertEquals(0, stage.getDuplicatedCellCount())
         assertEquals(true, stage.getEmptyCellCount() > 0)
 
-        val playUseCase = PlaySudokuUseCaseImpl(stage, 0)
-        playUseCase().collect()
+        SudokuPlayer(stage, 0).flow.collect()
 
         println(stage)
         assertEquals(true, stage.isSudokuClear())

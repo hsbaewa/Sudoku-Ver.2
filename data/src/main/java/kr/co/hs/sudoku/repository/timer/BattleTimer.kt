@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.repository.timer
 
 import android.os.SystemClock
+import kr.co.hs.sudoku.core.Timer
 import kr.co.hs.sudoku.datasource.timer.impl.TimeRemoteSourceImpl
 import java.util.Date
 

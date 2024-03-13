@@ -1,25 +1,24 @@
-package kr.co.hs.sudoku.usecase
+package kr.co.hs.sudoku
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
-import kr.co.hs.sudoku.model.stage.Stage
+import kr.co.hs.sudoku.core.IntCoordinateCellEntity
+import kr.co.hs.sudoku.core.Stage
 
-class PlaySudokuUseCaseImpl(
+class SudokuPlayer(
     private val stage: Stage,
     private var threashold: Long
-) : PlaySudokuUseCase {
-    override fun invoke(): Flow<IntCoordinateCellEntity> {
-        return callbackFlow {
-            stage.addValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
-                override fun onChanged(cell: IntCoordinateCellEntity) {
-                    trySend(cell)
-                }
-            })
-            stage.play(0, 0)
-            close()
-        }
+) {
+
+    val flow: Flow<IntCoordinateCellEntity> = callbackFlow {
+        stage.addValueChangedListener(object : IntCoordinateCellEntity.ValueChangedListener {
+            override fun onChanged(cell: IntCoordinateCellEntity) {
+                trySend(cell)
+            }
+        })
+        stage.play(0, 0)
+        close()
     }
 
     private suspend fun Stage.play(row: Int, column: Int) {

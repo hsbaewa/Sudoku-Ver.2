@@ -13,7 +13,7 @@ import kr.co.hs.sudoku.core.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.core.impl.MutableStageImpl
 import kotlin.math.sqrt
 
-class SudokuStageBuilder(val list: List<List<Int>>) : SudokuBuilder {
+internal class SudokuStageBuilder(val list: List<List<Int>>) : SudokuBuilder {
     override val flow: Flow<Stage> = flow {
         val stage = with(list) {
             MutableStageImpl(

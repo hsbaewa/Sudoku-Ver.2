@@ -11,19 +11,18 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
+import kr.co.hs.sudoku.core.IntCoordinateCellEntity
 import kr.co.hs.sudoku.databinding.ActivityGuideBinding
 import kr.co.hs.sudoku.di.repositories.RegistrationRepositoryQualifier
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.showProgressIndicator
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
-import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
 import kr.co.hs.sudoku.repository.settings.RegistrationRepository
-import kr.co.hs.sudoku.usecase.BuildSudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.SudokuBuildUseCase
 import kr.co.hs.sudoku.views.SudokuView
 import javax.inject.Inject
 
@@ -42,6 +41,9 @@ class GuideActivity : Activity() {
     @Inject
     @RegistrationRepositoryQualifier
     lateinit var registrationRepository: RegistrationRepository
+
+    @Inject
+    lateinit var sudokuBuilder: SudokuBuildUseCase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -281,7 +283,7 @@ class GuideActivity : Activity() {
                 listOf(4, 1, 2, 3)
             )
         )
-        val stage = BuildSudokuUseCaseImpl(matrix).invoke().last()
+        val stage = sudokuBuilder(matrix, this)
         with(binding.sudokuView) {
             setFixedCellValues(stage.toValueTable())
             isVisibleNumber = true
