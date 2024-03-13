@@ -1,14 +1,20 @@
 package kr.co.hs.sudoku
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.core.Stage
 import kr.co.hs.sudoku.core.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.core.impl.MutableStageImpl
 import kotlin.math.sqrt
 
 class SudokuStageBuilder(val list: List<List<Int>>) : SudokuBuilder {
-    override fun build(): Flow<Stage> = flow {
+    override val flow: Flow<Stage> = flow {
         val stage = with(list) {
             MutableStageImpl(
                 sqrt(size.toDouble()).toInt(),
@@ -24,4 +30,10 @@ class SudokuStageBuilder(val list: List<List<Int>>) : SudokuBuilder {
         }
         emit(stage)
     }
+
+    override suspend fun build(scope: CoroutineScope): Stage = scope
+        .async { withContext(Dispatchers.Default) { flow.first() } }
+        .await()
+
+    override fun build(): Stage = runBlocking { withContext(Dispatchers.Default) { flow.first() } }
 }

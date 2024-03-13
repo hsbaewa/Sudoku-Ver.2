@@ -1,6 +1,13 @@
 package kr.co.hs.sudoku
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.core.Stage
 import kr.co.hs.sudoku.core.impl.IntCoordinateCellEntityImpl
 import kr.co.hs.sudoku.core.impl.MutableStageImpl
@@ -10,7 +17,7 @@ class SudokuStageGenerator(
     private val fixCell: List<List<Int>>
 ) : SudokuBuilder {
 
-    override fun build() = flow {
+    override val flow: Flow<Stage> = flow {
         val stage = with(fixCell) {
             MutableStageImpl(
                 sqrt(size.toDouble()).toInt(),
@@ -37,7 +44,6 @@ class SudokuStageGenerator(
         }
         emit(stage)
     }
-
 
     private fun Stage.generate(row: Int, column: Int) {
         if (isSudokuClear()) {
@@ -86,4 +92,10 @@ class SudokuStageGenerator(
             }
         }
     }
+
+    override suspend fun build(scope: CoroutineScope): Stage = scope
+        .async { withContext(Dispatchers.Default) { flow.first() } }
+        .await()
+
+    override fun build(): Stage = runBlocking { withContext(Dispatchers.Default) { flow.first() } }
 }
