@@ -11,7 +11,7 @@ import kr.co.hs.sudoku.core.Stage
 import kotlin.math.ln
 import kotlin.random.Random
 
-class RandomSudokuStageGenerator(
+class SudokuStageRandomGenerator(
     private val size: Int,
     private val level: Double
 ) : SudokuBuilder {
@@ -20,9 +20,9 @@ class RandomSudokuStageGenerator(
             0 to level,
             1 to 100 - level
         )
-        repeat(this@RandomSudokuStageGenerator.size) {
+        repeat(this@SudokuStageRandomGenerator.size) {
             add(ArrayList<Int>().apply {
-                repeat(this@RandomSudokuStageGenerator.size) {
+                repeat(this@SudokuStageRandomGenerator.size) {
                     add(getWeightedRandom(data))
                 }
             })

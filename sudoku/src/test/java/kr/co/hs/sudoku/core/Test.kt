@@ -4,7 +4,7 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
-import kr.co.hs.sudoku.RandomSudokuStageGenerator
+import kr.co.hs.sudoku.SudokuStageRandomGenerator
 import kr.co.hs.sudoku.SudokuStageBuilder
 import kr.co.hs.sudoku.SudokuStageGenerator
 import org.junit.Assert.assertThrows
@@ -79,14 +79,14 @@ class Test {
 
     @Test
     fun sudoku_random_generate_test() = runTest(timeout = Duration.INFINITE) {
-        assertNotNull(RandomSudokuStageGenerator(4, 10.0).build(this))
-        assertNotNull(RandomSudokuStageGenerator(4, 20.0).build(this))
-        assertNotNull(RandomSudokuStageGenerator(4, 50.0).build(this))
-        assertNotNull(RandomSudokuStageGenerator(4, 70.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(4, 10.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(4, 20.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(4, 50.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(4, 70.0).build(this))
 
-        assertNotNull(RandomSudokuStageGenerator(9, 10.0).build(this))
-        assertNotNull(RandomSudokuStageGenerator(9, 20.0).build(this))
-        assertNotNull(RandomSudokuStageGenerator(9, 50.0).build(this))
-        assertNotNull(RandomSudokuStageGenerator(9, 70.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(9, 10.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(9, 20.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(9, 50.0).build(this))
+        assertNotNull(SudokuStageRandomGenerator(9, 70.0).build(this))
     }
 }
