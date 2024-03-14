@@ -12,7 +12,6 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
 import kr.co.hs.sudoku.di.repositories.BeginnerMatrixRepositoryQualifier
-import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
@@ -47,7 +46,7 @@ open class BattleRepositoryTest {
     lateinit var beginnerMatrixRepository: MatrixRepository<BeginnerMatrix>
 
     @Inject
-    @ProfileRepositoryQualifier
+    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
     lateinit var profileRepository: ProfileRepository
 
     @Inject

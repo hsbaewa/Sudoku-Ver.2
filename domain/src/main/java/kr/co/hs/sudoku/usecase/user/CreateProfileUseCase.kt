@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.usecase.UseCase
@@ -17,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class CreateProfileUseCase
 @Inject constructor(
-    private val repository: ProfileRepository
+    @ProfileRepositoryQualifier private val repository: ProfileRepository
 ) : UseCase<ProfileEntity, ProfileEntity, CreateProfileUseCase.Error>() {
 
     sealed interface Error

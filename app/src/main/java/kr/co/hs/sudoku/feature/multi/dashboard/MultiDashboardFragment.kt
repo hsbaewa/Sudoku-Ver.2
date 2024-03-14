@@ -23,7 +23,6 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
-import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
@@ -48,7 +47,7 @@ class MultiDashboardFragment : Fragment() {
     private val playViewModel: MultiPlayViewModel by activityViewModels()
 
     @Inject
-    @ProfileRepositoryQualifier
+    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
     lateinit var profileRepository: ProfileRepository
 
     override fun onCreateView(

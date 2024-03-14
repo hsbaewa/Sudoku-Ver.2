@@ -1,20 +1,19 @@
 package kr.co.hs.sudoku.repository.user
 
-import com.google.firebase.firestore.FirebaseFirestore
 import kr.co.hs.sudoku.datasource.user.ProfileDataSource
-import kr.co.hs.sudoku.datasource.user.impl.ProfileDataSourceImpl
-import kr.co.hs.sudoku.datasource.user.impl.ProfileRemoteSourceImpl
+import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
+import kr.co.hs.sudoku.di.DataSourceModule
 import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
 import kr.co.hs.sudoku.model.user.LocaleModel
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.ProfileModelImpl
-import kr.co.hs.sudoku.repository.TestableRepository
+import javax.inject.Inject
 
-class ProfileRepositoryImpl(
-    private val dataSource: ProfileDataSource = ProfileDataSourceImpl()
-) : ProfileRepository, TestableRepository {
-
-    private val remoteSource = ProfileRemoteSourceImpl()
+class ProfileRepositoryImpl
+@Inject constructor(
+    @DataSourceModule.ProfileDataSourceQualifier private val dataSource: ProfileDataSource,
+    @DataSourceModule.ProfileRemoteSourceQualifier private val remoteSource: ProfileRemoteSource
+) : ProfileRepository {
 
     override suspend fun getProfile(uid: String): ProfileEntity {
         return dataSource.getProfile(uid)?.toDomain().takeIf { it != null }?.run {
@@ -39,12 +38,6 @@ class ProfileRepositoryImpl(
         checkedAt = null,
         status = null
     )
-
-    override fun setFireStoreRootVersion(versionName: String) {
-        remoteSource.rootDocument = FirebaseFirestore.getInstance()
-            .collection("version")
-            .document(versionName)
-    }
 
     override suspend fun checkIn(profileEntity: ProfileEntity) =
         remoteSource.checkInCommunity(profileEntity.toData())

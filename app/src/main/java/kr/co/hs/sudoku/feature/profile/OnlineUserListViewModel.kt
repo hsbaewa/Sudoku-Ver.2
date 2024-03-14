@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
@@ -15,7 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OnlineUserListViewModel
 @Inject constructor(
-    @ProfileRepositoryQualifier
+    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
     private val profileRepository: ProfileRepository
 ) : ViewModel() {
 

@@ -17,8 +17,6 @@ import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
 import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
-import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
-import kr.co.hs.sudoku.datasource.user.impl.ProfileRemoteSourceImpl
 import javax.inject.Singleton
 
 @Module
@@ -54,11 +52,6 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideLogRemoteSource(): LogRemoteSource = LogRemoteSourceImpl()
-
-    @ProfileRemoteSourceQualifier
-    @Singleton
-    @Provides
-    fun provideProfileRemoteSource(): ProfileRemoteSource = ProfileRemoteSourceImpl()
 
     @ChallengeRecordRemoteSourceQualifier
     @Singleton

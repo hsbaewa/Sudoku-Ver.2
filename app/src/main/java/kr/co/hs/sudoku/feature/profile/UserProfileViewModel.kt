@@ -27,7 +27,6 @@ import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.di.google.GoogleDefaultWebClientIdQualifier
 import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
 import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
-import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeUser
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
@@ -43,7 +42,7 @@ import javax.inject.Inject
 @HiltViewModel
 class UserProfileViewModel
 @Inject constructor(
-    @ProfileRepositoryQualifier
+    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
     val profileRepository: ProfileRepository,
     @GoogleDefaultWebClientIdQualifier
     private val defaultWebClientId: String,

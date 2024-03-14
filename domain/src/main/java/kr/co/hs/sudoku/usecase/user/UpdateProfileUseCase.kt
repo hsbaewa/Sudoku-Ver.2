@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kr.co.hs.sudoku.di.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.usecase.UseCase
@@ -17,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class UpdateProfileUseCase
 @Inject constructor(
-    private val repository: ProfileRepository
+    @ProfileRepositoryQualifier private val repository: ProfileRepository
 ) : UseCase<ProfileEntity, ProfileEntity, UpdateProfileUseCase.Error>() {
 
     sealed interface Error
@@ -47,6 +48,9 @@ class UpdateProfileUseCase
     }
 
     private suspend fun updateProfile(entity: ProfileEntity) = with(repository) {
+        if (entity.uid.isEmpty())
+            throw ProfileRepository.ProfileException.EmptyUserId("user id is empty")
+
         val profile = runCatching { getProfile(entity.uid) }.getOrNull()
             ?.also {
                 it.displayName = entity.displayName

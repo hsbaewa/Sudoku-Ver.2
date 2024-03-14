@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
 
-    ext.hilt_version = '2.44'
+    ext.hilt_version = '2.48'
     dependencies {
         classpath 'com.google.gms:google-services:4.4.1'
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"

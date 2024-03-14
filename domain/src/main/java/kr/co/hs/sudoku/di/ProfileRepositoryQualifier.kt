@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.di.repositories
+package kr.co.hs.sudoku.di
 
 import javax.inject.Qualifier
 

@@ -59,7 +59,6 @@ import kr.co.hs.sudoku.di.google.GoogleGameSignInClientQualifier
 import kr.co.hs.sudoku.di.network.BattleRemoteSourceQualifier
 import kr.co.hs.sudoku.di.network.StageRemoteSourceQualifier
 import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
-import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.di.repositories.RegistrationRepositoryQualifier
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
 import kr.co.hs.sudoku.extension.Number.dp
@@ -132,7 +131,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val adminViewModel: AdminViewModel by viewModels()
 
     @Inject
-    @ProfileRepositoryQualifier
+    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
     lateinit var profileRepository: ProfileRepository
 
     @Inject

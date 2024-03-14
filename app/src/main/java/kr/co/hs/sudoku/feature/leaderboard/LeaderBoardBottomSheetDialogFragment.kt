@@ -18,7 +18,6 @@ import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutLeaderboardMultiPlayBinding
-import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
@@ -57,7 +56,7 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
     private val viewModel: LeaderBoardListViewModel by viewModels()
 
     @Inject
-    @ProfileRepositoryQualifier
+    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
     lateinit var profileRepository: ProfileRepository
 
     override fun onCreateView(

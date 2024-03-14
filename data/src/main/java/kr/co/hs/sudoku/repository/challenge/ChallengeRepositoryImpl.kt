@@ -6,7 +6,10 @@ import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
 import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
+import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
+import kr.co.hs.sudoku.di.DataSourceModule
 import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
+import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
 import kr.co.hs.sudoku.mapper.RecordMapper.toDomain
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.challenge.ChallengeModel
@@ -18,7 +21,6 @@ import kr.co.hs.sudoku.model.record.ReserveRecordModel
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.LocaleModel
 import kr.co.hs.sudoku.repository.TestableRepository
-import kr.co.hs.sudoku.repository.user.ProfileRepositoryImpl
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -27,7 +29,9 @@ class ChallengeRepositoryImpl
 @Inject constructor(
     private var challengeRemoteSource: ChallengeRemoteSource,
     private var recordRemoteSource: RecordRemoteSource,
-    private val logRemoteSource: LogRemoteSource
+    private val logRemoteSource: LogRemoteSource,
+    @DataSourceModule.ProfileRemoteSourceQualifier
+    private val profileRemoteSource: ProfileRemoteSource
 ) : ChallengeRepository, TestableRepository {
 
     private val currentUserUid: String
@@ -71,8 +75,10 @@ class ChallengeRepositoryImpl
     }
 
     override suspend fun putRecord(challengeId: String, clearRecord: Long): Boolean {
-        val profileRepository = ProfileRepositoryImpl()
-        val profile = profileRepository.getProfile(currentUserUid)
+        val profile = profileRemoteSource
+            .getProfile(currentUserUid)
+            .toDomain()
+
         return recordRemoteSource.setRecord(
             challengeId,
             RankerEntity(profile, clearRecord).toData()

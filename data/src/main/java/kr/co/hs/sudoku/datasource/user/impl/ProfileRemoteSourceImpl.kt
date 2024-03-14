@@ -1,5 +1,6 @@
 package kr.co.hs.sudoku.datasource.user.impl
 
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Transaction
@@ -7,10 +8,13 @@ import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
 import kr.co.hs.sudoku.model.user.ProfileModelImpl
+import javax.inject.Inject
 
-class ProfileRemoteSourceImpl : FireStoreRemoteSource(), ProfileRemoteSource {
+class ProfileRemoteSourceImpl
+@Inject constructor() : FireStoreRemoteSource(), ProfileRemoteSource {
 
-    private val profileCollection = rootDocument.collection("profile")
+    private val profileCollection: CollectionReference
+        get() = rootDocument.collection("profile")
 
     override suspend fun getProfile(uid: String) = profileCollection
         .document(uid)
