@@ -15,16 +15,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetProfileUseCase
+class UpdateProfileUseCase
 @Inject constructor(
     private val repository: ProfileRepository
-) : UseCase<String, ProfileEntity, GetProfileUseCase.Error>() {
+) : UseCase<ProfileEntity, ProfileEntity, UpdateProfileUseCase.Error>() {
+
+    sealed interface Error
+    object EmptyUserId : Error
+    object ProfileNotFound : Error
+
     override fun invoke(
-        param: String,
+        param: ProfileEntity,
         scope: CoroutineScope,
         onResult: (Result<ProfileEntity, Error>) -> Unit
     ): Job = scope.launch {
-        flow { emit(withContext(Dispatchers.IO) { repository.getProfile(param) }) }
+        flow { emit(withContext(Dispatchers.IO) { updateProfile(param) }) }
             .catch {
                 when (it) {
                     is ProfileRepository.ProfileException -> when (it) {
@@ -41,10 +46,19 @@ class GetProfileUseCase
             .collect { onResult(Result.Success(it)) }
     }
 
-    override suspend fun invoke(param: String, scope: CoroutineScope): ProfileEntity =
-        scope.async { withContext(Dispatchers.IO) { repository.getProfile(param) } }.await()
+    private suspend fun updateProfile(entity: ProfileEntity) = with(repository) {
+        val profile = runCatching { getProfile(entity.uid) }.getOrNull()
+            ?.also {
+                it.displayName = entity.displayName
+                entity.message?.run { it.message = this }
+                entity.iconUrl?.run { it.iconUrl = this }
+            }
+            ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found : ${entity.uid}")
 
-    sealed interface Error
-    object EmptyUserId : Error
-    object ProfileNotFound : Error
+        setProfile(profile)
+        getProfile(entity.uid)
+    }
+
+    override suspend fun invoke(param: ProfileEntity, scope: CoroutineScope) =
+        scope.async { withContext(Dispatchers.IO) { updateProfile(param) } }.await()
 }

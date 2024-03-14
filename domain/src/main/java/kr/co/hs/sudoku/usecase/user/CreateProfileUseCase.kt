@@ -15,36 +15,49 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetProfileUseCase
+class CreateProfileUseCase
 @Inject constructor(
     private val repository: ProfileRepository
-) : UseCase<String, ProfileEntity, GetProfileUseCase.Error>() {
+) : UseCase<ProfileEntity, ProfileEntity, CreateProfileUseCase.Error>() {
+
+    sealed interface Error
+    object AlreadyUser : Error
+    object EmptyUserId : Error
+
+    private class AlreadyUserException(p0: String?) : Exception(p0)
+
     override fun invoke(
-        param: String,
+        param: ProfileEntity,
         scope: CoroutineScope,
         onResult: (Result<ProfileEntity, Error>) -> Unit
     ): Job = scope.launch {
-        flow { emit(withContext(Dispatchers.IO) { repository.getProfile(param) }) }
+        flow { emit(withContext(Dispatchers.IO) { createProfile(param) }) }
             .catch {
                 when (it) {
                     is ProfileRepository.ProfileException -> when (it) {
                         is ProfileRepository.ProfileException.EmptyUserId ->
                             onResult(Result.Error(EmptyUserId))
 
-                        is ProfileRepository.ProfileException.ProfileNotFound ->
-                            onResult(Result.Error(ProfileNotFound))
+                        else -> onResult(Result.Exception(it))
                     }
 
+                    is AlreadyUserException -> onResult(Result.Error(AlreadyUser))
                     else -> onResult(Result.Exception(it))
                 }
             }
             .collect { onResult(Result.Success(it)) }
     }
 
-    override suspend fun invoke(param: String, scope: CoroutineScope): ProfileEntity =
-        scope.async { withContext(Dispatchers.IO) { repository.getProfile(param) } }.await()
+    private suspend fun createProfile(entity: ProfileEntity) = with(repository) {
+        runCatching { getProfile(entity.uid) }
+            .getOrNull()
+            ?.let { throw AlreadyUserException("already user id : ${it.uid}") }
 
-    sealed interface Error
-    object EmptyUserId : Error
-    object ProfileNotFound : Error
+        setProfile(entity)
+        getProfile(entity.uid)
+    }
+
+    override suspend fun invoke(param: ProfileEntity, scope: CoroutineScope): ProfileEntity =
+        scope.async { withContext(Dispatchers.IO) { createProfile(param) } }.await()
+
 }
