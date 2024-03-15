@@ -3,6 +3,8 @@ package kr.co.hs.sudoku.repository.user
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
+import kr.co.hs.sudoku.model.user.impl.OnlineUserEntityImpl
+import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import java.util.Date
 
 class TestProfileRepository : ProfileRepository {
@@ -50,15 +52,43 @@ class TestProfileRepository : ProfileRepository {
     }
 
     override suspend fun checkIn(profileEntity: ProfileEntity) {
-        TODO("Not yet implemented")
+        val profile = dummyData.getOrDefault(profileEntity.uid, null)
+            ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
+
+        if (profile is ProfileEntity.UserEntity) {
+            dummyData[profile.uid] = with(profile) {
+                OnlineUserEntityImpl(uid, displayName, message, iconUrl, locale, checkedAt = Date())
+            }
+        }
     }
 
     override suspend fun checkIn(uid: String) {
-        TODO("Not yet implemented")
+        val profile = dummyData.getOrDefault(uid, null)
+            ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
+
+        if (profile is ProfileEntity.UserEntity) {
+            dummyData[profile.uid] = with(profile) {
+                OnlineUserEntityImpl(uid, displayName, message, iconUrl, locale, checkedAt = Date())
+            }
+        }
     }
 
     override suspend fun checkOut(uid: String) {
-        TODO("Not yet implemented")
+        val profile = dummyData.getOrDefault(uid, null)
+            ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
+
+        if (profile is ProfileEntity.OnlineUserEntity) {
+            dummyData[profile.uid] = with(profile) {
+                ProfileEntityImpl(
+                    uid,
+                    displayName,
+                    message,
+                    iconUrl,
+                    locale,
+                    lastCheckedAt = Date()
+                )
+            }
+        }
     }
 
     override suspend fun getOnlineUserList(): List<ProfileEntity.OnlineUserEntity> =

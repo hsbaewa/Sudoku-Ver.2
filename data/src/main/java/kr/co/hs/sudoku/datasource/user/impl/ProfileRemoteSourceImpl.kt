@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.datasource.user.impl
 
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.tasks.await
@@ -50,24 +51,43 @@ class ProfileRemoteSourceImpl
     }
 
     override suspend fun checkInCommunity(profile: ProfileModelImpl) {
-        val data = mapOf(
-            "uid" to profile.uid,
-            "name" to profile.name,
-            "iconUrl" to profile.iconUrl,
-            "checkedAt" to FieldValue.serverTimestamp(),
-            "status" to "in"
-        ).toMutableMap()
-        profile.message?.run { data["message"] = this }
-        profile.locale?.run {
-            data["locale"] = mapOf(
-                "lang" to lang,
-                "region" to region
-            )
-        }
+        FirebaseFirestore.getInstance().runTransaction {
+            it.get(profileCollection.document(profile.uid))
+                .toObject(ProfileModelImpl::class.java)
+                ?: throw NullPointerException("document is null")
 
-        profileCollection.document(profile.uid)
-            .set(data, SetOptions.merge())
-            .await()
+            val data = mapOf(
+                "uid" to profile.uid,
+                "name" to profile.name,
+                "iconUrl" to profile.iconUrl,
+                "checkedAt" to FieldValue.serverTimestamp(),
+                "status" to "in"
+            ).toMutableMap()
+            profile.message?.run { data["message"] = this }
+            profile.locale?.run {
+                data["locale"] = mapOf(
+                    "lang" to lang,
+                    "region" to region
+                )
+            }
+
+            it.set(profileCollection.document(profile.uid), data)
+        }.await()
+    }
+
+    override suspend fun checkInCommunity(uid: String) {
+        FirebaseFirestore.getInstance().runTransaction {
+            it.get(profileCollection.document(uid))
+                .toObject(ProfileModelImpl::class.java)
+                ?: throw NullPointerException("document is null")
+
+            val data = mapOf(
+                "checkedAt" to FieldValue.serverTimestamp(),
+                "status" to "in"
+            ).toMutableMap()
+
+            it.set(profileCollection.document(uid), data)
+        }.await()
     }
 
     override suspend fun checkOutCommunity(uid: String) {

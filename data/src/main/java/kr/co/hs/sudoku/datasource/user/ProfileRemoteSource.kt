@@ -9,6 +9,7 @@ interface ProfileRemoteSource {
     fun getProfile(transaction: Transaction, uid: String): ProfileModelImpl
     suspend fun updateMyProfile(profile: ProfileModelImpl)
     suspend fun checkInCommunity(profile: ProfileModelImpl)
+    suspend fun checkInCommunity(uid: String)
     suspend fun checkOutCommunity(uid: String)
     suspend fun getCheckedInProfileList(): List<ProfileModel>
 }

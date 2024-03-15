@@ -39,13 +39,20 @@ class ProfileRepositoryImpl
         status = null
     )
 
-    override suspend fun checkIn(profileEntity: ProfileEntity) =
+    override suspend fun checkIn(profileEntity: ProfileEntity) {
         remoteSource.checkInCommunity(profileEntity.toData())
+        dataSource.clearProfile(profileEntity.uid)
+    }
 
-    override suspend fun checkIn(uid: String) =
+    override suspend fun checkIn(uid: String) {
         with(remoteSource) { checkInCommunity(getProfile(uid)) }
+        dataSource.clearProfile(uid)
+    }
 
-    override suspend fun checkOut(uid: String) = remoteSource.checkOutCommunity(uid)
+    override suspend fun checkOut(uid: String) {
+        remoteSource.checkOutCommunity(uid)
+        dataSource.clearProfile(uid)
+    }
 
     override suspend fun getOnlineUserList() = remoteSource.getCheckedInProfileList()
         .mapNotNull { it.toDomain() as? ProfileEntity.OnlineUserEntity }

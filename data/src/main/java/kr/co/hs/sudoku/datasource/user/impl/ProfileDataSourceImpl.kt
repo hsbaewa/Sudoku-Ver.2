@@ -12,4 +12,6 @@ class ProfileDataSourceImpl
     override fun setProfile(profile: ProfileModelImpl) {
         this[profile.uid] = profile
     }
+
+    override fun clearProfile(uid: String) = takeIf { containsKey(uid) }?.let { remove(uid) }
 }
