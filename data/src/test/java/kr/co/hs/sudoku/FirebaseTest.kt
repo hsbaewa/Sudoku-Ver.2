@@ -15,8 +15,8 @@ abstract class FirebaseTest {
         FirebaseApp.initializeApp(
             RuntimeEnvironment.getApplication(),
             FirebaseOptions.Builder()
-                .setProjectId("sudokubattle-0")
-                .setApplicationId("1:616519348076:android:49ea03c95e089c5b234d49")
+                .setProjectId("")
+                .setApplicationId("")
                 .build()
         )
     }

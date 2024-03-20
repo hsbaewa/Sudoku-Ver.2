@@ -33,11 +33,11 @@ class AuthenticatorTest {
         FirebaseApp.initializeApp(
             RuntimeEnvironment.getApplication(),
             FirebaseOptions.Builder()
-                .setProjectId("sudokubattle-0")
-                .setApiKey("AIzaSyBDSncF48BY47ETVFrZon1pvTuJ8cusB6M")
-                .setApplicationId("1:616519348076:android:7e79f73996ffc659234d49")
-                .setGcmSenderId("616519348076")
-                .setStorageBucket("sudokubattle-0.appspot.com")
+                .setProjectId("")
+                .setApiKey("")
+                .setApplicationId("")
+                .setGcmSenderId("")
+                .setStorageBucket("")
                 .build()
         )
 
