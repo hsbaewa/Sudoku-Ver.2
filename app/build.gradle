@@ -89,6 +89,12 @@ android {
             ]
         }
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 
@@ -166,6 +172,7 @@ dependencies {
 //    androidTestImplementation "androidx.test.espresso:espresso-accessibility:$espresso_version"
 //    androidTestImplementation "androidx.test.espresso:espresso-web:$espresso_version"
 //    androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espresso_version"
+    testImplementation 'org.robolectric:robolectric:4.11.1'
 
     // The following Espresso dependency can be either "implementation"
     // or "androidTestImplementation", depending on whether you want the
@@ -200,6 +207,8 @@ dependencies {
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hilt_version"
+    testImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    kaptTest "com.google.dagger:hilt-android-compiler:$hilt_version"
 }
 
 
