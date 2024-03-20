@@ -53,10 +53,10 @@ class ProfileRepositoryTest : FirebaseTest() {
         assertTrue(dummyProfile is ProfileEntity.UserEntity)
 
         assertThrows(Exception::class.java) {
-            runBlocking { profileRepository.checkIn(ProfileEntityImpl("", "")) }
+            runBlocking { profileRepository.checkIn("") }
         }
         assertThrows(Exception::class.java) {
-            runBlocking { profileRepository.checkIn(ProfileEntityImpl("asdasdasdasdasd", "")) }
+            runBlocking { profileRepository.checkIn("asdasdasdasdasd") }
         }
         assertThrows(Exception::class.java) {
             runBlocking { profileRepository.checkIn("") }
@@ -64,10 +64,7 @@ class ProfileRepositoryTest : FirebaseTest() {
         assertThrows(Exception::class.java) {
             runBlocking { profileRepository.checkIn("asdassdasdasfadsadas") }
         }
-        profileRepository.checkIn(dummyProfile.uid)
-        dummyProfile = profileRepository.getProfile(dummyProfile.uid)
-        assertTrue(dummyProfile is ProfileEntity.OnlineUserEntity)
-        profileRepository.checkIn(dummyProfile)
+        dummyProfile = profileRepository.checkIn(dummyProfile.uid)
         assertTrue(dummyProfile is ProfileEntity.OnlineUserEntity)
 
         var onlineUserList = profileRepository.runCatching { getOnlineUserList() }.getOrNull()

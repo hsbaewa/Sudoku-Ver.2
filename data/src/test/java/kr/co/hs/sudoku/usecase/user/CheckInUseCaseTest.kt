@@ -57,11 +57,11 @@ class CheckInUseCaseTest : FirebaseTest() {
     @Test
     fun do_test() = runTest(timeout = Duration.INFINITE) {
         assertThrows(ProfileRepository.ProfileException.EmptyUserId::class.java) {
-            runBlocking { usecase(ProfileEntityImpl("", ""), this) }
+            runBlocking { usecase("", this) }
         }
 
         assertThrows(ProfileRepository.ProfileException.ProfileNotFound::class.java) {
-            runBlocking { usecase(ProfileEntityImpl("no uid", ""), this) }
+            runBlocking { usecase("no uid", this) }
         }
 
         usecase(existProfile1, this)

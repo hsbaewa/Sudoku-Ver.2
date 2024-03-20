@@ -16,10 +16,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutDialogUserProfileBinding
+import kr.co.hs.sudoku.di.user.UserModule
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.challenge.ChallengeItemBottomSheetDialog
+import kr.co.hs.sudoku.feature.user.Authenticator
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
@@ -35,6 +38,10 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
     private lateinit var binding: LayoutDialogUserProfileBinding
     private val profileViewModel: UserProfileViewModel by viewModels()
     private val behavior by lazy { (dialog as BottomSheetDialog).behavior }
+
+    @Inject
+    @UserModule.GoogleGamesAuthenticatorQualifier
+    lateinit var authenticator: Authenticator
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,9 +79,9 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             arguments?.getString(EXTRA_USER_ID)?.let { uid ->
-                profileViewModel.getProfilePagingData(uid).observe(viewLifecycleOwner) {
-                    pagingDataAdapter.submitData(lifecycle, it)
-                }
+                profileViewModel
+                    .getProfilePagingData(authenticator, uid)
+                    .observe(viewLifecycleOwner) { pagingDataAdapter.submitData(lifecycle, it) }
             }
         }
     }

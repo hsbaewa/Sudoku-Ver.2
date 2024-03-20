@@ -46,13 +46,13 @@ class CheckOutUseCaseTest : FirebaseTest() {
         hiltRule.inject()
         existProfile1 = with(repository) {
             setProfile(existProfile1)
-            checkIn(existProfile1)
+            checkIn(existProfile1.uid)
             getProfile(existProfile1.uid)
         }
 
         existProfile2 = with(repository) {
             setProfile(existProfile2)
-            checkIn(existProfile2)
+            checkIn(existProfile2.uid)
             getProfile(existProfile2.uid)
         }
     }

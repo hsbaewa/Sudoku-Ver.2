@@ -27,6 +27,7 @@ import kr.co.hs.sudoku.core.Stage
 import kr.co.hs.sudoku.core.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
+import kr.co.hs.sudoku.di.user.UserModule
 import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
@@ -39,6 +40,7 @@ import kr.co.hs.sudoku.feature.multi.dashboard.MultiDashboardViewModel
 import kr.co.hs.sudoku.feature.single.play.SinglePlayControlStageFragment
 import kr.co.hs.sudoku.feature.single.play.SinglePlayViewModel
 import kr.co.hs.sudoku.feature.stage.StageFragment
+import kr.co.hs.sudoku.feature.user.Authenticator
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
@@ -88,6 +90,10 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
     @Inject
     lateinit var sudokuGenerator: SudokuGenerateUseCase
 
+    @Inject
+    @UserModule.GoogleGamesAuthenticatorQualifier
+    lateinit var authenticator: Authenticator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.lifecycleOwner = this
@@ -124,7 +130,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
                     }
             }
 
-            requestLastUserProfile()
+            requestCurrentUserProfile(authenticator)
         }
 
         with(singlePlayViewModel) {

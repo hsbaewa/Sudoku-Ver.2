@@ -12,10 +12,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
@@ -23,6 +23,7 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListMultiPlayBinding
+import kr.co.hs.sudoku.di.user.UserModule
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
@@ -32,7 +33,7 @@ import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayActivity
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.feature.multi.play.MultiPlayViewModel
-import kr.co.hs.sudoku.repository.user.ProfileRepository
+import kr.co.hs.sudoku.feature.user.Authenticator
 import kr.co.hs.sudoku.views.RecyclerView
 import javax.inject.Inject
 
@@ -47,8 +48,8 @@ class MultiDashboardFragment : Fragment() {
     private val playViewModel: MultiPlayViewModel by activityViewModels()
 
     @Inject
-    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
-    lateinit var profileRepository: ProfileRepository
+    @UserModule.GoogleGamesAuthenticatorQualifier
+    lateinit var authenticator: Authenticator
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -165,12 +166,10 @@ class MultiDashboardFragment : Fragment() {
             throwable.showErrorAlert()
         }) {
             showProgressIndicator()
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
-                ?: throw Exception("invalid current user uid")
             withContext(Dispatchers.IO) {
                 playViewModel.doJoin(battleEntity.id)
                 val app = requireContext().applicationContext as App
-                val displayName = profileRepository.getProfile(uid).displayName
+                val displayName = authenticator.getProfile().firstOrNull()?.displayName ?: ""
                 MessagingManager(app).sendNotification(
                     MessagingManager.JoinedMultiPlayer(battleEntity.id, displayName)
                 )

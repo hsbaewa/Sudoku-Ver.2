@@ -19,18 +19,18 @@ import javax.inject.Singleton
 class CheckOutUseCase
 @Inject constructor(
     @ProfileRepositoryQualifier private val repository: ProfileRepository
-) : UseCase<ProfileEntity, Unit, CheckOutUseCase.Error>() {
+) : UseCase<String, ProfileEntity, CheckOutUseCase.Error>() {
 
     sealed interface Error
     object EmptyUserId : Error
     object UnKnownUser : Error
 
     override fun invoke(
-        param: ProfileEntity,
+        param: String,
         scope: CoroutineScope,
-        onResult: (Result<Unit, Error>) -> Unit
+        onResult: (Result<ProfileEntity, Error>) -> Unit
     ): Job = scope.launch {
-        flow<Unit> { withContext(Dispatchers.IO) { checkOut(param) } }
+        flow<ProfileEntity> { withContext(Dispatchers.IO) { checkOut(param) } }
             .catch {
                 when (it) {
                     is ProfileRepository.ProfileException -> when (it) {
@@ -47,12 +47,18 @@ class CheckOutUseCase
             .collect { onResult(Result.Success(it)) }
     }
 
-    private suspend fun checkOut(profile: ProfileEntity) = with(repository) {
-        if (profile.uid.isEmpty())
+    operator fun invoke(
+        profileEntity: ProfileEntity,
+        scope: CoroutineScope,
+        onResult: (Result<ProfileEntity, Error>) -> Unit
+    ): Job = invoke(profileEntity.uid, scope, onResult)
+
+    private suspend fun checkOut(uid: String) = with(repository) {
+        if (uid.isEmpty())
             throw ProfileRepository.ProfileException.EmptyUserId("user id is empty")
 
-        val checkProfile = runCatching {
-            getProfile(profile.uid)
+        runCatching {
+            checkOut(uid)
         }.getOrElse {
             when (it) {
                 is NullPointerException ->
@@ -61,9 +67,13 @@ class CheckOutUseCase
                 else -> throw it
             }
         }
-        checkOut(checkProfile.uid)
     }
 
-    override suspend fun invoke(param: ProfileEntity, scope: CoroutineScope): Unit =
+    override suspend fun invoke(param: String, scope: CoroutineScope): ProfileEntity =
         scope.async { withContext(Dispatchers.IO) { checkOut(param) } }.await()
+
+    suspend operator fun invoke(
+        profileEntity: ProfileEntity,
+        scope: CoroutineScope
+    ): ProfileEntity = invoke(profileEntity.uid, scope)
 }

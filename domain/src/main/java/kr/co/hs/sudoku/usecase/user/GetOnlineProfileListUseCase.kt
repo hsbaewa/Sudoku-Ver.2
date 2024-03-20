@@ -19,12 +19,12 @@ import javax.inject.Singleton
 class GetOnlineProfileListUseCase
 @Inject constructor(
     @ProfileRepositoryQualifier private val repository: ProfileRepository
-) : UseCase<Unit, List<ProfileEntity>, Nothing>() {
+) : UseCase<Unit, List<ProfileEntity.OnlineUserEntity>, Nothing>() {
 
     override fun invoke(
         param: Unit,
         scope: CoroutineScope,
-        onResult: (Result<List<ProfileEntity>, Nothing>) -> Unit
+        onResult: (Result<List<ProfileEntity.OnlineUserEntity>, Nothing>) -> Unit
     ): Job = scope.launch {
         flow { emit(withContext(Dispatchers.IO) { repository.getOnlineUserList() }) }
             .catch { onResult(Result.Exception(it)) }
@@ -33,11 +33,14 @@ class GetOnlineProfileListUseCase
 
     operator fun invoke(
         scope: CoroutineScope,
-        onResult: (Result<List<ProfileEntity>, Nothing>) -> Unit
+        onResult: (Result<List<ProfileEntity.OnlineUserEntity>, Nothing>) -> Unit
     ) = invoke(Unit, scope, onResult)
 
 
-    override suspend fun invoke(param: Unit, scope: CoroutineScope): List<ProfileEntity> =
+    override suspend fun invoke(
+        param: Unit,
+        scope: CoroutineScope
+    ): List<ProfileEntity.OnlineUserEntity> =
         scope.async { withContext(Dispatchers.IO) { repository.getOnlineUserList() } }.await()
 
     suspend operator fun invoke(scope: CoroutineScope) = invoke(Unit, scope)

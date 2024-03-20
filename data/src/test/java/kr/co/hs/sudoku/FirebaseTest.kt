@@ -2,6 +2,7 @@ package kr.co.hs.sudoku
 
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import org.junit.After
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -18,5 +19,10 @@ abstract class FirebaseTest {
                 .setApplicationId("1:616519348076:android:49ea03c95e089c5b234d49")
                 .build()
         )
+    }
+
+    @After
+    fun onAfterFirebaseTest() {
+        FirebaseApp.clearInstancesForTest()
     }
 }

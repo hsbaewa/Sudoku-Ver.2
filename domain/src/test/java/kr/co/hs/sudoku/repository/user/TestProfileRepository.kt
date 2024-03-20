@@ -51,34 +51,25 @@ class TestProfileRepository : ProfileRepository {
         dummyData[profileEntity.uid] = profileEntity
     }
 
-    override suspend fun checkIn(profileEntity: ProfileEntity) {
-        val profile = dummyData.getOrDefault(profileEntity.uid, null)
-            ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
-
-        if (profile is ProfileEntity.UserEntity) {
-            dummyData[profile.uid] = with(profile) {
-                OnlineUserEntityImpl(uid, displayName, message, iconUrl, locale, checkedAt = Date())
-            }
-        }
-    }
-
-    override suspend fun checkIn(uid: String) {
+    override suspend fun checkIn(uid: String): ProfileEntity {
         val profile = dummyData.getOrDefault(uid, null)
             ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
 
-        if (profile is ProfileEntity.UserEntity) {
-            dummyData[profile.uid] = with(profile) {
+        return if (profile is ProfileEntity.UserEntity) {
+            with(profile) {
                 OnlineUserEntityImpl(uid, displayName, message, iconUrl, locale, checkedAt = Date())
-            }
+            }.also { dummyData[profile.uid] = it }
+        } else {
+            profile
         }
     }
 
-    override suspend fun checkOut(uid: String) {
+    override suspend fun checkOut(uid: String): ProfileEntity {
         val profile = dummyData.getOrDefault(uid, null)
             ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
 
-        if (profile is ProfileEntity.OnlineUserEntity) {
-            dummyData[profile.uid] = with(profile) {
+        return if (profile is ProfileEntity.OnlineUserEntity) {
+            with(profile) {
                 ProfileEntityImpl(
                     uid,
                     displayName,
@@ -87,7 +78,9 @@ class TestProfileRepository : ProfileRepository {
                     locale,
                     lastCheckedAt = Date()
                 )
-            }
+            }.also { dummyData[profile.uid] = it }
+        } else {
+            profile
         }
     }
 

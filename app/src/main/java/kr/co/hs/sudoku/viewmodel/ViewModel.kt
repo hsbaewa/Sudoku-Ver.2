@@ -20,6 +20,10 @@ abstract class ViewModel : ViewModel() {
         _error.value = throwable
     }
 
+    protected fun setError(t: Throwable) {
+        _error.value = t
+    }
+
     sealed interface RequestStatus<out D>
     class OnStart<D> : RequestStatus<D>
     data class OnFinish<D>(val d: D) : RequestStatus<D>

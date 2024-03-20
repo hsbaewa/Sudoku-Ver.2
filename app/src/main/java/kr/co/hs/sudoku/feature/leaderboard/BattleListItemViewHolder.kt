@@ -5,17 +5,17 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import coil.request.Disposable
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemLeaderboardBinding
+import kr.co.hs.sudoku.feature.user.Authenticator
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
-import kr.co.hs.sudoku.repository.user.ProfileRepository
 
 class BattleListItemViewHolder(
     binding: LayoutListItemLeaderboardBinding,
-    private val profileRepository: ProfileRepository
+    private val authenticator: Authenticator
 ) : LeaderBoardListItemViewHolder<LeaderBoardListItem.BattleItem>(binding) {
 
     private var requestProfileJob: Job? = null
@@ -69,16 +69,13 @@ class BattleListItemViewHolder(
 
     override fun onViewAttachedToWindow() {
         requestProfileJob = itemView.findViewTreeLifecycleOwner()?.lifecycleScope
-            ?.launch(CoroutineExceptionHandler { _, _ -> cardView.visibility = View.INVISIBLE }) {
+            ?.launch {
                 val uid = entity?.uid ?: return@launch
-                profileRepository
-                    .runCatching {
-                        disposableProfileIcon = getProfile(uid)
-                            .run { this@BattleListItemViewHolder.setProfile(this, isMine) }
+                authenticator.getProfile(uid)
+                    .catch { cardView.visibility = View.INVISIBLE }
+                    .collect {
+                        disposableProfileIcon = setProfile(it, isMine)
                         cardView.visibility = View.VISIBLE
-                    }
-                    .getOrElse {
-                        cardView.visibility = View.INVISIBLE
                     }
             }
     }

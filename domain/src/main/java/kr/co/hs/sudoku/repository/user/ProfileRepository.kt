@@ -11,13 +11,10 @@ interface ProfileRepository {
     suspend fun setProfile(profileEntity: ProfileEntity)
 
     @Throws(ProfileException::class)
-    suspend fun checkIn(profileEntity: ProfileEntity)
+    suspend fun checkIn(uid: String): ProfileEntity
 
     @Throws(ProfileException::class)
-    suspend fun checkIn(uid: String)
-
-    @Throws(ProfileException::class)
-    suspend fun checkOut(uid: String)
+    suspend fun checkOut(uid: String): ProfileEntity
 
     @Throws(ProfileException::class)
     suspend fun getOnlineUserList(): List<ProfileEntity.OnlineUserEntity>

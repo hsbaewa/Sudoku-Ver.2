@@ -41,10 +41,12 @@ import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.gms.games.GamesSignInClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -60,6 +62,7 @@ import kr.co.hs.sudoku.di.network.BattleRemoteSourceQualifier
 import kr.co.hs.sudoku.di.network.StageRemoteSourceQualifier
 import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
 import kr.co.hs.sudoku.di.repositories.RegistrationRepositoryQualifier
+import kr.co.hs.sudoku.di.user.UserModule
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
@@ -79,6 +82,7 @@ import kr.co.hs.sudoku.feature.profile.ProfileUpdateActivity
 import kr.co.hs.sudoku.feature.profile.OnlineUserListBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.UserProfileViewModel
 import kr.co.hs.sudoku.feature.single.SingleDashboardFragment
+import kr.co.hs.sudoku.feature.user.Authenticator
 import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
@@ -115,6 +119,10 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels()
 
     @Inject
+    @UserModule.GoogleGamesAuthenticatorQualifier
+    lateinit var authenticator: Authenticator
+
+    @Inject
     @GoogleGameSignInClientQualifier
     lateinit var gamesSignInClient: GamesSignInClient
     private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels()
@@ -123,7 +131,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val launcherForProfileUpdate =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
-                userProfileViewModel.requestCurrentUserProfile(gamesSignInClient)
+                userProfileViewModel.requestCurrentUserProfile(authenticator)
             }
         }
     private var hasUpdate = false
@@ -184,7 +192,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 multiDashboardViewModel.registerRank()
             }
             // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
-            lifecycleScope.launch { withStarted { requestCurrentUserProfile(gamesSignInClient) } }
+            lifecycleScope.launch { withStarted { requestCurrentUserProfile(authenticator) } }
         }
 
         with(gameSettingsViewModel) {
@@ -449,7 +457,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.sign_in -> {
-                userProfileViewModel.signIn(gamesSignInClient)
+                userProfileViewModel.signIn(authenticator)
                 true
             }
 
@@ -651,19 +659,19 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
         }
     }
 
+    @DelicateCoroutinesApi
     override fun onStart() {
         super.onStart()
-        lifecycleScope.launch {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-            withContext(Dispatchers.IO) { profileRepository.checkIn(uid) }
+        GlobalScope.launch {
+            authenticator.checkIn().catch { }.collect {}
         }
     }
 
+    @DelicateCoroutinesApi
     override fun onStop() {
         super.onStop()
-        lifecycleScope.launch {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-            withContext(Dispatchers.IO) { profileRepository.checkOut(uid) }
+        GlobalScope.launch {
+            authenticator.checkOut().catch { }.collect {}
         }
     }
 
