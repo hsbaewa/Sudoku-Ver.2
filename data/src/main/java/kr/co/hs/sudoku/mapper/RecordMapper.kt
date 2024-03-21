@@ -2,7 +2,7 @@ package kr.co.hs.sudoku.mapper
 
 import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
 import kr.co.hs.sudoku.model.rank.RankerEntity
-import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
+import kr.co.hs.sudoku.model.challenge.ClearTimeRecordModel
 
 object RecordMapper {
     fun ClearTimeRecordModel.toDomain() = RankerEntity(

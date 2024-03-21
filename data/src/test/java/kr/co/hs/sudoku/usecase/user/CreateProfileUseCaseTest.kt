@@ -8,14 +8,16 @@ import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.FirebaseTest
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import kr.co.hs.sudoku.usecase.UseCase
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import javax.inject.Inject
 import kotlin.random.Random
 import kotlin.time.Duration
 
+@RunWith(RobolectricTestRunner::class)
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)
 class CreateProfileUseCaseTest : FirebaseTest() {
@@ -25,8 +27,10 @@ class CreateProfileUseCaseTest : FirebaseTest() {
     @Inject
     lateinit var usecase: CreateProfileUseCase
 
-    @Before
-    fun before() = hiltRule.inject()
+    override fun onBefore() {
+        super.onBefore()
+        hiltRule.inject()
+    }
 
     @Test
     fun do_test() = runTest(timeout = Duration.INFINITE) {

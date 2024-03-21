@@ -8,19 +8,20 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.FirebaseTest
-import kr.co.hs.sudoku.di.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.usecase.UseCase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import javax.inject.Inject
 import kotlin.time.Duration
 
+@RunWith(RobolectricTestRunner::class)
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)
 class GetProfileUseCaseTest : FirebaseTest() {
@@ -31,17 +32,17 @@ class GetProfileUseCaseTest : FirebaseTest() {
     lateinit var usecase: GetProfileUseCase
 
     @Inject
-    @ProfileRepositoryQualifier
     lateinit var profileRepository: ProfileRepository
 
-    @Before
-    fun before() = runTest(timeout = Duration.INFINITE) {
+    override fun onBefore() {
+        super.onBefore()
         hiltRule.inject()
-        profileRepository.setProfile(
-            ProfileEntityImpl("uid-for-get-profile", "profile display name")
-        )
+        runTest(timeout = Duration.INFINITE) {
+            profileRepository.setProfile(
+                ProfileEntityImpl("uid-for-get-profile", "profile display name")
+            )
+        }
     }
-
 
     @Test
     fun do_test() = runTest(timeout = Duration.INFINITE) {

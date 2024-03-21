@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.model.record
+package kr.co.hs.sudoku.model.challenge
 
 import com.google.firebase.Timestamp
 import kr.co.hs.sudoku.model.user.LocaleModel

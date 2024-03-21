@@ -20,28 +20,43 @@ import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import kr.co.hs.sudoku.usecase.user.UpdateProfileUseCase
 import java.util.Locale
 
-abstract class Authenticator(
+abstract class FirebaseAuthenticator(
     private val firebaseAuth: FirebaseAuth,
     private val createProfile: CreateProfileUseCase,
     private val getProfile: GetProfileUseCase,
     private val updateProfile: UpdateProfileUseCase,
     private val checkIn: CheckInUseCase,
     private val checkOut: CheckOutUseCase
-) {
-    abstract fun signIn(): Flow<ProfileEntity>
+) : Authenticator {
 
-    open fun getProfile(): Flow<ProfileEntity> = callbackFlow {
-        val user = firebaseAuth.currentUser ?: throw RequireSignIn("unknown user")
+    protected fun FirebaseUser.toProfile(): ProfileEntity = ProfileEntityImpl(
+        uid = uid,
+        displayName = displayName ?: "",
+        message = null,
+        iconUrl = photoUrl?.toString() ?: "",
+        locale = LocaleEntityImpl(
+            Locale.getDefault().language,
+            Locale.getDefault().country
+        ),
+        lastCheckedAt = null
+    )
 
-        getProfile(user.uid, this) {
+    open val getCurrentUserProfile: ProfileEntity?
+        get() = firebaseAuth.currentUser?.toProfile()
+
+    override fun getProfile(): Flow<ProfileEntity> = callbackFlow {
+        val currentUserProfile =
+            getCurrentUserProfile ?: throw Authenticator.RequireSignIn("unknown user")
+
+        getProfile(currentUserProfile.uid, this) {
             when (it) {
                 is UseCase.Result.Error -> when (it.e) {
                     GetProfileUseCase.EmptyUserId -> close(IllegalArgumentException("user id is empty"))
-                    GetProfileUseCase.ProfileNotFound -> createProfile(user.toProfile(), this) {
+                    GetProfileUseCase.ProfileNotFound -> createProfile(currentUserProfile, this) {
                         when (it) {
                             is UseCase.Result.Error -> when (it.e) {
-                                CreateProfileUseCase.AlreadyUser -> close(kotlin.Exception("invalid state exception"))
-                                CreateProfileUseCase.EmptyUserId -> close(kotlin.Exception("invalid state exception"))
+                                CreateProfileUseCase.AlreadyUser -> close(Exception("invalid state exception"))
+                                CreateProfileUseCase.EmptyUserId -> close(Exception("invalid state exception"))
                             }
 
                             is UseCase.Result.Exception -> close(it.t)
@@ -64,12 +79,14 @@ abstract class Authenticator(
         awaitClose()
     }
 
-    fun getProfile(uid: String): Flow<ProfileEntity> = callbackFlow {
-        getProfile(uid, this) {
+    override fun checkIn(): Flow<ProfileEntity> = callbackFlow {
+        val user = getCurrentUserProfile ?: throw Exception("unknown user")
+
+        checkIn(user.uid, this) {
             when (it) {
                 is UseCase.Result.Error -> when (it.e) {
-                    GetProfileUseCase.EmptyUserId -> close(IllegalArgumentException("user id is empty"))
-                    GetProfileUseCase.ProfileNotFound -> close(IllegalArgumentException("user not found"))
+                    CheckInUseCase.EmptyUserId -> close(Exception("invalid user"))
+                    CheckInUseCase.UnKnownUser -> close(Exception("unknown user"))
                 }
 
                 is UseCase.Result.Exception -> close(it.t)
@@ -83,42 +100,10 @@ abstract class Authenticator(
         awaitClose()
     }
 
-    class RequireSignIn(message: String?) : Exception(message)
+    override fun checkOut(): Flow<ProfileEntity> = callbackFlow {
+        val user = getCurrentUserProfile ?: throw Exception("unknown user")
 
-    protected fun FirebaseUser.toProfile() = ProfileEntityImpl(
-        uid = uid,
-        displayName = displayName ?: "",
-        message = null,
-        iconUrl = photoUrl?.toString() ?: "",
-        locale = LocaleEntityImpl(
-            Locale.getDefault().language,
-            Locale.getDefault().country
-        ),
-        lastCheckedAt = null
-    )
-
-    fun checkIn(): Flow<Unit> = callbackFlow {
-        val user = firebaseAuth.currentUser ?: throw Exception("unknown user")
-
-        checkIn(user.toProfile(), this) {
-            when (it) {
-                is UseCase.Result.Error -> when (it.e) {
-                    CheckInUseCase.EmptyUserId -> close(Exception("invalid user"))
-                    CheckInUseCase.UnKnownUser -> close(Exception("unknown user"))
-                }
-
-                is UseCase.Result.Exception -> close(it.t)
-                is UseCase.Result.Success -> close()
-            }
-        }
-
-        awaitClose()
-    }
-
-    fun checkOut(): Flow<Unit> = callbackFlow {
-        val user = firebaseAuth.currentUser ?: throw Exception("unknown user")
-
-        checkOut(user.toProfile(), this) {
+        checkOut(user.uid, this) {
             when (it) {
                 is UseCase.Result.Error -> when (it.e) {
                     CheckOutUseCase.EmptyUserId -> close(Exception("invalid user"))
@@ -126,14 +111,17 @@ abstract class Authenticator(
                 }
 
                 is UseCase.Result.Exception -> close(it.t)
-                is UseCase.Result.Success -> close()
+                is UseCase.Result.Success -> launch {
+                    send(it.data)
+                    close()
+                }
             }
         }
 
         awaitClose()
     }
 
-    fun updateProfile(profileEntity: ProfileEntity): Flow<ProfileEntity> = callbackFlow {
+    override fun updateProfile(profileEntity: ProfileEntity): Flow<ProfileEntity> = callbackFlow {
         updateProfile(profileEntity, this) {
             when (it) {
                 is UseCase.Result.Error -> when (it.e) {

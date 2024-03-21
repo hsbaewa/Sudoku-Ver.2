@@ -7,7 +7,6 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.FirebaseTest
-import kr.co.hs.sudoku.di.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import org.junit.Assert.assertThrows
@@ -15,10 +14,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import javax.inject.Inject
 import kotlin.time.Duration
 
+@RunWith(RobolectricTestRunner::class)
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)
 class ProfileRepositoryTest : FirebaseTest() {
@@ -29,7 +31,6 @@ class ProfileRepositoryTest : FirebaseTest() {
     fun before() = hiltRule.inject()
 
     @Inject
-    @ProfileRepositoryQualifier
     lateinit var profileRepository: ProfileRepository
 
     @Test
@@ -68,13 +69,12 @@ class ProfileRepositoryTest : FirebaseTest() {
         assertTrue(dummyProfile is ProfileEntity.OnlineUserEntity)
 
         var onlineUserList = profileRepository.runCatching { getOnlineUserList() }.getOrNull()
-        assertEquals(true, onlineUserList?.isNotEmpty())
+        assertEquals(true, onlineUserList?.find { it.uid == "uid-dummy" } != null)
 
-        profileRepository.checkOut(dummyProfile.uid)
-        dummyProfile = profileRepository.getProfile(dummyProfile.uid)
+        dummyProfile = profileRepository.checkOut(dummyProfile.uid)
         assertTrue(dummyProfile is ProfileEntity.UserEntity)
 
         onlineUserList = profileRepository.runCatching { getOnlineUserList() }.getOrNull()
-        assertEquals(true, onlineUserList?.isEmpty())
+        assertEquals(true, onlineUserList?.find { it.uid == "uid-dummy" } == null)
     }
 }

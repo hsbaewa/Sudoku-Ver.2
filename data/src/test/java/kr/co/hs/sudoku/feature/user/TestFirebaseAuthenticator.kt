@@ -16,10 +16,8 @@ import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import kr.co.hs.sudoku.usecase.user.UpdateProfileUseCase
 import java.util.Locale
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class AnonymousAuthenticator
+class TestFirebaseAuthenticator
 @Inject constructor(
     firebaseAuth: FirebaseAuth,
     private val createProfile: CreateProfileUseCase,
@@ -27,11 +25,17 @@ class AnonymousAuthenticator
     updateProfile: UpdateProfileUseCase,
     checkIn: CheckInUseCase,
     checkOut: CheckOutUseCase
-) : Authenticator(firebaseAuth, createProfile, getProfile, updateProfile, checkIn, checkOut) {
+) : FirebaseAuthenticator(
+    firebaseAuth,
+    createProfile,
+    getProfile,
+    updateProfile,
+    checkIn,
+    checkOut
+) {
 
-
-    override fun signIn(): Flow<ProfileEntity> = callbackFlow {
-        val user = ProfileEntityImpl(
+    override val getCurrentUserProfile: ProfileEntity
+        get() = ProfileEntityImpl(
             uid = "profile-uid",
             displayName = "display-name",
             message = null,
@@ -43,14 +47,15 @@ class AnonymousAuthenticator
             lastCheckedAt = null
         )
 
-        createProfile(user, this) {
+    override fun signIn(): Flow<ProfileEntity> = callbackFlow {
+        createProfile(getCurrentUserProfile, this) {
             when (it) {
                 is UseCase.Result.Error -> when (it.e) {
-                    CreateProfileUseCase.AlreadyUser -> getProfile(user.uid, this) {
+                    CreateProfileUseCase.AlreadyUser -> getProfile(getCurrentUserProfile.uid, this) {
                         when (it) {
                             is UseCase.Result.Error -> when (it.e) {
                                 GetProfileUseCase.EmptyUserId -> close(IllegalArgumentException("user id is empty"))
-                                GetProfileUseCase.ProfileNotFound -> close(kotlin.Exception("invalid state exception"))
+                                GetProfileUseCase.ProfileNotFound -> close(Exception("invalid state exception"))
                             }
 
                             is UseCase.Result.Exception -> close(it.t)

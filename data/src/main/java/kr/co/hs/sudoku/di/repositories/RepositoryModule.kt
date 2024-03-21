@@ -10,16 +10,10 @@ import dagger.hilt.components.SingletonComponent
 import kr.co.hs.sudoku.datasource.StageRemoteSource
 import kr.co.hs.sudoku.datasource.admin.AdminRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
-import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
-import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
-import kr.co.hs.sudoku.di.DataSourceModule
 import kr.co.hs.sudoku.di.network.AdminRemoteSourceQualifier
 import kr.co.hs.sudoku.di.network.BattleRemoteSourceQualifier
-import kr.co.hs.sudoku.di.network.ChallengeRemoteSourceQualifier
-import kr.co.hs.sudoku.di.network.LogRemoteSourceQualifier
-import kr.co.hs.sudoku.di.network.ChallengeRecordRemoteSourceQualifier
 import kr.co.hs.sudoku.di.network.StageRemoteSourceQualifier
 import kr.co.hs.sudoku.model.matrix.AdvancedMatrix
 import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
@@ -33,8 +27,6 @@ import kr.co.hs.sudoku.repository.admin.AdminPermissionRepository
 import kr.co.hs.sudoku.repository.admin.AdminPermissionRepositoryImpl
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.repository.settings.RegistrationRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
@@ -55,26 +47,10 @@ object RepositoryModule {
     @Provides
     fun provideBattleRepository(
         @BattleRemoteSourceQualifier battleRemoteSource: BattleRemoteSource,
-        @DataSourceModule.ProfileRemoteSourceQualifier profileRemoteSource: ProfileRemoteSource,
-        @LogRemoteSourceQualifier logRemoteSource: LogRemoteSource
+        profileRemoteSource: ProfileRemoteSource,
+        logRemoteSource: LogRemoteSource
     ): BattleRepository =
         BattleRepositoryImpl(battleRemoteSource, profileRemoteSource, logRemoteSource)
-
-    @ChallengeRepositoryQualifier
-    @Singleton
-    @Provides
-    fun provideChallengeRepository(
-        @ChallengeRemoteSourceQualifier challengeRemoteSource: ChallengeRemoteSource,
-        @ChallengeRecordRemoteSourceQualifier recordRemoteSource: RecordRemoteSource,
-        @LogRemoteSourceQualifier logRemoteSource: LogRemoteSource,
-        @DataSourceModule.ProfileRemoteSourceQualifier profileRemoteSource: ProfileRemoteSource
-    ): ChallengeRepository =
-        ChallengeRepositoryImpl(
-            challengeRemoteSource,
-            recordRemoteSource,
-            logRemoteSource,
-            profileRemoteSource
-        )
 
     @BeginnerMatrixRepositoryQualifier
     @Singleton

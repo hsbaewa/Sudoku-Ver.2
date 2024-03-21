@@ -1,8 +1,8 @@
 package kr.co.hs.sudoku.repository.user
 
+import com.google.firebase.auth.FirebaseAuth
 import kr.co.hs.sudoku.datasource.user.ProfileDataSource
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
-import kr.co.hs.sudoku.di.DataSourceModule
 import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
 import kr.co.hs.sudoku.model.user.LocaleModel
 import kr.co.hs.sudoku.model.user.ProfileEntity
@@ -11,8 +11,9 @@ import javax.inject.Inject
 
 class ProfileRepositoryImpl
 @Inject constructor(
-    @DataSourceModule.ProfileDataSourceQualifier private val dataSource: ProfileDataSource,
-    @DataSourceModule.ProfileRemoteSourceQualifier private val remoteSource: ProfileRemoteSource
+    private val dataSource: ProfileDataSource,
+    private val remoteSource: ProfileRemoteSource,
+    private val firebaseAuth: FirebaseAuth
 ) : ProfileRepository {
 
     override suspend fun getProfile(uid: String): ProfileEntity {
@@ -22,6 +23,12 @@ class ProfileRepositoryImpl
             .also { dataSource.setProfile(it) }
             .toDomain()
     }
+
+    override suspend fun getProfile(): ProfileEntity =
+        getProfile(
+            firebaseAuth.currentUser?.uid
+                ?: throw ProfileRepository.ProfileException.ProfileNotFound("current user not found")
+        )
 
     override suspend fun setProfile(profileEntity: ProfileEntity) {
         val data = profileEntity.toData()
