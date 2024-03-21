@@ -30,6 +30,7 @@ import kr.co.hs.sudoku.repository.battle.BattleRepositoryImpl
 import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.repository.settings.RegistrationRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
+import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
 import javax.inject.Singleton
 
 @Module
@@ -48,9 +49,15 @@ object RepositoryModule {
     fun provideBattleRepository(
         @BattleRemoteSourceQualifier battleRemoteSource: BattleRemoteSource,
         profileRemoteSource: ProfileRemoteSource,
-        logRemoteSource: LogRemoteSource
+        logRemoteSource: LogRemoteSource,
+        sudokuGenerate: SudokuGenerateUseCase
     ): BattleRepository =
-        BattleRepositoryImpl(battleRemoteSource, profileRemoteSource, logRemoteSource)
+        BattleRepositoryImpl(
+            battleRemoteSource,
+            profileRemoteSource,
+            logRemoteSource,
+            sudokuGenerate
+        )
 
     @BeginnerMatrixRepositoryQualifier
     @Singleton

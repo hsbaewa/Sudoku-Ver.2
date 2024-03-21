@@ -6,6 +6,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.spyk
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -16,11 +17,13 @@ import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
 import kr.co.hs.sudoku.model.matrix.BeginnerMatrix
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
+import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepository
+import kr.co.hs.sudoku.usecase.user.CreateProfileUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -32,6 +35,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.util.Date
 import javax.inject.Inject
 import kotlin.time.Duration
 
@@ -52,6 +56,9 @@ open class BattleRepositoryTest {
     @BattleRepositoryQualifier
     lateinit var battleRepository: BattleRepository
 
+    @Inject
+    lateinit var createProfile: CreateProfileUseCase
+
     private val _userProfile = ArrayList<ProfileEntity>()
     private val _userBattleRepository = ArrayList<BattleRepository>()
 
@@ -65,9 +72,17 @@ open class BattleRepositoryTest {
     @Before
     open fun initRepository() = runTest(timeout = Duration.INFINITE) {
         hiltRule.inject()
-        (profileRepository as TestableRepository).setFireStoreRootVersion("test")
 
         userUidList.forEach {
+            val profile = object : ProfileEntity.UserEntity {
+                override val lastCheckedAt: Date = Date()
+                override val uid: String = it
+                override var displayName: String = "name($it)"
+                override var message: String? = "message($it)"
+                override var iconUrl: String? = null
+                override val locale: LocaleEntity? = null
+            }
+            createProfile.runCatching { coroutineScope { invoke(profile, this) } }.getOrNull()
             _userProfile.add(profileRepository.getProfile(it))
             val battleRepository =
                 spyk<BattleRepository>(objToCopy = battleRepository, recordPrivateCalls = true)

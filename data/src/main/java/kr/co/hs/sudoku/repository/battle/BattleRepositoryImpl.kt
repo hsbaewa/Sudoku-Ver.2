@@ -33,11 +33,9 @@ class BattleRepositoryImpl
 constructor(
     private val battleRemoteSource: BattleRemoteSource,
     private val profileRemoteSource: ProfileRemoteSource,
-    private val logRemoteSource: LogRemoteSource
+    private val logRemoteSource: LogRemoteSource,
+    private val sudokuGenerator: SudokuGenerateUseCase
 ) : BattleRepository, TestableRepository {
-
-    @Inject
-    lateinit var sudokuGenerator: SudokuGenerateUseCase
 
     override val currentUserUid: String
         get() = FirebaseAuth.getInstance().currentUser?.uid
