@@ -15,18 +15,19 @@ import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
-import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.extension.FirebaseCloudMessagingExt.subscribeUser
 import kr.co.hs.sudoku.feature.user.Authenticator
 import kr.co.hs.sudoku.feature.user.GoogleGamesAuthenticator
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
+import kr.co.hs.sudoku.usecase.UseCase
+import kr.co.hs.sudoku.usecase.user.GetCurrentUserProfileUseCase
+import kr.co.hs.sudoku.usecase.user.UpdateProfileUseCase
 import kr.co.hs.sudoku.viewmodel.ViewModel
 import java.util.Date
 import javax.inject.Inject
@@ -36,8 +37,9 @@ class UserProfileViewModel
 @Inject constructor(
     @BattleRepositoryQualifier
     private val battleRepository: BattleRepository,
-    @ChallengeRepositoryQualifier
-    private val challengeRepository: ChallengeRepository
+    private val challengeRepository: ChallengeRepository,
+    private val getProfile: GetCurrentUserProfileUseCase,
+    private val updateProfile: UpdateProfileUseCase
 ) : ViewModel() {
 
     private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
@@ -46,22 +48,39 @@ class UserProfileViewModel
     private val _profile = MutableLiveData<ProfileEntity?>()
     val profile: LiveData<ProfileEntity?> by this::_profile
 
-    fun requestCurrentUserProfile(authenticator: Authenticator) {
+    fun requestCurrentUserProfile() = viewModelScope.launch {
         setProgress(true)
-        viewModelScope.launch {
-            authenticator.getProfile()
-                .catch {
-                    setProgress(false)
-                    when (it) {
-                        is Authenticator.RequireSignIn -> _profile.value = null
-                        else -> setError(it)
+        getProfile(this) {
+            when (it) {
+                is UseCase.Result.Error -> when (it.e) {
+                    GetCurrentUserProfileUseCase.NotExistCurrentUser -> {
+                        setProgress(false)
+                        _profile.value = null
                     }
                 }
-                .collect {
+
+                is UseCase.Result.Exception -> {
                     setProgress(false)
-                    _profile.value = it
-                    firebaseMessaging.subscribeUser(it.uid).await()
+                    _profile.value = null
+                    setError(it.t)
                 }
+
+                is UseCase.Result.Success -> {
+                    _profile.value = it.data
+                    it.data.messagingSubscribe()
+                }
+            }
+        }
+
+    }
+
+    private fun ProfileEntity.messagingSubscribe() = viewModelScope.launch {
+        try {
+            firebaseMessaging.subscribeUser(uid).await()
+            setProgress(false)
+        } catch (e: Exception) {
+            setProgress(false)
+            setError(e)
         }
     }
 
@@ -84,20 +103,37 @@ class UserProfileViewModel
         }
     }
 
-    fun updateUserInfo(authenticator: Authenticator, onComplete: (Boolean) -> Unit) {
+    fun updateUserInfo(onComplete: (Boolean) -> Unit) {
         val profile = profile.value ?: throw Exception("알수 없는 사용자 입니다.")
 
-        setProgress(true)
         viewModelScope.launch {
-            authenticator.updateProfile(profile)
-                .catch {
-                    setProgress(false)
-                    setError(it)
+            setProgress(true)
+
+            updateProfile(profile, this) {
+                when (it) {
+                    is UseCase.Result.Error -> when (it.e) {
+                        UpdateProfileUseCase.EmptyUserId -> {
+                            setProgress(false)
+                            setError(IllegalArgumentException("user id is empty!!"))
+                        }
+
+                        UpdateProfileUseCase.ProfileNotFound -> {
+                            setProgress(false)
+                            setError(IllegalArgumentException("user profile is not found"))
+                        }
+                    }
+
+                    is UseCase.Result.Exception -> {
+                        setProgress(false)
+                        setError(it.t)
+                    }
+
+                    is UseCase.Result.Success -> {
+                        setProgress(false)
+                        onComplete(true)
+                    }
                 }
-                .collect {
-                    setProgress(false)
-                    onComplete(true)
-                }
+            }
         }
     }
 
@@ -114,16 +150,12 @@ class UserProfileViewModel
     }
 
 
-    fun getProfilePagingData(
-        authenticator: Authenticator,
-        uid: String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-    ): LiveData<PagingData<ProfileItem>> {
+    fun getProfilePagingData(profileEntity: ProfileEntity): LiveData<PagingData<ProfileItem>> {
         return Pager(
             config = PagingConfig(pageSize = 10, initialLoadSize = 10),
             pagingSourceFactory = {
                 ProfilePagingSource(
-                    uid,
-                    authenticator,
+                    profileEntity,
                     battleRepository,
                     challengeRepository
                 )
@@ -132,8 +164,7 @@ class UserProfileViewModel
     }
 
     private class ProfilePagingSource(
-        private val uid: String,
-        private val authenticator: Authenticator,
+        private val profile: ProfileEntity,
         private val battleRepository: BattleRepository,
         private val challengeRepository: ChallengeRepository,
     ) : PagingSource<Long, ProfileItem>() {
@@ -143,18 +174,14 @@ class UserProfileViewModel
 
             val profileItems = buildList {
                 if (isFirst) {
-                    val profile = authenticator.getProfile(uid)
-                        .catch { }
-                        .firstOrNull()
-
-                    profile?.iconUrl?.let { url -> add(ProfileItem.Icon(url)) }
+                    profile.iconUrl?.let { url -> add(ProfileItem.Icon(url)) }
                     add(
                         ProfileItem.DisplayName(
-                            profile?.displayName ?: "",
-                            profile?.locale?.getLocaleFlag()
+                            profile.displayName,
+                            profile.locale?.getLocaleFlag()
                         )
                     )
-                    profile?.message.takeUnless { it.isNullOrEmpty() }
+                    profile.message.takeUnless { it.isNullOrEmpty() }
                         ?.let { message -> add(ProfileItem.Message(message)) }
 
                     val lastCheckedAt = when (profile) {
@@ -166,7 +193,7 @@ class UserProfileViewModel
 
 
                     val ladder =
-                        withContext(Dispatchers.IO) { battleRepository.getLeaderBoard(uid) }
+                        withContext(Dispatchers.IO) { battleRepository.getLeaderBoard(profile.uid) }
 
                     add(
                         ProfileItem.BattleLadder(
@@ -183,8 +210,8 @@ class UserProfileViewModel
             val challengeHistory =
                 withContext(Dispatchers.IO) {
                     params.key
-                        ?.run { challengeRepository.getHistory(uid, Date(this), count) }
-                        ?: run { challengeRepository.getHistory(uid, count) }
+                        ?.run { challengeRepository.getHistory(profile.uid, Date(this), count) }
+                        ?: run { challengeRepository.getHistory(profile.uid, count) }
                 }.map { ProfileItem.ChallengeLog(it) }
             val nextKey =
                 challengeHistory.takeIf { it.isNotEmpty() }?.lastOrNull()?.item?.clearAt?.time

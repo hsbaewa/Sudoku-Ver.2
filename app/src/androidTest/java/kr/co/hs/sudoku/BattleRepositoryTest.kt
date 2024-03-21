@@ -46,7 +46,6 @@ open class BattleRepositoryTest {
     lateinit var beginnerMatrixRepository: MatrixRepository<BeginnerMatrix>
 
     @Inject
-    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
     lateinit var profileRepository: ProfileRepository
 
     @Inject

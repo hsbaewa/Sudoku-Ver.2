@@ -38,7 +38,6 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
-import com.google.android.gms.games.GamesSignInClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,12 +56,10 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityMainBinding
 import kr.co.hs.sudoku.datasource.StageRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
-import kr.co.hs.sudoku.di.google.GoogleGameSignInClientQualifier
 import kr.co.hs.sudoku.di.network.BattleRemoteSourceQualifier
 import kr.co.hs.sudoku.di.network.StageRemoteSourceQualifier
 import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
 import kr.co.hs.sudoku.di.repositories.RegistrationRepositoryQualifier
-import kr.co.hs.sudoku.di.user.UserModule
 import kr.co.hs.sudoku.extension.CoilExt.appImageLoader
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.dismissProgressIndicator
@@ -87,7 +84,6 @@ import kr.co.hs.sudoku.model.battle.BattleEntity
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.settings.RegistrationRepository
-import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.viewmodel.GameSettingsViewModel
 import java.net.MalformedURLException
 import java.net.URL
@@ -119,28 +115,20 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels()
 
     @Inject
-    @UserModule.GoogleGamesAuthenticatorQualifier
     lateinit var authenticator: Authenticator
 
-    @Inject
-    @GoogleGameSignInClientQualifier
-    lateinit var gamesSignInClient: GamesSignInClient
     private val challengeDashboardViewMode: ChallengeDashboardViewModel by viewModels()
     private val userProfileViewModel: UserProfileViewModel by viewModels()
     private val gameSettingsViewModel: GameSettingsViewModel by viewModels()
     private val launcherForProfileUpdate =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
-                userProfileViewModel.requestCurrentUserProfile(authenticator)
+                userProfileViewModel.requestCurrentUserProfile()
             }
         }
     private var hasUpdate = false
 
     private val adminViewModel: AdminViewModel by viewModels()
-
-    @Inject
-    @kr.co.hs.sudoku.di.ProfileRepositoryQualifier
-    lateinit var profileRepository: ProfileRepository
 
     @Inject
     @StageRemoteSourceQualifier
@@ -192,7 +180,7 @@ class MainActivity : Activity(), NavigationBarView.OnItemSelectedListener {
                 multiDashboardViewModel.registerRank()
             }
             // Play Games에논 로그인이 되어 있는데 Firebase 인증이 되어 있지 않은 경우가 있을 수 있어서 마이그레이션
-            lifecycleScope.launch { withStarted { requestCurrentUserProfile(authenticator) } }
+            lifecycleScope.launch { withStarted { requestCurrentUserProfile() } }
         }
 
         with(gameSettingsViewModel) {

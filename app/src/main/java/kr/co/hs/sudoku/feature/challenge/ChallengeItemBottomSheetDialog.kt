@@ -20,7 +20,6 @@ import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.BottomSheetDialogFragment
 import kr.co.hs.sudoku.databinding.LayoutDialogChallengeItemBinding
-import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.ad.ChallengeRetryRewardAdManager
@@ -58,7 +57,6 @@ class ChallengeItemBottomSheetDialog : BottomSheetDialogFragment(),
         }
 
     @Inject
-    @ChallengeRepositoryQualifier
     lateinit var challengeRepository: ChallengeRepository
 
     override fun onCreateView(

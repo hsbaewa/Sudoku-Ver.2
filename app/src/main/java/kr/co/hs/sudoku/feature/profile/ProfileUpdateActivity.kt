@@ -22,13 +22,10 @@ import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.ActivityProfileUpdateBinding
-import kr.co.hs.sudoku.di.user.UserModule
 import kr.co.hs.sudoku.extension.CoilExt.load
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.ActivityExtension.isShowProgressIndicator
 import kr.co.hs.sudoku.extension.platform.ContextExtension.getDrawableCompat
-import kr.co.hs.sudoku.feature.user.Authenticator
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class ProfileUpdateActivity : Activity() {
@@ -43,10 +40,6 @@ class ProfileUpdateActivity : Activity() {
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_profile_update) }
     private val app: App by lazy { applicationContext as App }
     private val viewModel: UserProfileViewModel by viewModels()
-
-    @Inject
-    @UserModule.GoogleGamesAuthenticatorQualifier
-    lateinit var authenticator: Authenticator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,14 +71,14 @@ class ProfileUpdateActivity : Activity() {
         }
 
         binding.btnUpdate.setOnClickListener {
-            viewModel.updateUserInfo(authenticator) {
+            viewModel.updateUserInfo {
                 setResult(RESULT_OK)
                 navigateUpToParent()
             }
         }
 
         lifecycleScope.launch {
-            withStarted { viewModel.requestCurrentUserProfile(authenticator) }
+            withStarted { viewModel.requestCurrentUserProfile() }
         }
     }
 

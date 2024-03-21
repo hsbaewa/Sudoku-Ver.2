@@ -16,12 +16,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutDialogUserProfileBinding
-import kr.co.hs.sudoku.di.user.UserModule
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
 import kr.co.hs.sudoku.feature.challenge.ChallengeItemBottomSheetDialog
-import kr.co.hs.sudoku.feature.user.Authenticator
+import kr.co.hs.sudoku.usecase.UseCase
+import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -40,8 +40,7 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
     private val behavior by lazy { (dialog as BottomSheetDialog).behavior }
 
     @Inject
-    @UserModule.GoogleGamesAuthenticatorQualifier
-    lateinit var authenticator: Authenticator
+    lateinit var getProfile: GetProfileUseCase
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,10 +77,18 @@ class ProfileBottomSheetDialog : BottomSheetDialogFragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            arguments?.getString(EXTRA_USER_ID)?.let { uid ->
-                profileViewModel
-                    .getProfilePagingData(authenticator, uid)
-                    .observe(viewLifecycleOwner) { pagingDataAdapter.submitData(lifecycle, it) }
+            showProgressIndicator()
+            getProfile(arguments?.getString(EXTRA_USER_ID) ?: "", this) {
+                when (it) {
+                    is UseCase.Result.Error -> when (it.e) {
+                        GetProfileUseCase.EmptyUserId -> dismissProgressIndicator()
+                        GetProfileUseCase.ProfileNotFound -> dismissProgressIndicator()
+                    }
+
+                    is UseCase.Result.Exception -> dismissProgressIndicator()
+                    is UseCase.Result.Success -> profileViewModel.getProfilePagingData(it.data)
+                        .observe(viewLifecycleOwner) { pagingDataAdapter.submitData(lifecycle, it) }
+                }
             }
         }
     }

@@ -14,7 +14,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.di.ad.ChallengeDashboardAdQualifier
-import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.feature.ad.NativeItemAdManager
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
@@ -24,7 +23,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ChallengeDashboardViewModel
 @Inject constructor(
-    @ChallengeRepositoryQualifier
     private val repository: ChallengeRepository,
     @ChallengeDashboardAdQualifier
     private val nativeItemAdManager: NativeItemAdManager,

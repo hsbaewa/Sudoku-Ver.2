@@ -8,7 +8,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
@@ -24,7 +23,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ChallengeManageViewModel
 @Inject constructor(
-    @ChallengeRepositoryQualifier
     private val repository: ChallengeRepository,
     private val sudokuGenerator: SudokuGenerateUseCase
 ) : ViewModel() {

@@ -6,16 +6,19 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import coil.request.Disposable
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.databinding.LayoutListItemLeaderboardBinding
-import kr.co.hs.sudoku.feature.user.Authenticator
 import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
+import kr.co.hs.sudoku.usecase.UseCase
+import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 
 class BattleListItemViewHolder(
     binding: LayoutListItemLeaderboardBinding,
-    private val authenticator: Authenticator
+    private val getProfile: GetProfileUseCase
 ) : LeaderBoardListItemViewHolder<LeaderBoardListItem.BattleItem>(binding) {
 
     private var requestProfileJob: Job? = null
@@ -71,7 +74,27 @@ class BattleListItemViewHolder(
         requestProfileJob = itemView.findViewTreeLifecycleOwner()?.lifecycleScope
             ?.launch {
                 val uid = entity?.uid ?: return@launch
-                authenticator.getProfile(uid)
+                callbackFlow {
+                    getProfile(uid, this) {
+                        when (it) {
+                            is UseCase.Result.Error -> when (it.e) {
+                                GetProfileUseCase.EmptyUserId ->
+                                    close(IllegalArgumentException("user id is empty"))
+
+                                GetProfileUseCase.ProfileNotFound ->
+                                    close(NullPointerException("profile not found"))
+                            }
+
+                            is UseCase.Result.Exception -> close(it.t)
+                            is UseCase.Result.Success -> launch {
+                                send(it.data)
+                                close()
+                            }
+                        }
+                    }
+
+                    awaitClose()
+                }
                     .catch { cardView.visibility = View.INVISIBLE }
                     .collect {
                         disposableProfileIcon = setProfile(it, isMine)

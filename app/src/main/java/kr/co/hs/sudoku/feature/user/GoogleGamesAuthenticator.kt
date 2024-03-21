@@ -18,8 +18,10 @@ import kr.co.hs.sudoku.usecase.user.CheckOutUseCase
 import kr.co.hs.sudoku.usecase.user.CreateProfileUseCase
 import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import kr.co.hs.sudoku.usecase.user.UpdateProfileUseCase
+import javax.inject.Inject
 
-class GoogleGamesAuthenticator(
+class GoogleGamesAuthenticator
+@Inject constructor(
     private val gamesSignInClient: GamesSignInClient,
     private val defaultWebClientId: String,
     private val firebaseAuth: FirebaseAuth,
@@ -28,9 +30,14 @@ class GoogleGamesAuthenticator(
     updateProfile: UpdateProfileUseCase,
     checkIn: CheckInUseCase,
     checkOut: CheckOutUseCase
-) : Authenticator(firebaseAuth, createProfile, getProfile, updateProfile, checkIn, checkOut) {
-
-
+) : FirebaseAuthenticator(
+    firebaseAuth,
+    createProfile,
+    getProfile,
+    updateProfile,
+    checkIn,
+    checkOut
+) {
     override fun signIn(): Flow<ProfileEntity> = callbackFlow {
         gamesSignInClient
             .signIn()
@@ -97,7 +104,7 @@ class GoogleGamesAuthenticator(
             .await()
             .isAuthenticated
             .takeUnless { it }
-            ?.let { throw SignInFailed("play game sign-in failed") }
+            ?.let { throw Authenticator.RequireSignIn("play game sign-in failed") }
 
         val authCode = gamesSignInClient.requestServerSideAccess(defaultWebClientId, false).await()
 
