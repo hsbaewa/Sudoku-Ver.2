@@ -1,20 +1,20 @@
 package kr.co.hs.sudoku.repository.user
 
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
 import kr.co.hs.sudoku.datasource.user.ProfileDataSource
-import kr.co.hs.sudoku.datasource.user.impl.ProfileDataSourceImpl
-import kr.co.hs.sudoku.datasource.user.impl.ProfileRemoteSourceImpl
+import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
 import kr.co.hs.sudoku.mapper.ProfileMapper.toDomain
 import kr.co.hs.sudoku.model.user.LocaleModel
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.ProfileModelImpl
-import kr.co.hs.sudoku.repository.TestableRepository
+import javax.inject.Inject
 
-class ProfileRepositoryImpl(
-    private val dataSource: ProfileDataSource = ProfileDataSourceImpl()
-) : ProfileRepository, TestableRepository {
-
-    private val remoteSource = ProfileRemoteSourceImpl()
+class ProfileRepositoryImpl
+@Inject constructor(
+    private val dataSource: ProfileDataSource,
+    private val remoteSource: ProfileRemoteSource,
+    private val firebaseAuth: FirebaseAuth
+) : ProfileRepository {
 
     override suspend fun getProfile(uid: String): ProfileEntity {
         return dataSource.getProfile(uid)?.toDomain().takeIf { it != null }?.run {
@@ -23,6 +23,12 @@ class ProfileRepositoryImpl(
             .also { dataSource.setProfile(it) }
             .toDomain()
     }
+
+    override suspend fun getProfile(): ProfileEntity =
+        getProfile(
+            firebaseAuth.currentUser?.uid
+                ?: throw ProfileRepository.ProfileException.ProfileNotFound("current user not found")
+        )
 
     override suspend fun setProfile(profileEntity: ProfileEntity) {
         val data = profileEntity.toData()
@@ -40,19 +46,15 @@ class ProfileRepositoryImpl(
         status = null
     )
 
-    override fun setFireStoreRootVersion(versionName: String) {
-        remoteSource.rootDocument = FirebaseFirestore.getInstance()
-            .collection("version")
-            .document(versionName)
-    }
+    override suspend fun checkIn(uid: String): ProfileEntity =
+        remoteSource.checkInCommunity(uid)
+            .also { dataSource.setProfile(it) }
+            .toDomain()
 
-    override suspend fun checkIn(profileEntity: ProfileEntity) =
-        remoteSource.checkInCommunity(profileEntity.toData())
-
-    override suspend fun checkIn(uid: String) =
-        with(remoteSource) { checkInCommunity(getProfile(uid)) }
-
-    override suspend fun checkOut(uid: String) = remoteSource.checkOutCommunity(uid)
+    override suspend fun checkOut(uid: String): ProfileEntity =
+        remoteSource.checkOutCommunity(uid)
+            .also { dataSource.setProfile(it) }
+            .toDomain()
 
     override suspend fun getOnlineUserList() = remoteSource.getCheckedInProfileList()
         .mapNotNull { it.toDomain() as? ProfileEntity.OnlineUserEntity }

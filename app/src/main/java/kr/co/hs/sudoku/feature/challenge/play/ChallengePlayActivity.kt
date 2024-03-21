@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
+import kr.co.hs.sudoku.core.IntCoordinateCellEntity
+import kr.co.hs.sudoku.core.history.impl.CachedHistoryQueue
 import kr.co.hs.sudoku.databinding.ActivityPlaySingleBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
@@ -30,8 +32,6 @@ import kr.co.hs.sudoku.feature.ad.AdaptiveBannerAdManager
 import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
-import kr.co.hs.sudoku.model.stage.history.impl.CachedHistoryQueue
 import kr.co.hs.sudoku.repository.timer.RealServerTimer
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import java.io.File

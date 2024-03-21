@@ -17,6 +17,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
+import kr.co.hs.sudoku.core.IntCoordinateCellEntity
+import kr.co.hs.sudoku.core.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.databinding.ActivityPlaySingleBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.NumberExtension.toTimerFormat
@@ -26,11 +28,11 @@ import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
-import kr.co.hs.sudoku.model.stage.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
 import kr.co.hs.sudoku.repository.timer.TimerImpl
+import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SinglePlayActivity : Activity() {
@@ -45,8 +47,11 @@ class SinglePlayActivity : Activity() {
             context.startActivity(newIntent(context, matrix))
     }
 
+    @Inject
+    lateinit var sudokuGenerator: SudokuGenerateUseCase
+
     private val singlePlayViewModel: SinglePlayViewModel
-            by viewModels { SinglePlayViewModel.ProviderFactory(startingMatrix) }
+            by viewModels { SinglePlayViewModel.ProviderFactory(startingMatrix, sudokuGenerator) }
     private val recordViewModel: RecordViewModel by viewModels()
     private val binding: ActivityPlaySingleBinding
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_play_single) }

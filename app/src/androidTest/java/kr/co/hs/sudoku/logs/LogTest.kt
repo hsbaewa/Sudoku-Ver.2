@@ -7,7 +7,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
-import kr.co.hs.sudoku.di.network.LogRemoteSourceQualifier
 import kr.co.hs.sudoku.model.logs.LogModel
 import kr.co.hs.sudoku.model.logs.impl.BattleClearModelImpl
 import kr.co.hs.sudoku.model.logs.impl.ChallengeClearModelImpl
@@ -30,7 +29,6 @@ class LogTest {
     var hiltRule = HiltAndroidRule(this)
 
     @Inject
-    @LogRemoteSourceQualifier
     lateinit var logRemoteSource: LogRemoteSource
 
     @Before

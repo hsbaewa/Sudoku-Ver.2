@@ -16,14 +16,15 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.repository.SudokuPlayer
 import kr.co.hs.sudoku.core.Activity
+import kr.co.hs.sudoku.core.IntCoordinateCellEntity
+import kr.co.hs.sudoku.core.Stage
+import kr.co.hs.sudoku.core.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.databinding.ActivityPlayMultiBinding
 import kr.co.hs.sudoku.databinding.LayoutCompleteBinding
 import kr.co.hs.sudoku.extension.CoilExt.loadProfileImage
@@ -41,16 +42,13 @@ import kr.co.hs.sudoku.feature.stage.StageFragment
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
 import kr.co.hs.sudoku.model.matrix.EmptyMatrix
 import kr.co.hs.sudoku.model.matrix.IntMatrix
-import kr.co.hs.sudoku.model.stage.IntCoordinateCellEntity
-import kr.co.hs.sudoku.model.stage.Stage
-import kr.co.hs.sudoku.model.stage.history.impl.HistoryQueueImpl
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.parcel.MatrixParcelModel
 import kr.co.hs.sudoku.repository.timer.TimerImpl
-import kr.co.hs.sudoku.usecase.AutoGenerateSudokuUseCase
-import kr.co.hs.sudoku.usecase.PlaySudokuUseCaseImpl
+import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 import kr.co.hs.sudoku.viewmodel.ViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChangedListener {
@@ -80,12 +78,15 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
             by lazy { DataBindingUtil.setContentView(this, R.layout.activity_play_multi) }
     private val recordViewModel: RecordViewModel by viewModels()
     private val singlePlayViewModel: SinglePlayViewModel by viewModels {
-        SinglePlayViewModel.ProviderFactory(startingMatrix)
+        SinglePlayViewModel.ProviderFactory(startingMatrix, sudokuGenerator)
     }
     private var lastKnownUserProfile: ProfileEntity? = null
     private val app: App by lazy { applicationContext as App }
     private val userProfileViewModel: UserProfileViewModel by viewModels()
     private val multiDashboardViewModel: MultiDashboardViewModel by viewModels()
+
+    @Inject
+    lateinit var sudokuGenerator: SudokuGenerateUseCase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,7 +124,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
                     }
             }
 
-            requestLastUserProfile()
+            requestCurrentUserProfile()
         }
 
         with(singlePlayViewModel) {
@@ -201,15 +202,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
     private lateinit var stage: Stage
     private fun initStageForAI() = lifecycleScope.launch {
         showProgressIndicator()
-        stage = withContext(Dispatchers.IO) {
-            val useCase = AutoGenerateSudokuUseCase(
-                startingMatrix.boxSize,
-                startingMatrix.boxCount,
-                startingMatrix
-            )
-            useCase().last()
-        }
-
+        stage = sudokuGenerator(startingMatrix, this)
         dismissProgressIndicator()
     }
 
@@ -218,8 +211,7 @@ class MultiPlayWithAIActivity : Activity(), IntCoordinateCellEntity.ValueChanged
         playAIJob = lifecycleScope.launch {
             aiFragment.setStatus(true, null)
             aiFragment.setValues(stage.toValueTable())
-            val playUseCase = PlaySudokuUseCaseImpl(stage = stage, 2000)
-            playUseCase().collect {
+            SudokuPlayer(stage, 2000).flow.collect {
                 val value = it.runCatching { getValue() }.getOrDefault(0)
                 aiFragment.setValue(it.row, it.column, value)
             }

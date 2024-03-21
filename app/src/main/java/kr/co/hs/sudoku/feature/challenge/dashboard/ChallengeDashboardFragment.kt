@@ -18,7 +18,6 @@ import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.core.Fragment
 import kr.co.hs.sudoku.core.PagingLoadStateAdapter
 import kr.co.hs.sudoku.databinding.LayoutListChallengeBinding
-import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.dismissProgressIndicator
 import kr.co.hs.sudoku.extension.platform.FragmentExtension.showProgressIndicator
@@ -42,7 +41,6 @@ class ChallengeDashboardFragment : Fragment(), ProfilePopupMenu.OnPopupMenuItemC
     private val viewModel: ChallengeDashboardViewModel by activityViewModels()
 
     @Inject
-    @ChallengeRepositoryQualifier
     lateinit var challengeRepository: ChallengeRepository
 
     override fun onCreateView(

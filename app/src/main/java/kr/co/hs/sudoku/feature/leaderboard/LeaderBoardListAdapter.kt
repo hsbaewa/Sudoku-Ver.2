@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import kr.co.hs.sudoku.databinding.LayoutListItemLeaderboardBinding
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
-import kr.co.hs.sudoku.repository.user.ProfileRepository
+import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 
 class LeaderBoardListAdapter(
-    private val profileRepository: ProfileRepository,
+    private val getProfile: GetProfileUseCase,
     private val onPopupMenuItemClickListener: ProfilePopupMenu.OnPopupMenuItemClickListener
 ) : ListAdapter<LeaderBoardListItem, LeaderBoardListItemViewHolder<LeaderBoardListItem>>(
     LeaderBoardListItemDiffCallback()
@@ -30,7 +30,7 @@ class LeaderBoardListAdapter(
         val inflater = LayoutInflater.from(parent.context)
         val binding = LayoutListItemLeaderboardBinding.inflate(inflater, parent, false)
         return when (viewType) {
-            VT_BATTLE_ITEM -> BattleListItemViewHolder(binding, profileRepository).apply {
+            VT_BATTLE_ITEM -> BattleListItemViewHolder(binding, getProfile).apply {
                 binding.cardViewProfile.setOnClickListener {
                     it.showPopup(getItem(bindingAdapterPosition))
                 }
@@ -42,7 +42,7 @@ class LeaderBoardListAdapter(
                 }
             }
 
-            VT_BATTLE_ITEM_FOR_MINE -> BattleListItemViewHolder(binding, profileRepository)
+            VT_BATTLE_ITEM_FOR_MINE -> BattleListItemViewHolder(binding, getProfile)
             VT_CHALLENGE_ITEM_FOR_MINE -> ChallengeListItemViewHolder(binding)
             VT_EMPTY -> ChallengeListItemViewHolder(binding)
             else -> throw Exception("unknown view type")

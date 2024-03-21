@@ -1,6 +1,7 @@
 package kr.co.hs.sudoku.repository.timer
 
 import android.os.SystemClock
+import kr.co.hs.sudoku.core.Timer
 
 class TimerImpl : Timer {
     override fun start() = getCurrentTime().also { start = it }

@@ -18,12 +18,11 @@ import kr.co.hs.sudoku.App
 import kr.co.hs.sudoku.R
 import kr.co.hs.sudoku.core.Activity
 import kr.co.hs.sudoku.databinding.LayoutLeaderboardMultiPlayBinding
-import kr.co.hs.sudoku.di.repositories.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.extension.Number.dp
 import kr.co.hs.sudoku.feature.multi.MultiPlayCreateActivity
 import kr.co.hs.sudoku.feature.profile.ProfileBottomSheetDialog
 import kr.co.hs.sudoku.feature.profile.ProfilePopupMenu
-import kr.co.hs.sudoku.repository.user.ProfileRepository
+import kr.co.hs.sudoku.usecase.user.GetProfileUseCase
 import javax.inject.Inject
 
 
@@ -57,8 +56,7 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
     private val viewModel: LeaderBoardListViewModel by viewModels()
 
     @Inject
-    @ProfileRepositoryQualifier
-    lateinit var profileRepository: ProfileRepository
+    lateinit var getProfile: GetProfileUseCase
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,7 +74,7 @@ class LeaderBoardBottomSheetDialogFragment : BottomSheetDialogFragment(),
             this.layoutManager = LinearLayoutManager(context)
             addVerticalDivider(10.dp)
             val itemAdapter = LeaderBoardListAdapter(
-                profileRepository,
+                getProfile,
                 this@LeaderBoardBottomSheetDialogFragment
             )
             this.adapter = itemAdapter

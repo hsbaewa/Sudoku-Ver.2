@@ -4,6 +4,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
@@ -75,25 +76,26 @@ class LogRemoteSourceImpl
     override suspend fun createLog(logModel: LogModel) {
         logsCollection
             .document()
-            .set(
-                when (logModel) {
-                    is LogModel.BattleClear -> logModel
-                        .asMutableMap()
-                        .also {
-                            it["type"] = "battleClear"
-                            it["createdAt"] = FieldValue.serverTimestamp()
-                        }
-
-                    is LogModel.ChallengeClear -> logModel
-                        .asMutableMap()
-                        .also {
-                            it["type"] = "challengeClear"
-                            it["createdAt"] = FieldValue.serverTimestamp()
-                        }
-                }
-            )
+            .set(logModel.toData())
             .await()
     }
+
+    private fun LogModel.toData() = when (this) {
+        is LogModel.BattleClear -> asMutableMap()
+            .also {
+                it["type"] = "battleClear"
+                it["createdAt"] = FieldValue.serverTimestamp()
+            }
+
+        is LogModel.ChallengeClear -> asMutableMap()
+            .also {
+                it["type"] = "challengeClear"
+                it["createdAt"] = FieldValue.serverTimestamp()
+            }
+    }
+
+    override fun createLog(t: Transaction, logModel: LogModel) =
+        t.set(logsCollection.document(), logModel.toData())
 
     override suspend fun deleteLog(logId: String) {
         logsCollection.document(logId).delete().await()

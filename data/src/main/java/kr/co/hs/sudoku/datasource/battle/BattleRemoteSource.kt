@@ -6,7 +6,7 @@ import kr.co.hs.sudoku.model.battle.BattleLeaderBoardModel
 import kr.co.hs.sudoku.model.battle.BattleModel
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.BattleStatisticsModel
-import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
+import kr.co.hs.sudoku.model.challenge.ClearTimeRecordModel
 
 interface BattleRemoteSource {
     fun getBattleCollectionRef(): CollectionReference

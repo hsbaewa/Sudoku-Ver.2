@@ -78,7 +78,7 @@ class ProfileUpdateActivity : Activity() {
         }
 
         lifecycleScope.launch {
-            withStarted { viewModel.requestLastUserProfile() }
+            withStarted { viewModel.requestCurrentUserProfile() }
         }
     }
 

@@ -10,15 +10,7 @@ import kr.co.hs.sudoku.datasource.admin.AdminRemoteSource
 import kr.co.hs.sudoku.datasource.admin.impl.AdminRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
 import kr.co.hs.sudoku.datasource.battle.impl.BattleRemoteSourceImpl
-import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
-import kr.co.hs.sudoku.datasource.challenge.impl.ChallengeRemoteSourceImpl
 import kr.co.hs.sudoku.datasource.impl.StageRemoteSourceFromConfig
-import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
-import kr.co.hs.sudoku.datasource.logs.impl.LogRemoteSourceImpl
-import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
-import kr.co.hs.sudoku.datasource.record.impl.ChallengeRecordRemoteSourceImpl
-import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
-import kr.co.hs.sudoku.datasource.user.impl.ProfileRemoteSourceImpl
 import javax.inject.Singleton
 
 @Module
@@ -39,29 +31,9 @@ object NetworkModule {
     @Provides
     fun provideBattleRemoteSource(): BattleRemoteSource = BattleRemoteSourceImpl()
 
-    @ChallengeRemoteSourceQualifier
-    @Singleton
-    @Provides
-    fun provideChallengeRemoteSource(): ChallengeRemoteSource = ChallengeRemoteSourceImpl()
-
     @StageRemoteSourceQualifier
     @Singleton
     @Provides
     fun provideStageRemoteSource(): StageRemoteSource =
         StageRemoteSourceFromConfig(FirebaseRemoteConfig.getInstance())
-
-    @LogRemoteSourceQualifier
-    @Singleton
-    @Provides
-    fun provideLogRemoteSource(): LogRemoteSource = LogRemoteSourceImpl()
-
-    @ProfileRemoteSourceQualifier
-    @Singleton
-    @Provides
-    fun provideProfileRemoteSource(): ProfileRemoteSource = ProfileRemoteSourceImpl()
-
-    @ChallengeRecordRemoteSourceQualifier
-    @Singleton
-    @Provides
-    fun provideRecordRemoteSource(): RecordRemoteSource = ChallengeRecordRemoteSourceImpl()
 }

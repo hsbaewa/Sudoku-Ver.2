@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.hs.sudoku.di.repositories.BattleRepositoryQualifier
-import kr.co.hs.sudoku.di.repositories.ChallengeRepositoryQualifier
 import kr.co.hs.sudoku.repository.battle.BattleRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.viewmodel.ViewModel
@@ -20,7 +19,6 @@ class LeaderBoardListViewModel
 @Inject constructor(
     @BattleRepositoryQualifier
     private val battleRepository: BattleRepository,
-    @ChallengeRepositoryQualifier
     private val challengeRepository: ChallengeRepository
 ) : ViewModel() {
 

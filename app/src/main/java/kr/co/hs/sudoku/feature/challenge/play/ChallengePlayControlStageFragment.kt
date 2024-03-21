@@ -6,8 +6,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kr.co.hs.sudoku.R
+import kr.co.hs.sudoku.core.history.HistoryItem
 import kr.co.hs.sudoku.feature.stage.ControlStageFragment
-import kr.co.hs.sudoku.model.stage.history.HistoryItem
 import kr.co.hs.sudoku.viewmodel.RecordViewModel
 
 class ChallengePlayControlStageFragment : ControlStageFragment() {

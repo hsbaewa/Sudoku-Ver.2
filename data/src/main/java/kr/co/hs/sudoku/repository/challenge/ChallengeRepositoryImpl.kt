@@ -1,11 +1,9 @@
 package kr.co.hs.sudoku.repository.challenge
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
+import kotlinx.coroutines.coroutineScope
+import kr.co.hs.sudoku.datasource.challenge.ChallengeRecordRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRemoteSource
 import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
-import kr.co.hs.sudoku.datasource.record.RecordRemoteSource
 import kr.co.hs.sudoku.mapper.ChallengeMapper.toDomain
 import kr.co.hs.sudoku.mapper.RecordMapper.toDomain
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
@@ -13,37 +11,36 @@ import kr.co.hs.sudoku.model.challenge.ChallengeModel
 import kr.co.hs.sudoku.model.logs.ChallengeClearLogEntity
 import kr.co.hs.sudoku.model.logs.LogModel
 import kr.co.hs.sudoku.model.rank.RankerEntity
-import kr.co.hs.sudoku.model.record.ClearTimeRecordModel
-import kr.co.hs.sudoku.model.record.ReserveRecordModel
+import kr.co.hs.sudoku.model.challenge.ClearTimeRecordModel
+import kr.co.hs.sudoku.model.challenge.ReserveRecordModel
 import kr.co.hs.sudoku.model.user.LocaleEntity
 import kr.co.hs.sudoku.model.user.LocaleModel
-import kr.co.hs.sudoku.repository.TestableRepository
-import kr.co.hs.sudoku.repository.user.ProfileRepositoryImpl
+import kr.co.hs.sudoku.usecase.user.GetCurrentUserProfileUseCase
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
 class ChallengeRepositoryImpl
 @Inject constructor(
-    private var challengeRemoteSource: ChallengeRemoteSource,
-    private var recordRemoteSource: RecordRemoteSource,
-    private val logRemoteSource: LogRemoteSource
-) : ChallengeRepository, TestableRepository {
-
-    private val currentUserUid: String
-        get() = FirebaseAuth.getInstance().currentUser?.uid
-            ?: throw Exception("사용자 인증 정보가 없습니다. 게임 진행을 위해서는 먼저 사용자 인증이 필요합니다.")
+    private val challengeRemoteSource: ChallengeRemoteSource,
+    private val recordRemoteSource: ChallengeRecordRemoteSource,
+    private val logRemoteSource: LogRemoteSource,
+    private val getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase
+) : ChallengeRepository {
 
     override suspend fun getChallenges(createdAt: Date, count: Long): List<ChallengeEntity> {
+        val currentUserProfile = coroutineScope { getCurrentUserProfileUseCase(this) }
         return challengeRemoteSource.getChallenges(createdAt, count)
             .mapNotNull { it.toDomain() }
-            .onEach { recordRemoteSource.getChallengeMetadata(it, currentUserUid) }
+            .onEach { recordRemoteSource.getChallengeMetadata(it, currentUserProfile.uid) }
     }
 
-    override suspend fun getChallenge(id: String) =
-        challengeRemoteSource.getChallenge(id).toDomain()
-            ?.also { recordRemoteSource.getChallengeMetadata(it, currentUserUid) }
+    override suspend fun getChallenge(id: String): ChallengeEntity {
+        val currentUserProfile = coroutineScope { getCurrentUserProfileUseCase(this) }
+        return challengeRemoteSource.getChallenge(id).toDomain()
+            ?.also { recordRemoteSource.getChallengeMetadata(it, currentUserProfile.uid) }
             ?: throw Exception("unknown challenge")
+    }
 
     override suspend fun createChallenge(entity: ChallengeEntity) =
         entity.createdAt.takeIf { it != null }
@@ -71,19 +68,20 @@ class ChallengeRepositoryImpl
     }
 
     override suspend fun putRecord(challengeId: String, clearRecord: Long): Boolean {
-        val profileRepository = ProfileRepositoryImpl()
-        val profile = profileRepository.getProfile(currentUserUid)
+        val currentUserProfile = coroutineScope { getCurrentUserProfileUseCase(this) }
         return recordRemoteSource.setRecord(
             challengeId,
-            RankerEntity(profile, clearRecord).toData()
+            RankerEntity(currentUserProfile, clearRecord).toData()
         )
     }
 
-    override suspend fun putReserveRecord(challengeId: String) =
-        recordRemoteSource.setRecord(
+    override suspend fun putReserveRecord(challengeId: String): Boolean {
+        val currentUserProfile = coroutineScope { getCurrentUserProfileUseCase(this) }
+        return recordRemoteSource.setRecord(
             challengeId,
-            ReserveRecordModel(currentUserUid, "", null, null, null)
+            ReserveRecordModel(currentUserProfile.uid, "", null, null, null)
         )
+    }
 
     private fun RankerEntity.toData() = ClearTimeRecordModel(
         uid = uid,
@@ -101,16 +99,6 @@ class ChallengeRepositoryImpl
 
     override suspend fun deleteRecord(challengeId: String, uid: String): Boolean {
         return recordRemoteSource.deleteRecord(challengeId, uid)
-    }
-
-    override fun setFireStoreRootVersion(versionName: String) {
-        val root = FirebaseFirestore.getInstance()
-            .collection("version")
-            .document(versionName)
-
-        (challengeRemoteSource as FireStoreRemoteSource).rootDocument = root
-        (recordRemoteSource as FireStoreRemoteSource).rootDocument = root
-        (logRemoteSource as FireStoreRemoteSource).rootDocument = root
     }
 
     override suspend fun getHistory(
