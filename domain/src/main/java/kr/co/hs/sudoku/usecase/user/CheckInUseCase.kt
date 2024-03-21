@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.hs.sudoku.di.ProfileRepositoryQualifier
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.usecase.UseCase
@@ -18,7 +17,7 @@ import javax.inject.Singleton
 @Singleton
 class CheckInUseCase
 @Inject constructor(
-    @ProfileRepositoryQualifier private val repository: ProfileRepository
+    private val repository: ProfileRepository
 ) : UseCase<String, ProfileEntity, CheckInUseCase.Error>() {
     sealed interface Error
     object EmptyUserId : Error

@@ -2,6 +2,7 @@ package kr.co.hs.sudoku.usecase.user
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kr.co.hs.sudoku.data.TestProfileDataSource
 import kr.co.hs.sudoku.model.user.ProfileEntity
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import kr.co.hs.sudoku.repository.user.ProfileRepository
@@ -19,7 +20,7 @@ class CheckInUseCaseTest {
 
     @Before
     fun before() = runTest {
-        repository = TestProfileRepository()
+        repository = TestProfileRepository(TestProfileDataSource())
         usecase = CheckInUseCase(repository)
         existProfile = repository.getProfile("0")
     }

@@ -15,31 +15,33 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CheckOutUseCase
+class GetCurrentUserProfileUseCase
 @Inject constructor(
     private val repository: ProfileRepository
-) : UseCase<String, ProfileEntity, CheckOutUseCase.Error>() {
+) : UseCase<Unit, ProfileEntity, GetCurrentUserProfileUseCase.Error>() {
 
     sealed interface Error
-    object EmptyUserId : Error
-    object UnKnownUser : Error
+    object NotExistCurrentUser : Error
+
+    class NotExistCurrentUserException(p0: String?) : Exception(p0)
 
     override fun invoke(
-        param: String,
+        param: Unit,
         scope: CoroutineScope,
         onResult: (Result<ProfileEntity, Error>) -> Unit
     ): Job = scope.launch {
-        flow<ProfileEntity> { withContext(Dispatchers.IO) { checkOut(param) } }
+        flow { emit(withContext(Dispatchers.IO) { getProfile() }) }
             .catch {
                 when (it) {
                     is ProfileRepository.ProfileException -> when (it) {
                         is ProfileRepository.ProfileException.EmptyUserId ->
-                            onResult(Result.Error(EmptyUserId))
+                            onResult(Result.Error(NotExistCurrentUser))
 
                         is ProfileRepository.ProfileException.ProfileNotFound ->
-                            onResult(Result.Error(UnKnownUser))
+                            onResult(Result.Error(NotExistCurrentUser))
                     }
 
+                    is NotExistCurrentUserException -> onResult(Result.Error(NotExistCurrentUser))
                     else -> onResult(Result.Exception(it))
                 }
             }
@@ -47,32 +49,34 @@ class CheckOutUseCase
     }
 
     operator fun invoke(
-        profileEntity: ProfileEntity,
         scope: CoroutineScope,
         onResult: (Result<ProfileEntity, Error>) -> Unit
-    ): Job = invoke(profileEntity.uid, scope, onResult)
+    ) = invoke(Unit, scope, onResult)
 
-    private suspend fun checkOut(uid: String) = with(repository) {
-        if (uid.isEmpty())
-            throw ProfileRepository.ProfileException.EmptyUserId("user id is empty")
-
+    private suspend fun getProfile() = with(repository) {
         runCatching {
-            checkOut(uid)
+            getProfile()
         }.getOrElse {
             when (it) {
                 is NullPointerException ->
-                    throw ProfileRepository.ProfileException.ProfileNotFound(it.message)
+                    throw NotExistCurrentUserException("profile not found")
+
+                is ProfileRepository.ProfileException -> when (it) {
+                    is ProfileRepository.ProfileException.EmptyUserId ->
+                        throw NotExistCurrentUserException("EmptyUserId")
+
+                    is ProfileRepository.ProfileException.ProfileNotFound ->
+                        throw NotExistCurrentUserException("ProfileNotFound")
+                }
 
                 else -> throw it
             }
         }
     }
 
-    override suspend fun invoke(param: String, scope: CoroutineScope): ProfileEntity =
-        scope.async { withContext(Dispatchers.IO) { checkOut(param) } }.await()
+    override suspend fun invoke(param: Unit, scope: CoroutineScope): ProfileEntity =
+        scope.async { withContext(Dispatchers.IO) { getProfile() } }.await()
 
-    suspend operator fun invoke(
-        profileEntity: ProfileEntity,
-        scope: CoroutineScope
-    ): ProfileEntity = invoke(profileEntity.uid, scope)
+    suspend operator fun invoke(scope: CoroutineScope) = invoke(Unit, scope)
+
 }

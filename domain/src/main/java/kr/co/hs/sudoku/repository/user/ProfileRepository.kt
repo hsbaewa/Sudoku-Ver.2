@@ -8,6 +8,9 @@ interface ProfileRepository {
     suspend fun getProfile(uid: String): ProfileEntity
 
     @Throws(ProfileException::class)
+    suspend fun getProfile(): ProfileEntity
+
+    @Throws(ProfileException::class)
     suspend fun setProfile(profileEntity: ProfileEntity)
 
     @Throws(ProfileException::class)

@@ -4,6 +4,7 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kr.co.hs.sudoku.data.TestProfileDataSource
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.repository.user.TestProfileRepository
 import kr.co.hs.sudoku.usecase.UseCase
@@ -18,7 +19,7 @@ class GetProfileUseCaseTest {
 
     @Before
     fun before() {
-        testRepository = TestProfileRepository()
+        testRepository = TestProfileRepository(TestProfileDataSource())
         getProfileUseCase = GetProfileUseCase(testRepository)
     }
 

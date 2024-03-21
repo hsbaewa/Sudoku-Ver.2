@@ -1,71 +1,52 @@
 package kr.co.hs.sudoku.repository.user
 
-import kr.co.hs.sudoku.model.user.LocaleEntity
+import kr.co.hs.sudoku.data.TestProfileDataSource
 import kr.co.hs.sudoku.model.user.ProfileEntity
-import kr.co.hs.sudoku.model.user.impl.LocaleEntityImpl
 import kr.co.hs.sudoku.model.user.impl.OnlineUserEntityImpl
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import java.util.Date
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TestProfileRepository : ProfileRepository {
-
-    private val dummyData = hashMapOf<String, ProfileEntity?>(
-        "0" to object : ProfileEntity.UserEntity {
-            override val lastCheckedAt: Date = Date()
-            override val uid: String = "0"
-            override var displayName: String = "user0"
-            override var message: String? = "message0"
-            override var iconUrl: String? = "https://cdn-icons-png.flaticon.com/512/21/21104.png"
-            override val locale: LocaleEntity = LocaleEntityImpl("ko", "kr")
-        },
-        "1" to object : ProfileEntity.UserEntity {
-            override val lastCheckedAt: Date = Date()
-            override val uid: String = "1"
-            override var displayName: String = "user1"
-            override var message: String? = "message1"
-            override var iconUrl: String? = null
-            override val locale: LocaleEntity = LocaleEntityImpl("ko", "kr")
-        },
-        "2" to object : ProfileEntity.OnlineUserEntity {
-            override val checkedAt: Date = Date()
-            override val uid: String = "2"
-            override var displayName: String = "user2"
-            override var message: String? = "message2"
-            override var iconUrl: String? = "https://cdn-icons-png.flaticon.com/512/21/21104.png"
-            override val locale: LocaleEntity = LocaleEntityImpl("ko", "kr")
-        }
-    )
+@Singleton
+class TestProfileRepository
+@Inject constructor(
+    private val dataSource: TestProfileDataSource
+) : ProfileRepository {
 
     override suspend fun getProfile(uid: String): ProfileEntity {
         if (uid.isEmpty())
             throw ProfileRepository.ProfileException.EmptyUserId("uid is empty")
 
-        return dummyData.getOrDefault(uid, null)
+        return dataSource.dummyData.getOrDefault(uid, null)
             ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
     }
+
+    override suspend fun getProfile(): ProfileEntity =
+        throw ProfileRepository.ProfileException.EmptyUserId("uid is empty")
 
     override suspend fun setProfile(profileEntity: ProfileEntity) {
         if (profileEntity.uid.isEmpty())
             throw ProfileRepository.ProfileException.EmptyUserId("uid is empty")
 
-        dummyData[profileEntity.uid] = profileEntity
+        dataSource.dummyData[profileEntity.uid] = profileEntity
     }
 
     override suspend fun checkIn(uid: String): ProfileEntity {
-        val profile = dummyData.getOrDefault(uid, null)
+        val profile = dataSource.dummyData.getOrDefault(uid, null)
             ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
 
         return if (profile is ProfileEntity.UserEntity) {
             with(profile) {
                 OnlineUserEntityImpl(uid, displayName, message, iconUrl, locale, checkedAt = Date())
-            }.also { dummyData[profile.uid] = it }
+            }.also { dataSource.dummyData[profile.uid] = it }
         } else {
             profile
         }
     }
 
     override suspend fun checkOut(uid: String): ProfileEntity {
-        val profile = dummyData.getOrDefault(uid, null)
+        val profile = dataSource.dummyData.getOrDefault(uid, null)
             ?: throw ProfileRepository.ProfileException.ProfileNotFound("profile not found")
 
         return if (profile is ProfileEntity.OnlineUserEntity) {
@@ -78,12 +59,12 @@ class TestProfileRepository : ProfileRepository {
                     locale,
                     lastCheckedAt = Date()
                 )
-            }.also { dummyData[profile.uid] = it }
+            }.also { dataSource.dummyData[profile.uid] = it }
         } else {
             profile
         }
     }
 
     override suspend fun getOnlineUserList(): List<ProfileEntity.OnlineUserEntity> =
-        dummyData.values.mapNotNull { it as? ProfileEntity.OnlineUserEntity }
+        dataSource.dummyData.values.mapNotNull { it as? ProfileEntity.OnlineUserEntity }
 }

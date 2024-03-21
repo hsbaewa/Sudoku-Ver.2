@@ -3,6 +3,7 @@ package kr.co.hs.sudoku.usecase.user
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kr.co.hs.sudoku.data.TestProfileDataSource
 import kr.co.hs.sudoku.model.user.impl.ProfileEntityImpl
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.repository.user.TestProfileRepository
@@ -17,7 +18,7 @@ class CreateProfileUseCaseTest {
 
     @Before
     fun before() {
-        testRepository = TestProfileRepository()
+        testRepository = TestProfileRepository(TestProfileDataSource())
         usecase = CreateProfileUseCase(testRepository)
     }
 
