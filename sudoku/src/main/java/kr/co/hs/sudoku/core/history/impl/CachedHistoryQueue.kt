@@ -58,7 +58,10 @@ class CachedHistoryQueue(outputStream: OutputStream) : HistoryQueue {
         val inputStreamReader = InputStreamReader(inputStream)
         val bufferedReader = BufferedReader(inputStreamReader)
 
+        @Suppress("UNUSED_VARIABLE") val boxSize = bufferedReader.readLine().toInt()
+        @Suppress("UNUSED_VARIABLE") val boxCount = bufferedReader.readLine().toInt()
         val rowCount = bufferedReader.readLine().toInt()
+        @Suppress("UNUSED_VARIABLE") val columnCount = bufferedReader.readLine().toInt()
         val matrix = List(rowCount) { _ ->
             bufferedReader.readLine().split(",").map { it.toInt() }.toMutableList()
         }
