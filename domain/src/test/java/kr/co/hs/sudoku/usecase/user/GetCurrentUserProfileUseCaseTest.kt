@@ -1,10 +1,11 @@
 package kr.co.hs.sudoku.usecase.user
 
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kr.co.hs.sudoku.data.TestProfileDataSource
 import kr.co.hs.sudoku.repository.user.TestProfileRepository
-import kr.co.hs.sudoku.usecase.UseCase
+import kr.co.hs.sudoku.usecase.NoErrorUseCase
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
@@ -25,21 +26,17 @@ class GetCurrentUserProfileUseCaseTest {
     fun do_test() = runTest(timeout = Duration.INFINITE) {
         assertThrows(Exception::class.java) {
             runBlocking {
-                usecase(this) {
+                usecase().collect {
                     when (it) {
-                        is UseCase.Result.Error -> when (it.e) {
-                            GetCurrentUserProfileUseCase.NotExistCurrentUser -> throw Exception("NotExistCurrentUser")
-                        }
-
-                        is UseCase.Result.Exception -> throw it.t
-                        is UseCase.Result.Success -> {}
+                        is NoErrorUseCase.Result.Exception -> throw it.t
+                        is NoErrorUseCase.Result.Success -> {}
                     }
                 }
             }
         }
 
-        assertThrows(GetCurrentUserProfileUseCase.NotExistCurrentUserException::class.java) {
-            runBlocking { usecase(this) }
+        assertThrows(Exception::class.java) {
+            runBlocking { usecase().first() }
         }
     }
 }

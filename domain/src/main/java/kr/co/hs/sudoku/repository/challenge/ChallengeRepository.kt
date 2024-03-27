@@ -1,20 +1,39 @@
 package kr.co.hs.sudoku.repository.challenge
 
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
-import kr.co.hs.sudoku.model.logs.ChallengeClearLogEntity
 import kr.co.hs.sudoku.model.rank.RankerEntity
+import kr.co.hs.sudoku.repository.RepositoryException
 import java.util.Date
 
 interface ChallengeRepository {
+    @Throws(RepositoryException::class, ChallengeException::class)
     suspend fun getChallenges(createdAt: Date, count: Long): List<ChallengeEntity>
+
+    @Throws(RepositoryException::class, ChallengeException::class)
     suspend fun getChallenge(id: String): ChallengeEntity
-    suspend fun createChallenge(entity: ChallengeEntity): Boolean
+
+    @Throws(RepositoryException::class, ChallengeException::class)
+    suspend fun createChallenge(entity: ChallengeEntity): ChallengeEntity
+
+    @Throws(RepositoryException::class, ChallengeException::class)
     suspend fun removeChallenge(challengeId: String): Boolean
+
+    @Throws(RepositoryException::class, ChallengeException::class)
     suspend fun getRecords(challengeId: String): List<RankerEntity>
-    suspend fun getRecord(challengeId: String, uid: String): RankerEntity
+
+    @Throws(RepositoryException::class, ChallengeException::class)
+    suspend fun getRecord(challengeId: String): RankerEntity
+
+    @Throws(RepositoryException::class, ChallengeException::class)
     suspend fun putRecord(challengeId: String, clearRecord: Long): Boolean
+
+    @Throws(RepositoryException::class, ChallengeException::class)
     suspend fun putReserveRecord(challengeId: String): Boolean
-    suspend fun deleteRecord(challengeId: String, uid: String): Boolean
-    suspend fun getHistory(uid: String, createdAt: Date, count: Long): List<ChallengeClearLogEntity>
-    suspend fun getHistory(uid: String, count: Long): List<ChallengeClearLogEntity>
+
+    @Throws(RepositoryException::class, ChallengeException::class)
+    suspend fun deleteRecord(challengeId: String): Boolean
+
+    sealed class ChallengeException(p0: String?) : Exception(p0) {
+        class RequiredCurrentUserException(p0: String?) : ChallengeException(p0)
+    }
 }
