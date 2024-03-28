@@ -73,11 +73,11 @@ class LogRemoteSourceImpl
             it.toLogData() as T
         }
 
-    override suspend fun createLog(logModel: LogModel) {
-        logsCollection
-            .document()
-            .set(logModel.toData())
-            .await()
+    override suspend fun createLog(logModel: LogModel): String {
+        val reference = logsCollection.document()
+        logModel.id = reference.id
+        reference.set(logModel.toData()).await()
+        return logModel.id
     }
 
     private fun LogModel.toData() = when (this) {
@@ -99,5 +99,12 @@ class LogRemoteSourceImpl
 
     override suspend fun deleteLog(logId: String) {
         logsCollection.document(logId).delete().await()
+    }
+
+    override suspend fun getLog(id: String): LogModel {
+        val result = logsCollection.document(id).get().await()
+        if (!result.exists())
+            throw NullPointerException("document is empty")
+        return result.toLogData() ?: throw NullPointerException("can not to log data")
     }
 }

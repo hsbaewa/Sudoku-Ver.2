@@ -14,7 +14,8 @@ interface LogRemoteSource {
         count: Long
     ): List<T>
 
-    suspend fun createLog(logModel: LogModel)
+    suspend fun getLog(id: String): LogModel
+    suspend fun createLog(logModel: LogModel): String
     fun createLog(t: Transaction, logModel: LogModel): Transaction
     suspend fun deleteLog(logId: String)
 }

@@ -27,15 +27,16 @@ class ChallengeRemoteSourceImpl
     private val challengeCollection: CollectionReference
         get() = rootDocument.collection("challenge")
 
-    override suspend fun getChallenge(id: String) = challengeCollection
-        .document(id)
-        .get()
-        .await()
-        .toObject(ChallengeModel::class.java)
-        ?: throw Exception("cannot parse to ChallengeModel class")
+    override suspend fun getChallenge(id: String) = with(challengeCollection) {
+        val document = document(id).get().await()
+        if (!document.exists())
+            throw NullPointerException("document is null")
+        document.toObject(ChallengeModel::class.java)
+            ?: throw Exception("cannot parse to ChallengeModel class")
+    }
 
-    override suspend fun createChallenge(challengeModel: ChallengeModel) =
-        with(
+    override suspend fun createChallenge(challengeModel: ChallengeModel): String {
+        return with(
             challengeModel.id.takeIf { !it.isNullOrEmpty() }
                 ?.run { challengeCollection.document(this) }
                 ?: challengeCollection.document()
@@ -48,11 +49,15 @@ class ChallengeRemoteSourceImpl
                     .also { it["createdAt"] = FieldValue.serverTimestamp() }
             ).await()
 
-            true
+            id
         }
+    }
 
-    override suspend fun createChallenge(challengeModel: ChallengeModel, createdAt: Date) =
-        with(
+    override suspend fun createChallenge(
+        challengeModel: ChallengeModel,
+        createdAt: Date
+    ): String {
+        return with(
             challengeModel.id.takeIf { it != null }
                 ?.run { challengeCollection.document(this) }
                 ?: challengeCollection.document()
@@ -65,8 +70,9 @@ class ChallengeRemoteSourceImpl
                     .also { it["createdAt"] = createdAt }
             ).await()
 
-            true
+            id
         }
+    }
 
     override suspend fun removeChallenge(id: String) =
         with(challengeCollection.document(id)) {

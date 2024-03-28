@@ -10,7 +10,6 @@ import dagger.hilt.components.SingletonComponent
 import kr.co.hs.sudoku.datasource.StageRemoteSource
 import kr.co.hs.sudoku.datasource.admin.AdminRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
-import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
 import kr.co.hs.sudoku.di.network.AdminRemoteSourceQualifier
 import kr.co.hs.sudoku.di.network.BattleRemoteSourceQualifier
@@ -31,6 +30,7 @@ import kr.co.hs.sudoku.repository.settings.GameSettingsRepository
 import kr.co.hs.sudoku.repository.settings.RegistrationRepository
 import kr.co.hs.sudoku.repository.stage.MatrixRepository
 import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
+import kr.co.hs.sudoku.usecase.history.CreateHistoryUseCase
 import javax.inject.Singleton
 
 @Module
@@ -49,14 +49,14 @@ object RepositoryModule {
     fun provideBattleRepository(
         @BattleRemoteSourceQualifier battleRemoteSource: BattleRemoteSource,
         profileRemoteSource: ProfileRemoteSource,
-        logRemoteSource: LogRemoteSource,
-        sudokuGenerate: SudokuGenerateUseCase
+        sudokuGenerate: SudokuGenerateUseCase,
+        createHistory: CreateHistoryUseCase
     ): BattleRepository =
         BattleRepositoryImpl(
             battleRemoteSource,
             profileRemoteSource,
-            logRemoteSource,
-            sudokuGenerate
+            sudokuGenerate,
+            createHistory
         )
 
     @BeginnerMatrixRepositoryQualifier

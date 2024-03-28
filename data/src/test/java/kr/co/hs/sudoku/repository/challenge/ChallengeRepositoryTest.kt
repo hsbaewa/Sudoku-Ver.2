@@ -1,4 +1,4 @@
-package kr.co.hs.sudoku.repository.user
+package kr.co.hs.sudoku.repository.challenge
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -10,8 +10,7 @@ import kr.co.hs.sudoku.FirebaseTest
 import kr.co.hs.sudoku.feature.user.Authenticator
 import kr.co.hs.sudoku.model.challenge.impl.ChallengeEntityImpl
 import kr.co.hs.sudoku.model.matrix.CustomMatrix
-import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
-import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
+import kr.co.hs.sudoku.repository.history.MyHistoryRepository
 import kr.co.hs.sudoku.usecase.SudokuRandomGenerateUseCase
 import org.junit.Before
 import org.junit.Rule
@@ -37,7 +36,10 @@ class ChallengeRepositoryTest : FirebaseTest() {
     lateinit var challengeRepository: ChallengeRepository
 
     @Inject
-    lateinit var sudokuGenerator: SudokuGenerateUseCase
+    lateinit var myHistoryRepository: MyHistoryRepository
+
+    @Inject
+    lateinit var sudokuGenerator: SudokuRandomGenerateUseCase
 
     @Before
     fun before() = runTest(timeout = Duration.INFINITE) {
@@ -68,16 +70,5 @@ class ChallengeRepositoryTest : FirebaseTest() {
 
         list = challengeRepository.getChallenges(Date(), 10000)
         assertEquals(listSize, list.size)
-
-
-//        val profile = authenticator.getProfile().firstOrNull() ?: throw Exception("sign first")
-
-//        val history = challengeRepository.getHistory(profile.uid, 50)
-//
-//        assertEquals(true, history.isNotEmpty())
-//        assertEquals(profile.uid, history.first().uid)
-//        assertEquals(true, history.first().challengeId.isNotEmpty())
-//        assertEquals(1, history.first().grade)
-//        assertEquals(20000, history.first().record.toInt())
     }
 }

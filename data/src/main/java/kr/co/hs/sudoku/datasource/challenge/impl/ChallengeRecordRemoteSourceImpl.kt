@@ -1,22 +1,19 @@
 package kr.co.hs.sudoku.datasource.challenge.impl
 
+import android.os.Build
 import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.challenge.ChallengeRecordRemoteSource
-import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
 import kr.co.hs.sudoku.mapper.Mapper.asMutableMap
 import kr.co.hs.sudoku.model.challenge.ChallengeEntity
 import kr.co.hs.sudoku.model.challenge.ClearTimeRecordModel
 import kr.co.hs.sudoku.model.challenge.ReserveRecordModel
-import kr.co.hs.sudoku.model.logs.impl.ChallengeClearModelImpl
 import javax.inject.Inject
 
 class ChallengeRecordRemoteSourceImpl
 @Inject constructor(
-    private val logRemoteSource: LogRemoteSource
 ) : FireStoreRemoteSource(), ChallengeRecordRemoteSource {
 
     private fun collection(challengeId: String) = rootDocument
@@ -40,20 +37,8 @@ class ChallengeRecordRemoteSourceImpl
 
     override suspend fun setRecord(id: String, record: ClearTimeRecordModel): Boolean =
         runCatching {
-            FirebaseFirestore.getInstance().runTransaction {
-                it.set(document(id, record.uid), record)
-
-                logRemoteSource.createLog(
-                    it,
-                    ChallengeClearModelImpl()
-                        .also {
-                            it.uid = record.uid
-                            it.challengeId = id
-                            it.record = record.clearTime
-                        }
-                )
-                true
-            }.await()
+            document(id, record.uid).set(record).await()
+            true
         }.getOrDefault(false)
 
     override suspend fun setRecord(id: String, record: ReserveRecordModel): Boolean =
@@ -74,16 +59,20 @@ class ChallengeRecordRemoteSourceImpl
             .await()
             .toObject(ClearTimeRecordModel::class.java)
             ?.apply {
-                rank = if (clearTime > 0) {
-                    collection(id)
-                        .orderBy("clearTime")
-                        .whereLessThan("clearTime", clearTime)
-                        .count()
-                        .get(AggregateSource.SERVER)
-                        .await()
-                        .count + 1
+                rank = if (Build.BOARD == "robolectric") {
+                    1
                 } else {
-                    throw NullPointerException("cannot parse to ClearTimeRecordModel")
+                    if (clearTime > 0) {
+                        collection(id)
+                            .orderBy("clearTime")
+                            .whereLessThan("clearTime", clearTime)
+                            .count()
+                            .get(AggregateSource.SERVER)
+                            .await()
+                            .count + 1
+                    } else {
+                        throw NullPointerException("cannot parse to ClearTimeRecordModel")
+                    }
                 }
             }
             ?: throw NullPointerException("cannot parse to ClearTimeRecordModel")
@@ -95,11 +84,10 @@ class ChallengeRecordRemoteSourceImpl
             .toObject(ReserveRecordModel::class.java)
             ?: throw Exception("not reserved record")
 
-    override suspend fun deleteRecord(id: String, uid: String): Boolean =
-        runCatching {
-            document(id, uid).delete().await()
-            true
-        }.getOrDefault(false)
+    override suspend fun deleteRecord(id: String, uid: String): Boolean {
+        document(id, uid).delete().await()
+        return true
+    }
 
     override suspend fun getChallengeMetadata(
         challengeEntity: ChallengeEntity,

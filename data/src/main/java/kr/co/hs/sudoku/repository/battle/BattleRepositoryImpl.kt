@@ -5,12 +5,12 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kr.co.hs.sudoku.datasource.FireStoreRemoteSource
 import kr.co.hs.sudoku.datasource.battle.BattleRemoteSource
-import kr.co.hs.sudoku.datasource.logs.LogRemoteSource
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain
 import kr.co.hs.sudoku.mapper.BattleMapper.toDomain2
@@ -20,10 +20,10 @@ import kr.co.hs.sudoku.model.battle.BattleLeaderBoardEntity
 import kr.co.hs.sudoku.model.battle.BattleModel
 import kr.co.hs.sudoku.model.battle.BattleParticipantModel
 import kr.co.hs.sudoku.model.battle.ParticipantEntity
-import kr.co.hs.sudoku.model.logs.impl.BattleClearModelImpl
 import kr.co.hs.sudoku.model.matrix.IntMatrix
 import kr.co.hs.sudoku.repository.TestableRepository
 import kr.co.hs.sudoku.usecase.SudokuGenerateUseCase
+import kr.co.hs.sudoku.usecase.history.CreateHistoryUseCase
 import javax.inject.Inject
 import kotlin.math.sqrt
 
@@ -33,8 +33,8 @@ class BattleRepositoryImpl
 constructor(
     private val battleRemoteSource: BattleRemoteSource,
     private val profileRemoteSource: ProfileRemoteSource,
-    private val logRemoteSource: LogRemoteSource,
-    private val sudokuGenerator: SudokuGenerateUseCase
+    private val sudokuGenerator: SudokuGenerateUseCase,
+    private val createHistory: CreateHistoryUseCase
 ) : BattleRepository, TestableRepository {
 
     override val currentUserUid: String
@@ -482,14 +482,7 @@ constructor(
             }
         }.await()
 
-        logRemoteSource.createLog(
-            BattleClearModelImpl().also {
-                it.battleId = battle.id
-                it.battleWith = battle.participants.map { it.uid }
-                it.uid = currentUserUid
-                it.record = record
-            }
-        )
+        createHistory(battle, record).firstOrNull()
     }
 
     override suspend fun exit() = doExitBattle()
@@ -638,7 +631,6 @@ constructor(
             .document(versionName)
         (profileRemoteSource as FireStoreRemoteSource).rootDocument = rootDocument
         (battleRemoteSource as FireStoreRemoteSource).rootDocument = rootDocument
-        (logRemoteSource as FireStoreRemoteSource).rootDocument = rootDocument
     }
 
 

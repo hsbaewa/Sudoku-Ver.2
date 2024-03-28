@@ -12,8 +12,13 @@ import kr.co.hs.sudoku.datasource.user.ProfileDataSource
 import kr.co.hs.sudoku.datasource.user.ProfileRemoteSource
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepository
 import kr.co.hs.sudoku.repository.challenge.ChallengeRepositoryImpl
+import kr.co.hs.sudoku.repository.history.HistoryRepository
+import kr.co.hs.sudoku.repository.history.HistoryRepositoryImpl
+import kr.co.hs.sudoku.repository.history.MyHistoryRepository
+import kr.co.hs.sudoku.repository.history.MyHistoryRepositoryImpl
 import kr.co.hs.sudoku.repository.user.ProfileRepository
 import kr.co.hs.sudoku.repository.user.ProfileRepositoryImpl
+import kr.co.hs.sudoku.usecase.challenge.GetChallengeUseCase
 import kr.co.hs.sudoku.usecase.user.GetCurrentUserProfileUseCase
 import javax.inject.Singleton
 
@@ -43,6 +48,32 @@ object RepositoryModule {
         challengeRemoteSource,
         recordRemoteSource,
         logRemoteSource,
+        getCurrentUserProfileUseCase
+    )
+
+    @Provides
+    @Singleton
+    fun bindHistoryRepository(
+        getChallenge: GetChallengeUseCase,
+        logRemoteSource: LogRemoteSource,
+        recordRemoteSource: ChallengeRecordRemoteSource
+    ): HistoryRepository = HistoryRepositoryImpl(
+        getChallenge,
+        logRemoteSource,
+        recordRemoteSource,
+    )
+
+    @Provides
+    @Singleton
+    fun bindMyHistoryRepository(
+        getChallenge: GetChallengeUseCase,
+        logRemoteSource: LogRemoteSource,
+        recordRemoteSource: ChallengeRecordRemoteSource,
+        getCurrentUserProfileUseCase: GetCurrentUserProfileUseCase
+    ): MyHistoryRepository = MyHistoryRepositoryImpl(
+        getChallenge,
+        logRemoteSource,
+        recordRemoteSource,
         getCurrentUserProfileUseCase
     )
 }

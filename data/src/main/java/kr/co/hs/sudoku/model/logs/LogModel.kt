@@ -3,7 +3,7 @@ package kr.co.hs.sudoku.model.logs
 import com.google.firebase.Timestamp
 
 sealed interface LogModel {
-    val id: String
+    var id: String
     val createdAt: Timestamp
     val uid: String
 

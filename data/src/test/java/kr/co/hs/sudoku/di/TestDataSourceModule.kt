@@ -49,8 +49,8 @@ object TestDataSourceModule {
 
     @Provides
     @Singleton
-    fun bindChallengeRecordRemoteSource(
-        logRemoteSource: LogRemoteSource
-    ): ChallengeRecordRemoteSource = ChallengeRecordRemoteSourceImpl(logRemoteSource)
-        .apply { rootDocument = testRootDocument }
+    fun bindChallengeRecordRemoteSource(): ChallengeRecordRemoteSource =
+        ChallengeRecordRemoteSourceImpl()
+            .apply { rootDocument = testRootDocument }
+
 }
