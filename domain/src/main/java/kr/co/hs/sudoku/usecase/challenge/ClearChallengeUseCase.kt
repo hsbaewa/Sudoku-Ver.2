@@ -22,51 +22,51 @@ class ClearChallengeUseCase
 @Inject constructor(
     private val repository: ChallengeRepository,
     private val createHistory: CreateHistoryUseCase
-) : UseCaseFlow<ClearChallengeUseCase.Param, Unit, ClearChallengeUseCase.Error>() {
-
-    data class Param(val challenge: ChallengeEntity, val stage: Stage)
+) {
 
     sealed interface Error
     object SignInFirst : Error
     object StageClearFirst : Error
 
-    override fun invoke(
-        param: Param
-    ): Flow<Result<Unit, Error>> = flow {
-        if (!param.stage.isSudokuClear())
-            throw ClearChallengeException.StageNotClearedException("")
+    operator fun invoke(
+        challenge: ChallengeEntity,
+        stage: Stage
+    ): Flow<UseCaseFlow.Result<Unit, Error>> =
+        flow {
+            if (!stage.isSudokuClear())
+                throw ClearChallengeException.StageNotClearedException("")
 
-        val record = param.stage.getClearTime()
-        if (record < 0)
-            throw ClearChallengeException.StageNotClearedException("invalid clear time : $record")
+            val record = stage.getClearTime()
+            if (record < 0)
+                throw ClearChallengeException.StageNotClearedException("invalid clear time : $record")
 
-        emit(param)
-    }.map {
-        repository.putRecord(param.challenge.challengeId, param.stage.getClearTime())
-    }.filter {
-        it
-    }.onEach {
-        createHistory(param.challenge, param.stage.getClearTime()).first()
-    }.flowOn(
-        Dispatchers.IO
-    ).map {
-        @Suppress("USELESS_CAST")
-        Result.Success(Unit) as Result<Unit, Error>
-    }.catch {
-        when (it) {
-            is ChallengeRepository.ChallengeException -> when (it) {
-                is ChallengeRepository.ChallengeException.RequiredCurrentUserException ->
-                    emit(Result.Error(SignInFirst))
+            emit(Unit)
+        }.map {
+            repository.putRecord(challenge.challengeId, stage.getClearTime())
+        }.filter {
+            it
+        }.onEach {
+            createHistory(challenge, stage.getClearTime()).first()
+        }.flowOn(
+            Dispatchers.IO
+        ).map {
+            @Suppress("USELESS_CAST")
+            UseCaseFlow.Result.Success(Unit) as UseCaseFlow.Result<Unit, Error>
+        }.catch {
+            when (it) {
+                is ChallengeRepository.ChallengeException -> when (it) {
+                    is ChallengeRepository.ChallengeException.RequiredCurrentUserException ->
+                        emit(UseCaseFlow.Result.Error(SignInFirst))
+                }
+
+                is ClearChallengeException -> when (it) {
+                    is ClearChallengeException.StageNotClearedException ->
+                        emit(UseCaseFlow.Result.Error(StageClearFirst))
+                }
+
+                else -> emit(UseCaseFlow.Result.Exception(it))
             }
-
-            is ClearChallengeException -> when (it) {
-                is ClearChallengeException.StageNotClearedException ->
-                    emit(Result.Error(StageClearFirst))
-            }
-
-            else -> emit(Result.Exception(it))
         }
-    }
 
     sealed class ClearChallengeException(p0: String?) : Exception(p0) {
         class StageNotClearedException(p0: String?) : ClearChallengeException(p0)

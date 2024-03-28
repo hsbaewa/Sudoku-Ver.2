@@ -23,21 +23,22 @@ class CancelPlayingChallengeUseCase
 
     override fun invoke(
         param: ChallengeEntity,
-    ): Flow<Result<Unit, Error>> = flow {
-        emit(repository.deleteRecord(param.challengeId))
-    }.flowOn(
-        Dispatchers.IO
-    ).map {
-        @Suppress("USELESS_CAST")
-        Result.Success(Unit) as Result<Unit, Error>
-    }.catch {
-        when (it) {
-            is ChallengeRepository.ChallengeException -> when (it) {
-                is ChallengeRepository.ChallengeException.RequiredCurrentUserException ->
-                    emit(Result.Error(SignInFirst))
-            }
+    ): Flow<Result<Unit, Error>> =
+        flow {
+            emit(repository.deleteRecord(param.challengeId))
+        }.flowOn(
+            Dispatchers.IO
+        ).map {
+            @Suppress("USELESS_CAST")
+            Result.Success(Unit) as Result<Unit, Error>
+        }.catch {
+            when (it) {
+                is ChallengeRepository.ChallengeException -> when (it) {
+                    is ChallengeRepository.ChallengeException.RequiredCurrentUserException ->
+                        emit(Result.Error(SignInFirst))
+                }
 
-            else -> emit(Result.Exception(it))
+                else -> emit(Result.Exception(it))
+            }
         }
-    }
 }
